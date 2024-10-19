@@ -23,6 +23,7 @@
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
         </RouterLink>
+        <!-- Sign In 버튼 클릭 시 모달 표시 -->
         <button class="menu-item sign-in" @click="showModal = true">
           <FontAwesomeIcon class="fa-icon" :icon="faSignInAlt" />
           Sign In
@@ -36,11 +37,9 @@
 </template>
 
 <script setup>
-// ref를 import합니다.
 import { ref } from 'vue';
 import Profile from './ProfileSide.vue';
-import Modal from './Modal.vue'; // Modal 컴포넌트 import
-// Font Awesome 아이콘 관련 import
+import Modal from './MoDal.vue'; // Modal 컴포넌트 import
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
   faCalendarAlt,
@@ -50,13 +49,13 @@ import {
   faSignInAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
-// 반응형 데이터 정의
-const isLoggedIn = ref(false); // 로그인 상태 관리 (초기값 false)
-const userName = ref('John Doe'); // 사용자 이름
-const profileImage = ref('john-doe-profile.png'); // 프로필 이미지
+// 로그인 상태 관리
+const isLoggedIn = ref(false);
+const userName = ref('John Doe');
+const profileImage = ref('john-doe-profile.png');
 
 // 모달 표시 상태 관리
-const showModal = ref(false);
+const showModal = ref(false); // 기본값 false로 시작
 </script>
 
 <style scoped>
