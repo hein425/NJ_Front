@@ -1,14 +1,30 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import MenuBar from './components/MenuBar.vue'
+import HeaderTop from './components/HeaderTop.vue'
 import CalendarGrid from './components/CalendarGrid.vue';
 </script>
 
 <template>
-  <MenuBar> </MenuBar>
-  <CalendarGrid class=""></CalendarGrid> 
-  
+  <HeaderTop />
+  <MenuBar class="Menubar" />
+  <CalendarGrid class="CalendarGrid"/>
+
   <RouterView />
 </template>
 
-<style scoped></style>
+<style scoped>
+.Menubar{
+  position: relative; 
+}
+
+.CalendarGrid{
+  position: absolute;
+  top: 20%; 
+  left: 40%;
+  z-index: 10; 
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border: 1px solid #ccc;
+}
+</style>

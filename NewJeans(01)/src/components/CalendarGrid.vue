@@ -74,15 +74,15 @@ watch(
         </h1>
         <div class="DOWgrid">
           <div class="Sun">일</div>
-          <div class="p-2 px-4">월</div>
-          <div class="p-2 px-4">화</div>
-          <div class="p-2 px-4">수</div>
-          <div class="p-2 px-4">목</div>
-          <div class="p-2 px-4">금</div>
-          <div class="p-2 px-4 text-blue-500">토</div>
-        </div>
+          <div class="Dayss">월</div>
+          <div class="Dayss">화</div>
+          <div class="Dayss">수</div>
+          <div class="Dayss">목</div>
+          <div class="Dayss">금</div>
+          <div class="Sat">토</div>
+        </div>  
         <div
-          class="grid grid-cols-7 gap-2"
+          class="CALgrid"
           v-for="group in groupColumns"
           :key="group.length"
         >
@@ -90,7 +90,7 @@ watch(
             @click="selectDateFn(column)"
             v-for="(column, index) in group"
             :key="column.format('YYYY-MM-DD')"
-            class="text-center p-2 hover:bg-blue-200 cursor-pointer"
+            class="Datecell"
             :class="{
               'text-red-600': index % 7 == 0,
               'text-blue-600': index % 7 == 6,
@@ -139,16 +139,55 @@ margin-bottom: 1rem;
     grid-template-columns: repeat(7, 1fr); 
     gap: 0.5rem; 
     text-align: center; 
-    color: #4b5563; 
+    color: gray
 }
 
 .Sun{
-    padding: 0.5rem; 
+padding: 0.5rem; 
 padding-left: 1rem;
 padding-right: 1rem; 
-color: #dc2626; 
+color: red; 
 }
 
+.Dayss{
+  padding: 0.5rem; 
+  padding-left: 1rem;
+  padding-right: 1rem; 
+}
 
+.Sat{
+  padding: 0.5rem; 
+padding-left: 1rem;
+padding-right: 1rem; 
+color: blue 
+}
+
+.CALgrid{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px; 
+}
+
+.Datecell {
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.date-cell:hover {
+  background-color: #bfdbfe; 
+}
+
+.red-text {
+  color: #dc2626; 
+}
+
+.blue-text {
+  color: #2563eb;
+}
+
+.faded-opacity {
+  opacity: 0.2; 
+}
 
 </style>
