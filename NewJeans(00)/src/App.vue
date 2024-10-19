@@ -2,13 +2,13 @@
 import { RouterLink, RouterView } from 'vue-router'
 import MenuBar from './components/MenuBar.vue'
 import HeaderTop from './components/HeaderTop.vue'
-import CalendarGrid from './components/CalendarGrid.vue';
+import CalendarView from './views/CalendarView.vue';
 </script>
 
 <template>
   <HeaderTop />
   <MenuBar class="Menubar" />
-  <CalendarGrid class="CalendarGrid"/>
+  <CalendarView />
 
   <RouterView />
 </template>
