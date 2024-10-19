@@ -34,5 +34,8 @@ app.component('FontAwesomeIcon', FontAwesomeIcon);
 app.use(createPinia());
 app.use(router);
 
+// todo 
+window.Kakao.init("99f806e6a12394255f93d08473d7c714");
+
 // 앱 마운트
 app.mount('#app');

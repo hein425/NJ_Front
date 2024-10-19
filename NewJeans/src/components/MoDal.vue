@@ -17,7 +17,7 @@
 
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
-          <button class="social-button kakao-button">
+          <button a id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
             <img src="@/assets/kakao.png" alt="Kakao Icon" class="social-icon" /> 카카오 계정으로 로그인
           </button>
           <button class="social-button google-button">
@@ -37,7 +37,13 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // useRouter 훅 import
+import { useRouter } from 'vue-router'; 
+
+import { watchEffect } from "vue";
+import { useRoute } from "vue-router";
+import axios from "axios";
+
+// useRouter 훅 import
 
 const router = useRouter(); // useRouter 훅 사용
 
@@ -76,6 +82,29 @@ const closeModal = () => {
 const handleForgotPassword = () => {
   console.log('비밀번호 찾기 페이지로 이동');
 };
+
+
+//카카오 로그인
+
+const route = useRoute();
+
+const kakaoLogin = () => {
+  window.Kakao.Auth.authorize({
+    redirectUri: "http://localhost:5173/kakaologin",
+  });
+};
+
+watchEffect(() => {
+  if (route.query.code) {
+    axios.get("http://localhost:10000/kakao/login?code=" + route.query.code)
+  .then((response) => {
+    console.log(response.data);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+  }
+});
 </script>
 
 
