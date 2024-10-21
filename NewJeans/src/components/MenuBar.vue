@@ -23,21 +23,34 @@
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
         </RouterLink>
-        <!-- Sign In 버튼 클릭 시 모달 표시 -->
-        <button class="menu-item sign-in" @click="showModal = true">
+
+        <!-- 로그인 상태에 따라 버튼 전환 -->
+        <button
+          v-if="!isLoggedIn"
+          class="menu-item sign-in"
+          @click="showModal = true"
+        >
           <FontAwesomeIcon class="fa-icon" :icon="faSignInAlt" />
           Sign In
+        </button>
+        <button v-else class="menu-item sign-out" @click="logoutFromKakao">
+          <FontAwesomeIcon class="fa-icon" :icon="faSignOutAlt" />
+          Sign Out
         </button>
       </nav>
 
       <!-- Modal 컴포넌트 -->
-      <Modal :show="showModal" @close="showModal = false" />
+      <Modal
+        :show="showModal"
+        @close="showModal = false"
+        @login="loginWithKakao"
+      />
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue' // vue에서 onMounted 가져오기
 import Profile from './ProfileSide.vue'
 import Modal from './MoDal.vue' // Modal 컴포넌트 import
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -47,15 +60,80 @@ import {
   faUsers,
   faCog,
   faSignInAlt,
+  faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons'
+
+// 부모 컴포넌트로 이벤트를 전송하기 위한 emit 정의
+const emit = defineEmits(['login', 'logout']) // defineEmits를 사용해 emit 정의
 
 // 로그인 상태 관리
 const isLoggedIn = ref(false)
 const userName = ref('John Doe')
-const profileImage = ref('john-doe-profile.png')
+const profileImage = ref('default-profile.png')
 
 // 모달 표시 상태 관리
-const showModal = ref(false) // 기본값 false로 시작
+const showModal = ref(false)
+
+// Kakao SDK 초기화 및 기존 로그인 상태 확인
+onMounted(() => {
+  if (!window.Kakao.isInitialized()) {
+    window.Kakao.init('YOUR_APP_KEY') // 여기에 본인의 JavaScript 키 사용
+  }
+
+  // 기존 로그인 상태 확인
+  if (window.Kakao.Auth.getAccessToken()) {
+    window.Kakao.API.request({
+      url: '/v2/user/me',
+      success: function (res) {
+        isLoggedIn.value = true
+        userName.value = res.properties.nickname
+        profileImage.value = res.properties.profile_image
+      },
+      fail: function (error) {
+        console.log(error)
+      },
+    })
+  }
+})
+
+// 카카오 로그인 함수
+const loginWithKakao = () => {
+  window.Kakao.Auth.login({
+    success: function (authObj) {
+      console.log(authObj)
+      window.Kakao.API.request({
+        url: '/v2/user/me',
+        success: function (res) {
+          console.log(res)
+          isLoggedIn.value = true
+          userName.value = res.properties.nickname
+          profileImage.value = res.properties.profile_image
+          showModal.value = false // 로그인 성공 시 모달 닫기
+          emit('login') // 부모 컴포넌트로 로그인 이벤트 emit
+        },
+        fail: function (error) {
+          console.log(error)
+        },
+      })
+    },
+    fail: function (err) {
+      console.log(err)
+    },
+  })
+}
+
+// 카카오 로그아웃 함수
+const logoutFromKakao = () => {
+  if (window.Kakao.Auth.getAccessToken()) {
+    window.Kakao.Auth.logout(() => {
+      console.log('로그아웃 완료')
+      isLoggedIn.value = false
+      userName.value = 'John Doe'
+      profileImage.value = 'default-profile.png'
+      emit('logout') // 부모 컴포넌트로 로그아웃 이벤트 emit
+    })
+  }
+}
 </script>
 
 <style scoped>
@@ -132,21 +210,5 @@ const showModal = ref(false) // 기본값 false로 시작
   grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */
   border-bottom-right-radius: 1rem;
   border-bottom-left-radius: 1rem;
-}
-
-/* 반응형 디자인을 위한 미디어 쿼리 */
-/*화면 너비가 768px 이하일 때,
-grid-template-columns를 1열로 변경하여 작은 화면에서도 메뉴가 보기 좋게 정렬되도록 설정했습니다.*/
-@media (max-width: 768px) {
-  .menu-grid {
-    grid-template-columns: 1fr; /* 작은 화면에서는 1열로 변경 */
-    width: 80vw; /* 너비를 화면 전체에 맞추기 */
-    grid-template-rows: repeat(5, 8vh); /* 높이를 5행으로 변경 */
-  }
-
-  .menu-item {
-    font-size: 0.9rem; /* 작은 화면에서 폰트 크기를 줄임 */
-    padding: 1rem 0.5rem; /* 패딩을 줄여서 작은 화면에서도 보기 좋게 설정 */
-  }
 }
 </style>

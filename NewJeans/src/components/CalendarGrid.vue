@@ -164,6 +164,8 @@ watch(
 
 .flipped-content {
   transform: rotateY(180deg); /* 뒤집힌 상태에서도 뒷면이 보이도록 */
+  justify-content: center;
+  width: 1000px;
 }
 
 /* 달력 스타일 */
