@@ -117,16 +117,6 @@ const showModal = ref(false) // 기본값 false로 시작
   border-top-right-radius: 1rem; /* 우측 상단 모서리 둥글게 */
 }
 
-/* Teams 메뉴 */
-.menu-item:nth-child(3) {
-  border-radius: 0; /* 기본적으로 둥근 모서리 없음 */
-}
-
-/* Setting 메뉴 */
-.menu-item:nth-child(4) {
-  border-radius: 0; /* 기본적으로 둥근 모서리 없음 */
-}
-
 /* Sign In 버튼 */
 .sign-in {
   grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */

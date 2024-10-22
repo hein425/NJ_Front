@@ -117,9 +117,7 @@ watch(
 
       <!-- 뒤집힌 화면에서 일정 및 다이어리 버튼, 폼 렌더링 -->
       <div class="flipped-content">
-        <div
-          class="button-group"
-        >
+        <div class="button-group">
           <button class="schedule-btn" @click="showScheduleForm">
             Schedule
           </button>
@@ -140,7 +138,6 @@ watch(
   </div>
 </template>
 
-
 <style scoped>
 /* 달력의 전체적인 구조 */
 .calendar-wrapper {
@@ -149,17 +146,17 @@ watch(
   perspective: 1000px;
   display: flex;
   align-items: flex-start;
-  height: auto;
   padding-bottom: 20px;
   padding-left: 50px;
   padding-right: 50px;
   min-height: 500px;
-  width: 60%;
-  height: 750px;
+  width: 65%;
+  height: 780px;
   padding-top: 30px;
   margin-left: 50px;
   margin-right: 50px;
   overflow: hidden;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
 
 /* 달력 제목과 관련된 스타일들  */
