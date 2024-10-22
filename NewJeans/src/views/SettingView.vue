@@ -48,7 +48,6 @@
             @change="applyTheme"
           />
           <div class="theme-preview"></div>
-          <!-- 테마 미리보기 -->
         </label>
       </div>
       <p>선택된 테마: {{ selectedTheme }}</p>
@@ -68,30 +67,26 @@ const profileImage = ref('https://via.placeholder.com/150')
 const themes = [
   { value: 'light', label: 'Light Theme' },
   { value: 'dark', label: 'Dark Theme' },
-  { value: 'blue', label: 'Blue Theme' },
-  { value: 'green', label: 'Green Theme' },
+  { value: 'pink', label: 'Pink Theme' },
+  { value: 'sky', label: 'Sky Theme' },
 ]
 
 const selectedTheme = ref(themes[0].value) // 초기 선택 테마
 
-// 다크 모드 적용 함수
+// 테마 적용 함수
 const applyTheme = () => {
-  // 기존 테마 제거
   document.documentElement.classList.remove(
     'light-theme',
     'dark-theme',
-    'blue-theme',
-    'green-theme',
+    'pink-theme',
+    'sky-theme',
   )
-
-  // 선택된 테마 적용
   document.documentElement.classList.add(`${selectedTheme.value}-theme`)
 }
 
 // watch로 테마 변경을 감지하고 적용
 watch(selectedTheme, applyTheme, { immediate: true })
 
-// 함수들
 const editProfile = () => {
   console.log('닉네임 변경 클릭')
 }
@@ -111,7 +106,7 @@ const deleteAccount = () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background-color: var(--background-color); /* 배경색 */
+  background-color: var(--background-color);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -143,7 +138,7 @@ const deleteAccount = () => {
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 20px;
-  border: 1px solid var(--border-color); /* 테두리 색상 */
+  border: 1px solid var(--border-color);
   padding: 10px;
 }
 
@@ -153,7 +148,7 @@ const deleteAccount = () => {
   border-radius: 20px;
   padding: 10px 15px;
   cursor: pointer;
-  background-color: var(--button-background); /* 버튼 배경 */
+  background-color: var(--button-background);
 }
 
 .change-img-btn:hover {
@@ -186,7 +181,7 @@ const deleteAccount = () => {
 .profile-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--text-color); /* 텍스트 색상 */
+  color: var(--text-color);
   margin-bottom: 10px;
 }
 
@@ -205,7 +200,6 @@ const deleteAccount = () => {
   width: 100%;
 }
 
-/* 삭제 버튼과 설명을 묶는 컨테이너 */
 .delete-container {
   display: flex;
   justify-content: space-between;
@@ -240,7 +234,7 @@ const deleteAccount = () => {
   margin-top: 5px;
 }
 
-/* 테마 선택 섹션 스타일 */
+/* 테마 선택 섹션 */
 .theme-section {
   width: 100%;
   margin-top: 50px;
