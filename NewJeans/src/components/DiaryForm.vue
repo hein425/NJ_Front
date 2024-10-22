@@ -21,32 +21,41 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
-import axios from 'axios'
+import { ref } from 'vue';
+import axios from 'axios';
 
-const title = ref('')
-const date = ref('')
-const content = ref('')
+const props = defineProps({
+  selectedDate: String,
+});
+
+const title = ref('');
+const date = ref(props.selectedDate || '');
+const content = ref('');
 
 const submitDiary = async () => {
   const diaryData = {
     title: title.value,
     date: date.value,
     content: content.value,
-    "category": "DAILY",
-    "calendarsIdx": 1
+    category: 'DAILY',
+    calendarsIdx: 1,
   }
-  
+
   try {
-    const response = await axios.post('http://localhost:8080/diary/create', diaryData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    const response = await axios.post(
+      'http://localhost:8080/diary/create',
+      diaryData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
     console.log('Diary Submitted Successfully', response.data)
   } catch (error) {
     console.error('Failed to submit diary:', error)
   }
+  
 }
 </script>
 

@@ -126,12 +126,12 @@ watch(
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
         <div v-if="isScheduleFormVisible" class="form-container">
-          <ScheduleForm />
+          <ScheduleForm :selectedDate="selectDate" /> 
         </div>
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm />
+          <DiaryForm :selectedDate="selectDate" />
         </div>
       </div>
     </div>
