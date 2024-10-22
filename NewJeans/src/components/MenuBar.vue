@@ -63,7 +63,7 @@ const showModal = ref(false) // 기본값 false로 시작
   display: flex;
   flex-direction: column; /* 세로 방향으로 정렬 */
   align-items: flex-start; /* 왼쪽 정렬 */
-  padding: 5vh 0 0 20vw; /* vh와 vw 단위로 패딩 설정 */
+  padding: 5vh 0 0 17vw; /* vh와 vw 단위로 패딩 설정 */
 }
 
 .menu-grid {

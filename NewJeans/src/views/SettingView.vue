@@ -37,23 +37,61 @@
     <div class="theme-section">
       <h4>Theme</h4>
       <div class="theme-options">
-        <div class="theme-box"></div>
-        <div class="theme-box"></div>
-        <div class="theme-box"></div>
-        <div class="theme-box"></div>
+        <!-- 각 테마를 선택할 수 있는 radio 버튼과 연결 -->
+        <label v-for="(theme, index) in themes" :key="index" class="theme-box">
+          <input
+            type="radio"
+            name="theme"
+            :value="theme.value"
+            v-model="selectedTheme"
+            class="radio-input"
+            @change="applyTheme"
+          />
+          <div class="theme-preview"></div>
+          <!-- 테마 미리보기 -->
+        </label>
       </div>
+      <p>선택된 테마: {{ selectedTheme }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
+// 사용자 정보
 const userName = ref('건전한소환사이름')
 const userEmail = ref('hhhii@gmail.com')
 const profileImage = ref('https://via.placeholder.com/150')
 
-// 프로필 수정, 프로필 이미지 변경, 계정 삭제를 위한 예시 함수
+// 테마 데이터 및 선택된 테마 관리
+const themes = [
+  { value: 'light', label: 'Light Theme' },
+  { value: 'dark', label: 'Dark Theme' },
+  { value: 'blue', label: 'Blue Theme' },
+  { value: 'green', label: 'Green Theme' },
+]
+
+const selectedTheme = ref(themes[0].value) // 초기 선택 테마
+
+// 다크 모드 적용 함수
+const applyTheme = () => {
+  // 기존 테마 제거
+  document.documentElement.classList.remove(
+    'light-theme',
+    'dark-theme',
+    'blue-theme',
+    'green-theme',
+  )
+
+  // 선택된 테마 적용
+  document.documentElement.classList.add(`${selectedTheme.value}-theme`)
+}
+
+// watch로 테마 변경을 감지하고 적용
+watch(selectedTheme, applyTheme, { immediate: true })
+
+// 함수들
 const editProfile = () => {
   console.log('닉네임 변경 클릭')
 }
@@ -73,7 +111,7 @@ const deleteAccount = () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background-color: white;
+  background-color: var(--background-color); /* 배경색 */
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -95,7 +133,7 @@ const deleteAccount = () => {
 .profile-image-container {
   display: flex;
   flex-direction: column;
-  align-items: center; /* 중앙 정렬 */
+  align-items: center;
   margin-left: 100px;
 }
 
@@ -104,20 +142,22 @@ const deleteAccount = () => {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 10px; /* 버튼과 이미지 사이 간격 */
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color); /* 테두리 색상 */
+  padding: 10px;
 }
 
 .change-img-btn {
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  color: var(--button-text-color);
+  border-radius: 20px;
   padding: 10px 15px;
   cursor: pointer;
+  background-color: var(--button-background); /* 버튼 배경 */
 }
 
 .change-img-btn:hover {
-  background-color: #555;
+  background-color: var(--border-color);
 }
 
 .profile-details {
@@ -129,19 +169,31 @@ const deleteAccount = () => {
 .name-edit {
   display: flex;
   align-items: center;
-  gap: 10px; /* 닉네임과 변경 버튼 간격 */
+  gap: 10px;
+}
+
+.edit-btn {
+  margin-left: 40px;
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  color: var(--button-text-color);
+  border-radius: 20px;
+  padding: 8px 15px;
+  cursor: pointer;
+  background-color: var(--button-background);
 }
 
 .profile-name {
   font-size: 1.5rem;
   font-weight: bold;
+  color: var(--text-color); /* 텍스트 색상 */
   margin-bottom: 10px;
 }
 
 .profile-email {
   font-size: 1.5rem;
   font-weight: 500;
-  color: black;
+  color: var(--text-color);
   margin-bottom: 20px;
 }
 
@@ -156,7 +208,7 @@ const deleteAccount = () => {
 /* 삭제 버튼과 설명을 묶는 컨테이너 */
 .delete-container {
   display: flex;
-  justify-content: space-between; /* 텍스트와 화살표가 양 끝에 위치 */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
 }
@@ -172,18 +224,18 @@ const deleteAccount = () => {
   color: red;
   font-size: 1rem;
   cursor: pointer;
-  flex-grow: 1; /* 버튼이 가능한 넓은 영역 차지 */
+  flex-grow: 1;
   display: flex;
 }
 
 .delete-arrow {
   font-size: 1.5rem;
   color: gray;
-  margin-left: 70px; /* 화살표를 버튼에서 떨어뜨리기 위한 마진 */
+  margin-left: 70px;
 }
 
 .delete-description {
-  color: gray;
+  color: var(--text-color);
   font-size: 0.9rem;
   margin-top: 5px;
 }
@@ -191,32 +243,41 @@ const deleteAccount = () => {
 /* 테마 선택 섹션 스타일 */
 .theme-section {
   width: 100%;
-  margin-top: 70px;
+  margin-top: 50px;
 }
 
 .theme-section h4 {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   font-size: 1.4rem;
   font-weight: bold;
-  margin-left: 80px;
+  margin-left: 100px;
 }
 
 .theme-options {
   display: flex;
-  gap: 15px;
+  gap: 50px;
   justify-content: center;
 }
 
 .theme-box {
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
-  background-color: #e1e1e1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.theme-box:hover {
-  background-color: #ccc;
+.theme-preview {
+  width: 150px;
+  height: 150px;
+  background-color: #e1e1e1;
+  border-radius: 10px;
+}
+
+.radio-input {
+  display: none;
+}
+
+.radio-input:checked + .theme-preview {
+  border: 3px solid green;
 }
 </style>
