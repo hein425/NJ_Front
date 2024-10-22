@@ -1,8 +1,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import dayjs from 'dayjs'
-import ScheduleForm from '@/components/ScheduleForm.vue'
-import DiaryForm from '@/components/DiaryForm.vue'
+import ScheduleForm from './ScheduleForm.vue'
+import DiaryForm from './DiaryForm.vue'
 
 const now = ref(dayjs())
 const columns = ref([])
