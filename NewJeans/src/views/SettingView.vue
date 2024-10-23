@@ -107,6 +107,10 @@ const deleteAccount = () => {
   align-items: center;
   justify-content: flex-start;
   background-color: var(--background-color);
+  background-image: var(--background-image);
+  background-repeat: var(--background-repeat);
+  background-size: var(--background-size);
+  background-position: var(--background-position);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
