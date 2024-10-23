@@ -364,6 +364,8 @@ watch(
   padding: 20px;
   height: 100%;
   position: relative;
+  max-height: 100%; /* 부모 요소 높이에 맞추어 최대 높이 설정 */
+  overflow-y: auto;
 }
 
 /* 버튼 그룹 스타일 */

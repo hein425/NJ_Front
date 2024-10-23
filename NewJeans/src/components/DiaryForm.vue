@@ -27,7 +27,7 @@
       </div>
 
       <button type="submit">저장</button>
-      <button type="button">취소</button>
+      <button type="button" @click="cancelForm">취소</button>
     </form>
   </div>
 </template>
@@ -44,7 +44,7 @@ const props = defineProps({
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
-const selectedCategory = ref(''); // 선택된 카테고리
+const selectedCategory = ref('Daily'); // 선택된 카테고리
 const categories = ['Daily','GROWTH', 'EXERCISE', 'TRIP', 'ETC']; // 카테고리 리스트
 
 const submitDiary = async () => {
@@ -73,6 +73,16 @@ const submitDiary = async () => {
   }
   
 }
+
+
+// 취소 버튼 클릭 시 폼 초기화
+const cancelForm = () => {
+  title.value = '';
+  date.value = props.selectedDate || '';
+  selectedCategory.value = 'Daily';
+  content.value = '';
+};
+
 </script>
 
 <style scoped>
