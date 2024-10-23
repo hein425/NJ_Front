@@ -15,11 +15,10 @@ const isScheduleFormVisible = ref(false)
 const isDiaryFormVisible = ref(false)
 
 const flipBack = () => {
-  isFlipped.value = false;
-  isScheduleFormVisible.value = false;
-  isDiaryFormVisible.value = false;
+  isFlipped.value = false
+  isScheduleFormVisible.value = false
+  isDiaryFormVisible.value = false
 }
-
 
 const subMonth = () => {
   now.value = dayjs(now.value).subtract(1, 'month')
@@ -174,7 +173,7 @@ watch(
   display: flex;
   justify-content: center; /* 가운데 정렬 */
   align-items: center;
-  gap: 1rem; /* 버튼과 연도/월 사이 간격 */
+  gap: 5rem; /* 버튼과 연도/월 사이 간격 */
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -193,6 +192,7 @@ watch(
   left: 10px; /* 왼쪽 정렬 */
 }
 .YMYM {
+  width: 120px; /* 고정 너비를 설정하여 월 이름에 상관없이 동일한 너비 유지 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -210,6 +210,7 @@ watch(
 
 .month {
   font-size: 1.2rem;
+  white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
 }
 .B-Month-button,
 .A-Month-button {
@@ -284,6 +285,7 @@ watch(
   transition:
     background-color 0.2s,
     border 0.2s;
+  aspect-ratio: 1 / 1; /* 정사각형 유지 */
 }
 
 .date-number {
@@ -374,7 +376,7 @@ watch(
   width: 120px;
 }
 
-.flip-back-btn{
+.flip-back-btn {
   background-color: white;
   color: black;
   padding: 0; /* 패딩을 제거해 크기에 영향 미치지 않도록 설정 */
