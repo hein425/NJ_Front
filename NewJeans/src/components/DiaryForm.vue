@@ -52,6 +52,7 @@ const submitDiary = async () => {
       },
     )
     console.log('Diary Submitted Successfully', response.data)
+
   } catch (error) {
     console.error('Failed to submit diary:', error)
   }

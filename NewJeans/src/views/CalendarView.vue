@@ -10,6 +10,11 @@ const groupColumns = ref([])
 
 const selectDate = ref(null)
 const isFlipped = ref(false)
+const flipBack = () => {
+  isFlipped.value = false;
+  selectDate.value = null;
+}
+
 
 const isScheduleFormVisible = ref(false)
 const isDiaryFormVisible = ref(false)
@@ -78,14 +83,14 @@ watch(
         <h1 class="Calender-title">
           <button @click="goToday" class="Today-button">Today</button>
           <button @click="subMonth()" class="B-Month-button">
-            <i><</i>
+            <i>&lang;</i>
           </button>
           <div class="YMYM">
             <span class="year">{{ now.format('YYYY') }}</span>
             <span class="month">{{ now.format('MMMM') }}</span>
           </div>
           <button @click="addMonth()" class="A-Month-button">
-            <i>></i>
+            <i>&rang;</i>
           </button>
         </h1>
         <div class="DOWgrid">
@@ -121,7 +126,10 @@ watch(
           <button class="schedule-btn" @click="showScheduleForm">
             Schedule
           </button>
+          <button class="flip-back-btn" @click="flipBack">&orarr;</button>
+          <!-- ㄴ 달력 다시 뒤집기 버튼 -->
           <button class="diary-btn" @click="showDiaryForm">Diary</button>
+          
         </div>
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
@@ -209,7 +217,7 @@ watch(
   width: 2rem;
   height: 2rem;
   cursor: pointer;
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 /* 플립 애니메이션 */
@@ -358,8 +366,25 @@ watch(
   width: 120px;
 }
 
+.flip-back-btn{
+  background-color: white;
+  color: black;
+  padding: 0; /* 패딩을 제거해 크기에 영향 미치지 않도록 설정 */
+  display: flex; /* 버튼 내부의 텍스트를 중앙에 정렬하기 위한 flexbox */
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center; /* 수직 중앙 정렬 */
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  font-size: 1.2rem;
+  transition: background-color 0.3s;
+  height: 60px;
+  width: 60px;
+}
+
 .schedule-btn:hover,
-.diary-btn:hover {
+.diary-btn:hover,
+.flip-back-btn:hover {
   background-color: #555;
 }
 
