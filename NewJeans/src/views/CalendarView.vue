@@ -44,6 +44,8 @@ const showDiaryForm = () => {
   isScheduleFormVisible.value = false
 }
 
+const weeksInMonth = ref(6) // 기본 6주로 설정 (최대 6주)
+
 watch(
   now,
   () => {
@@ -54,12 +56,24 @@ watch(
     const startdayOfWeek = startday.get('day')
     const lastdayOfWeek = lastday.get('day')
 
+    // 주차 수 계산: 시작일과 끝일의 요일에 따라 달의 주차를 계산
+    const totalDays = lastday.diff(startday, 'day') + 1
+    const daysFromLastMonth = startdayOfWeek
+    const daysFromNextMonth = 6 - lastdayOfWeek
+    const totalCells = totalDays + daysFromLastMonth + daysFromNextMonth
+    weeksInMonth.value = Math.ceil(totalCells / 7) // 몇 주인지 계산
+
+    // 이전 달의 날짜 추가
     for (let i = 1; i <= startdayOfWeek; i++) {
       columns.value.unshift(dayjs(startday).subtract(i, 'day'))
     }
+
+    // 해당 월의 날짜 추가
     for (let i = 0; i < lastday.get('date'); i++) {
       columns.value.push(dayjs(startday).add(i, 'day'))
     }
+
+    // 다음 달의 날짜 추가
     for (let i = 1; i <= 6 - lastdayOfWeek; i++) {
       columns.value.push(dayjs(lastday).add(i, 'day'))
     }
@@ -71,12 +85,18 @@ watch(
   {
     immediate: true,
     deep: true,
-  },
+  },  
 )
 </script>
 
 <template>
-  <div class="calendar-wrapper">
+  <div
+    class="calendar-wrapper"
+    :style="{
+      height:
+        weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
+    }"
+  >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
     <div class="calendar-container" :class="{ flipped: isFlipped }">
       <!-- 달력 앞면 영역 -->
@@ -159,7 +179,6 @@ watch(
   padding-right: 50px;
   min-height: 500px;
   width: 65%;
-  height: 790px;
   padding-top: 30px;
   margin-left: 50px;
   margin-right: 50px;
@@ -173,7 +192,7 @@ watch(
   display: flex;
   justify-content: center; /* 가운데 정렬 */
   align-items: center;
-  gap: 1rem; /* 버튼과 연도/월 사이 간격 */
+  gap: 5rem; /* 버튼과 연도/월 사이 간격 */
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -192,6 +211,7 @@ watch(
   left: 10px; /* 왼쪽 정렬 */
 }
 .YMYM {
+  width: 120px; /* 고정 너비를 설정하여 월 이름에 상관없이 동일한 너비 유지 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,6 +229,7 @@ watch(
 
 .month {
   font-size: 1.2rem;
+  white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
 }
 .B-Month-button,
 .A-Month-button {
@@ -283,6 +304,7 @@ watch(
   transition:
     background-color 0.2s,
     border 0.2s;
+  aspect-ratio: 1 / 1; /* 정사각형 유지 */
 }
 
 .date-number {
@@ -389,6 +411,7 @@ watch(
   height: 60px;
   width: 60px;
 }
+
 .flip-back-btn:hover {
   background-color: #b4b4b4;
 }
