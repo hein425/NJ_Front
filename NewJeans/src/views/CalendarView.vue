@@ -8,16 +8,19 @@ const now = ref(dayjs())
 const columns = ref([])
 const groupColumns = ref([])
 
-const selectDate = ref(null)
-const isFlipped = ref(false)
-const flipBack = () => {
-  isFlipped.value = false;
-  selectDate.value = null;
-}
-
-
 const isScheduleFormVisible = ref(false)
 const isDiaryFormVisible = ref(false)
+
+const selectDate = ref(null)
+const isFlipped = ref(false)
+
+
+const flipBack = () => {
+  isFlipped.value = false;
+  isScheduleFormVisible.value = false;
+  isDiaryFormVisible.value = false;
+}
+
 
 const subMonth = () => {
   now.value = dayjs(now.value).subtract(1, 'month')
@@ -26,8 +29,8 @@ const addMonth = () => {
   now.value = dayjs(now.value).add(1, 'month')
 }
 const selectDateFn = date => {
-  selectDate.value = dayjs(date).format('YYYY-MM-DD')
-  isFlipped.value = true
+  selectDate.value = dayjs(date).format('YYYY-MM-DD');
+  isFlipped.value = true;
 }
 const goToday = () => {
   now.value = dayjs()
