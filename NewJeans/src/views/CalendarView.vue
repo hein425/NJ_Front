@@ -15,11 +15,10 @@ const isScheduleFormVisible = ref(false)
 const isDiaryFormVisible = ref(false)
 
 const flipBack = () => {
-  isFlipped.value = false;
-  isScheduleFormVisible.value = false;
-  isDiaryFormVisible.value = false;
+  isFlipped.value = false
+  isScheduleFormVisible.value = false
+  isDiaryFormVisible.value = false
 }
-
 
 const subMonth = () => {
   now.value = dayjs(now.value).subtract(1, 'month')
@@ -374,7 +373,7 @@ watch(
   width: 120px;
 }
 
-.flip-back-btn{
+.flip-back-btn {
   background-color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   color: black;
@@ -390,12 +389,12 @@ watch(
   height: 60px;
   width: 60px;
 }
-.flip-back-btn:hover{
+.flip-back-btn:hover {
   background-color: #b4b4b4;
 }
 
 .schedule-btn:hover,
-.diary-btn:hover{
+.diary-btn:hover {
   background-color: #555;
 }
 

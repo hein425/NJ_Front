@@ -1,8 +1,9 @@
+
 <template>
   <div class="diary-form">
     <h2>다이어리 작성</h2>
     <form @submit.prevent="submitDiary">
-      <!-- 다이어리 작성 폼 예시 -->
+      
       <div>
         <label for="title">제목</label>
         <input id="title" v-model="title" />
@@ -19,15 +20,18 @@
         <label for="date">날짜</label>
         <input id="date" v-model="date" type="date" />
       </div>
+
       <div>
         <label for="content">내용</label>
         <textarea id="content" v-model="content" placeholder="Enter your note"></textarea>
       </div>
+
       <button type="submit">저장</button>
+      <button type="button">취소</button>
     </form>
   </div>
 </template>
-
+ 
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
@@ -41,7 +45,7 @@ const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const selectedCategory = ref(''); // 선택된 카테고리
-const categories = ['Work', 'Personal', 'Study', 'Exercise', 'Daily']; // 카테고리 리스트
+const categories = ['Daily','GROWTH', 'EXERCISE', 'TRIP', 'ETC']; // 카테고리 리스트
 
 const submitDiary = async () => {
   const diaryData = {
@@ -100,6 +104,7 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin: 5px;
 }
 
 button:hover {
