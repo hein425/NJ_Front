@@ -31,5 +31,4 @@ const isSignUpPage = computed(() => route.path === '/signupp')
   padding: 0; /* 콘텐츠와 화면 사이에 여백 추가 */
   width: 100%;
 }
-
 </style>
