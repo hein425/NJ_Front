@@ -1,8 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue'
-import dayjs from 'dayjs'
-import ScheduleForm from '@/components/ScheduleForm.vue'
-import DiaryForm from '@/components/DiaryForm.vue'
+import { ref, watch } from 'vue';
+import dayjs from 'dayjs';
+import ScheduleForm from '@/components/ScheduleForm.vue';
+import DiaryForm from '@/components/DiaryForm.vue';
+import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 
 const now = ref(dayjs())
 const columns = ref([])
@@ -41,6 +42,11 @@ const showScheduleForm = () => {
 
 const showDiaryForm = () => {
   isDiaryFormVisible.value = true
+  isScheduleFormVisible.value = false
+}
+
+// 스케줄 폼 닫기
+const closeScheduleForm = () => {
   isScheduleFormVisible.value = false
 }
 
@@ -87,6 +93,7 @@ watch(
     deep: true,
   },  
 )
+
 </script>
 
 <template>
@@ -154,13 +161,18 @@ watch(
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
         <div v-if="isScheduleFormVisible" class="form-container">
-          <ScheduleForm :selectedDate="selectDate" />
+          <ScheduleForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate" />
+          <DiaryForm :selectedDate="selectDate"  />
         </div>
+
+        <div>
+          <ScheduleDayForm :selectedDate="selectDate"/>
+        </div>
+
       </div>
     </div>
   </div>
