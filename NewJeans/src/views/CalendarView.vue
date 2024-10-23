@@ -376,6 +376,7 @@ watch(
 
 .flip-back-btn{
   background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   color: black;
   padding: 0; /* 패딩을 제거해 크기에 영향 미치지 않도록 설정 */
   display: flex; /* 버튼 내부의 텍스트를 중앙에 정렬하기 위한 flexbox */
@@ -389,10 +390,12 @@ watch(
   height: 60px;
   width: 60px;
 }
+.flip-back-btn:hover{
+  background-color: #b4b4b4;
+}
 
 .schedule-btn:hover,
-.diary-btn:hover,
-.flip-back-btn:hover {
+.diary-btn:hover{
   background-color: #555;
 }
 
