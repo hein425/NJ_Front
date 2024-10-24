@@ -34,14 +34,16 @@
         <textarea id="description" v-model="description"></textarea>
       </div>
       <button type="submit">저장</button>
+      <button type="button" @click="cancelForm">취소</button>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs';
 
 const props = defineProps({
   selectedDate: String,
@@ -55,10 +57,19 @@ const router = useRouter()  // Vue Router 사용
 
 const title = ref('')
 const color = ref('ORANGE')  // 기본 값은 'ORANGE'
-const startdate = ref(props.selectedDate || '')
+// const startdate = ref(props.selectedDate || '')
+const startdate = ref('')  
 const enddate = ref('')
 const location = ref('')
 const description = ref('')
+
+// onMounted 훅을 사용하여 컴포넌트가 마운트될 때 startdate를 설정
+onMounted(() => {
+  if (props.selectedDate) {
+    // selectedDate를 datetime-local 형식으로 변환
+    startdate.value = dayjs(props.selectedDate).format('YYYY-MM-DDTHH:mm')
+  }
+})
 
 const submitSchedule = async () => {
   const scheduleData = {
@@ -83,6 +94,8 @@ const submitSchedule = async () => {
     console.error('Failed to submit schedule:', error)
   }
 }
+
+
 </script>
 
 <style scoped>
