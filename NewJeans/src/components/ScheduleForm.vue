@@ -125,6 +125,7 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     repeat: repeat.value,
+    calendarsIdx: 1,
   };
 
   try {
