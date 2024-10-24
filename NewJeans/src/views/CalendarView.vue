@@ -1,106 +1,105 @@
 <script setup>
-import { ref, watch } from 'vue'
-import dayjs from 'dayjs'
-import ScheduleForm from '@/components/ScheduleForm.vue'
-import DiaryForm from '@/components/DiaryForm.vue'
-import ScheduleDayForm from '@/components/ScheduleDayForm.vue'
+import { ref, watch } from 'vue';
+import dayjs from 'dayjs';
+import ScheduleForm from '@/components/ScheduleForm.vue';
+import DiaryForm from '@/components/DiaryForm.vue';
+import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 
-const now = ref(dayjs())
-const columns = ref([])
-const groupColumns = ref([])
+const now = ref(dayjs());
+const columns = ref([]);
+const groupColumns = ref([]);
 
-const selectDate = ref(null)
-const isFlipped = ref(false)
+const selectDate = ref(null);
+const isFlipped = ref(false);
 
-const isScheduleFormVisible = ref(false)
-const isDiaryFormVisible = ref(false)
+const isScheduleFormVisible = ref(false);
+const isDiaryFormVisible = ref(false);
 
 const flipBack = () => {
-  isFlipped.value = false
-  isScheduleFormVisible.value = false
-  isDiaryFormVisible.value = false
-}
+  isFlipped.value = false;
+  isScheduleFormVisible.value = false;
+  isDiaryFormVisible.value = false;
+};
 
 const subMonth = () => {
-  now.value = dayjs(now.value).subtract(1, 'month')
-}
+  now.value = dayjs(now.value).subtract(1, 'month');
+};
 const addMonth = () => {
-  now.value = dayjs(now.value).add(1, 'month')
-}
+  now.value = dayjs(now.value).add(1, 'month');
+};
 const selectDateFn = date => {
-  selectDate.value = dayjs(date).format('YYYY-MM-DD')
-  isFlipped.value = true
-}
+  selectDate.value = dayjs(date).format('YYYY-MM-DD');
+  isFlipped.value = true;
+};
 const goToday = () => {
-  now.value = dayjs()
-}
+  now.value = dayjs();
+};
 
 const showScheduleForm = () => {
-  isScheduleFormVisible.value = true
-  isDiaryFormVisible.value = false
-}
+  isScheduleFormVisible.value = true;
+  isDiaryFormVisible.value = false;
+};
 
 const showDiaryForm = () => {
-  isDiaryFormVisible.value = true
-  isScheduleFormVisible.value = false
-}
+  isDiaryFormVisible.value = true;
+  isScheduleFormVisible.value = false;
+};
 
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
-  isScheduleFormVisible.value = false
-}
+  isScheduleFormVisible.value = false;
+};
 
-const weeksInMonth = ref(6) // 기본 6주로 설정 (최대 6주)
+const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
 
 watch(
   now,
   () => {
-    columns.value = []
-    groupColumns.value = []
-    const startday = dayjs(now.value).startOf('month')
-    const lastday = dayjs(now.value).endOf('month')
-    const startdayOfWeek = startday.get('day')
-    const lastdayOfWeek = lastday.get('day')
+    columns.value = [];
+    groupColumns.value = [];
+    const startday = dayjs(now.value).startOf('month');
+    const lastday = dayjs(now.value).endOf('month');
+    const startdayOfWeek = startday.get('day');
+    const lastdayOfWeek = lastday.get('day');
 
     // 주차 수 계산: 시작일과 끝일의 요일에 따라 달의 주차를 계산
-    const totalDays = lastday.diff(startday, 'day') + 1
-    const daysFromLastMonth = startdayOfWeek
-    const daysFromNextMonth = 6 - lastdayOfWeek
-    const totalCells = totalDays + daysFromLastMonth + daysFromNextMonth
-    weeksInMonth.value = Math.ceil(totalCells / 7) // 몇 주인지 계산
+    const totalDays = lastday.diff(startday, 'day') + 1;
+    const daysFromLastMonth = startdayOfWeek;
+    const daysFromNextMonth = 6 - lastdayOfWeek;
+    const totalCells = totalDays + daysFromLastMonth + daysFromNextMonth;
+    weeksInMonth.value = Math.ceil(totalCells / 7); // 몇 주인지 계산
 
     // 이전 달의 날짜 추가
     for (let i = 1; i <= startdayOfWeek; i++) {
-      columns.value.unshift(dayjs(startday).subtract(i, 'day'))
+      columns.value.unshift(dayjs(startday).subtract(i, 'day'));
     }
 
     // 해당 월의 날짜 추가
     for (let i = 0; i < lastday.get('date'); i++) {
-      columns.value.push(dayjs(startday).add(i, 'day'))
+      columns.value.push(dayjs(startday).add(i, 'day'));
     }
 
     // 다음 달의 날짜 추가
     for (let i = 1; i <= 6 - lastdayOfWeek; i++) {
-      columns.value.push(dayjs(lastday).add(i, 'day'))
+      columns.value.push(dayjs(lastday).add(i, 'day'));
     }
 
     for (let i = 0; i < columns.value.length; i += 7) {
-      groupColumns.value.push(columns.value.slice(i, i + 7))
+      groupColumns.value.push(columns.value.slice(i, i + 7));
     }
   },
   {
     immediate: true,
     deep: true,
   },
-)
+);
 </script>
 
 <template>
   <div
     class="calendar-wrapper"
     :style="{
-      height:
-        weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
+      height: weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
     }"
   >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
@@ -150,9 +149,7 @@ watch(
       <!-- 뒤집힌 화면에서 일정 및 다이어리 버튼, 폼 렌더링 -->
       <div class="flipped-content">
         <div class="button-group">
-          <button class="schedule-btn" @click="showScheduleForm">
-            Schedule
-          </button>
+          <button class="schedule-btn" @click="showScheduleForm">Schedule</button>
           <button class="flip-back-btn" @click="flipBack">&orarr;</button>
           <!-- ㄴ 달력 다시 뒤집기 버튼 -->
           <button class="diary-btn" @click="showDiaryForm">Diary</button>
@@ -160,10 +157,7 @@ watch(
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
         <div v-if="isScheduleFormVisible" class="form-container">
-          <ScheduleForm
-            :selectedDate="selectDate"
-            @closeForm="closeScheduleForm"
-          />
+          <ScheduleForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
@@ -171,7 +165,7 @@ watch(
           <DiaryForm :selectedDate="selectDate" />
         </div>
 
-        <div>
+        <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">
           <ScheduleDayForm :selectedDate="selectDate" />
         </div>
       </div>

@@ -26,26 +26,31 @@ const isLoggedIn = computed(() => authStore.isLoggedIn);
 const userName = computed(() => authStore.userName);
 const profile = computed(() => authStore.profile);
 
-console.log(localStorage.getItem('token'));
-console.log(localStorage.getItem('userName'));
-console.log(localStorage.getItem('profile'));
+// localStorage 값 확인
+console.log('Token in localStorage:', localStorage.getItem('token'));
+console.log('UserName in localStorage:', localStorage.getItem('userName'));
+console.log('Profile in localStorage:', localStorage.getItem('profile'));
+
+// Pinia 상태 확인
+console.log('Pinia Token:', authStore.token);
+console.log('Pinia UserName:', authStore.userName);
+console.log('Pinia Profile:', authStore.profile);
 </script>
 
 <style scoped>
 .profile {
-  margin-left: 5px;
   display: flex;
   flex-direction: column; /* 세로 방향으로 정렬 */
   align-items: flex-start; /* 왼쪽 정렬 */
 }
 
 .profile-container {
+  width: 230px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column; /* 세로 방향으로 정렬 */
   align-items: center; /* 수평 정렬 */
   margin-bottom: 10px; /* 각 프로필 블록 간의 간격 */
-  position: relative;
-  left: 25px;
 }
 
 .profile-image {

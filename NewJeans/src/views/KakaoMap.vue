@@ -1,12 +1,12 @@
 <template>
   <div class="map_wrap">
-    <div id="map" style="width: 200px; height: 200px"></div>
+    <div id="map" style="width: 450px; height: 250px"></div>
 
     <div id="menu_wrap" class="bg_white">
       <div class="option">
         <form @submit.prevent="searchPlaces">
           키워드 : <input type="text" v-model="keyword" id="keyword" size="15" />
-          <button type="submit">검색하기</button>
+          <button type="submit" class="searchBtn">검색하기</button>
         </form>
       </div>
       <hr />
@@ -161,7 +161,8 @@ onMounted(() => {
 .map_wrap {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 50%;
+  text-align: center;
 }
 
 #menu_wrap {
@@ -169,7 +170,8 @@ onMounted(() => {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 250px;
+  width: 300px;
+  height: 100%;
   margin: 10px 0 30px 10px;
   padding: 5px;
   overflow-y: auto;
@@ -177,6 +179,10 @@ onMounted(() => {
   z-index: 1;
   font-size: 12px;
   border-radius: 10px;
+}
+
+.searchBtn {
+  margin-left: 20px;
 }
 
 #placesList li {

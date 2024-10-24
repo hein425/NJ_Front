@@ -38,13 +38,15 @@
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
-      <!-- Save and Cancel Buttons -->
       <div class="button-row">
-        <button type="submit" class="save-button">
-          <i class="check-icon">O</i>
+        <!-- 저장 버튼 -->
+        <button type="submit" class="submit-button">
+          <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
+
+        <!-- 취소 버튼 -->
         <button type="button" @click="cancelForm" class="cancel-button">
-          <i class="cancel-icon">X</i>
+          <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
     </form>
@@ -146,25 +148,30 @@ const submitDiary = async () => {
 
 .button-row {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 10px;
+  justify-content: center;
+  gap: 10px;
 }
 
-.save-button,
+.submit-button,
 .cancel-button {
-  background-color: #333;
-  color: white;
-  border: none;
-  padding: 10px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  margin-left: 10px;
-  font-size: 1.2rem;
 }
 
-.save-button:hover,
-.cancel-button:hover {
-  background-color: #555;
+.submit-button {
+  background-color: #343434;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #808080;
+  color: white;
 }
 </style>

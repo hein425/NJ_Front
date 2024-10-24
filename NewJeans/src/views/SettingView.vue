@@ -4,9 +4,7 @@
     <div class="profile-section">
       <div class="profile-image-container">
         <img :src="profileImage" alt="Profile Image" class="profile-image" />
-        <button @click="changeProfileImage" class="change-img-btn">
-          프로필 사진 변경
-        </button>
+        <button @click="changeProfileImage" class="change-img-btn">프로필 사진 변경</button>
       </div>
       <div class="profile-details">
         <div class="name-edit">
@@ -19,13 +17,8 @@
         <div class="delete-section">
           <div class="delete-container">
             <div class="delete-text-container">
-              <button @click="deleteAccount" class="delete-btn">
-                내 계정 삭제
-              </button>
-              <p class="delete-description">
-                계정을 영구적으로 삭제하고 모든 워크 스페이스에서 액세스 권한을
-                제거합니다.
-              </p>
+              <button @click="deleteAccount" class="delete-btn">내 계정 삭제</button>
+              <p class="delete-description">계정을 영구적으로 삭제하고 모든 워크 스페이스에서 액세스 권한을 제거합니다.</p>
             </div>
             <span class="delete-arrow">›</span>
           </div>
@@ -39,14 +32,7 @@
       <div class="theme-options">
         <!-- 각 테마를 선택할 수 있는 radio 버튼과 연결 -->
         <label v-for="(theme, index) in themes" :key="index" class="theme-box">
-          <input
-            type="radio"
-            name="theme"
-            :value="theme.value"
-            v-model="selectedTheme"
-            class="radio-input"
-            @change="applyTheme"
-          />
+          <input type="radio" name="theme" :value="theme.value" v-model="selectedTheme" class="radio-input" @change="applyTheme" />
           <div class="theme-preview"></div>
         </label>
       </div>
@@ -56,12 +42,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch } from 'vue';
 
 // 사용자 정보
-const userName = ref('건전한소환사이름')
-const userEmail = ref('hhhii@gmail.com')
-const profileImage = ref('https://via.placeholder.com/150')
+const userName = ref('건전한소환사이름');
+const userEmail = ref('hhhii@gmail.com');
+const profileImage = ref('https://via.placeholder.com/150');
 
 // 테마 데이터 및 선택된 테마 관리
 const themes = [
@@ -69,35 +55,30 @@ const themes = [
   { value: 'dark', label: 'Dark Theme' },
   { value: 'pink', label: 'Pink Theme' },
   { value: 'sky', label: 'Sky Theme' },
-]
+];
 
-const selectedTheme = ref(themes[0].value) // 초기 선택 테마
+const selectedTheme = ref(themes[0].value); // 초기 선택 테마
 
 // 테마 적용 함수
 const applyTheme = () => {
-  document.documentElement.classList.remove(
-    'light-theme',
-    'dark-theme',
-    'pink-theme',
-    'sky-theme',
-  )
-  document.documentElement.classList.add(`${selectedTheme.value}-theme`)
-}
+  document.documentElement.classList.remove('light-theme', 'dark-theme', 'pink-theme', 'sky-theme');
+  document.documentElement.classList.add(`${selectedTheme.value}-theme`);
+};
 
 // watch로 테마 변경을 감지하고 적용
-watch(selectedTheme, applyTheme, { immediate: true })
+watch(selectedTheme, applyTheme, { immediate: true });
 
 const editProfile = () => {
-  console.log('닉네임 변경 클릭')
-}
+  console.log('닉네임 변경 클릭');
+};
 
 const changeProfileImage = () => {
-  console.log('프로필 사진 변경 클릭')
-}
+  console.log('프로필 사진 변경 클릭');
+};
 
 const deleteAccount = () => {
-  console.log('계정 삭제 클릭')
-}
+  console.log('계정 삭제 클릭');
+};
 </script>
 
 <style scoped>
