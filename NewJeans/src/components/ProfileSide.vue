@@ -2,7 +2,7 @@
   <div class="profile">
     <div class="profile-container" v-if="isLoggedIn">
       <!-- 프로필 이미지와 사용자명을 함께 표시 -->
-      <img :src="profileImage" alt="Profile Picture" class="profile-image" />
+      <img :src="profile" alt="Profile Picture" class="profile-image" />
       <p>Welcome, {{ userName }}!</p>
     </div>
     <div class="profile-container" v-else>
@@ -16,26 +16,19 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+
 const authStore = useAuthStore(); // Pinia 스토어 사용
-const isLoggedIn = authStore.isLoggedIn; // 로그인 상태 가져오기
-const userName = authStore.userName; // 사용자명 가져오기
-const profileImage = authStore.profileImage; // 프로필 이미지 가져오기
-// props를 정의하고 템플릿에서 직접 사용할 수 있도록 설정
-// const { isLoggedIn, userName, profileImage } = defineProps({
-//   isLoggedIn: {
-//     type: Boolean,
-//     default: false,
-//   },
-//   userName: {
-//     type: String,
-//     default: '사용자명',
-//   },
-//   profileImage: {
-//     type: String,
-//     default: 'default-profile.png',
-//   },
-// });
+
+// 반응형으로 값을 가져오도록 computed 사용
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+const userName = computed(() => authStore.userName);
+const profile = computed(() => authStore.profile);
+
+console.log(localStorage.getItem('token'));
+console.log(localStorage.getItem('userName'));
+console.log(localStorage.getItem('profile'));
 </script>
 
 <style scoped>

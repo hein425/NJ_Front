@@ -10,8 +10,8 @@ import { useAuthStore } from '@/stores/authStore';
 const authStore = useAuthStore();
 
 // 앱이 마운트될 때 로그인 상태 복원
-onMounted(() => {
-  authStore.restoreLogin();
+onMounted(async () => {
+  await authStore.restoreLogin();
 });
 
 const route = useRoute();

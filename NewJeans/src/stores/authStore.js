@@ -5,19 +5,19 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: false, // 로그인 상태
     token: null, // 사용자 토큰
     userName: '', // 사용자 이름
-    profileImage: '', // 프로필 이미지 추가
+    profile: '', // 프로필 이미지 추가
   }),
   actions: {
-    login(token, userName, profileImage) {
+    login(token, userName, profile) {
       this.token = token;
       this.userName = userName;
-      this.profileImage = profileImage; // 프로필 이미지 저장
+      this.profile = profile; // 프로필 이미지 저장
       this.isLoggedIn = true;
 
       // localStorage에 토큰과 유저명 저장
       localStorage.setItem('token', token);
       localStorage.setItem('userName', userName);
-      localStorage.setItem('profileImage', profileImage);
+      localStorage.setItem('profile', profile);
     },
     logout() {
       // 로그아웃 처리: 상태 초기화 및 localStorage 정리
@@ -33,12 +33,12 @@ export const useAuthStore = defineStore('auth', {
     restoreLogin() {
       const token = localStorage.getItem('token');
       const userName = localStorage.getItem('userName');
-      const profileImage = localStorage.getItem('profileImage'); // 이미지도 복원
+      const profile = localStorage.getItem('profile'); // 이미지도 복원
 
       if (token && userName) {
         this.token = token;
         this.userName = userName;
-        this.profileImage = profileImage;
+        this.profile = profile;
         this.isLoggedIn = true;
       }
     },

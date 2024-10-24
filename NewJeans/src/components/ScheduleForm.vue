@@ -52,7 +52,8 @@
         <!-- 장소 입력 -->
         <div class="form-row">
           <label for="location">지도 넣는 곳</label>
-          <input id="location" v-model="location" placeholder="Add Place" />
+          <!-- <input id="location" v-model="location" placeholder="Add Place" /> -->
+          <KakaoMap />
         </div>
 
         <!-- 내용 입력 -->
@@ -68,9 +69,11 @@
         <div class="button-row">
           <button type="submit" class="submit-button">
             <i class="fas fa-check"></i>
+            <!-- 체크 아이콘 -->
           </button>
           <button type="button" @click="cancelForm" class="cancel-button">
             <i class="fas fa-times"></i>
+            <!-- 엑스 아이콘 -->
           </button>
         </div>
       </div>
@@ -82,6 +85,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import KakaoMap from '@/views/KakaoMap.vue';
 
 const props = defineProps({
   selectedDate: String,
@@ -125,7 +129,7 @@ const submitSchedule = async () => {
   };
 
   try {
-    const response = await axios.post('http://localhost:8080/schedule/create', scheduleData, {
+    const response = await axios.post('http://192.168.0.17:8080/schedule/create', scheduleData, {
       headers: {
         'Content-Type': 'application/json',
       },

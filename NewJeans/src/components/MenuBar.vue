@@ -1,7 +1,7 @@
 <template>
   <header>
     <div class="nav_wrapper">
-      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profileImage="profileImage" />
+      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="profile" />
       <nav class="menu-grid">
         <RouterLink to="/" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
@@ -56,9 +56,9 @@ const router = useRouter();
 const showModal = ref(false); // 기본값 false로 시작
 
 // 로그아웃 처리 함수
-const handleLogout = () => {
-  authStore.logout(); // Pinia 스토어에서 로그아웃 처리
-  router.push('/login'); // 로그아웃 후 로그인 페이지로 이동
+const handleLogout = async () => {
+  await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
+  router.push('/'); // 로그아웃 후 로그인 페이지로 이동
 };
 </script>
 
