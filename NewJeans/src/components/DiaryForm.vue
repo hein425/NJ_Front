@@ -10,10 +10,12 @@
       </div>
 
       <label for="category">카테고리</label>
-      <select v-model="selectedCategory" id="category">
-        <option v-for="category in categories" :key="category" :value="category">
-          {{ category }}
-        </option>
+      <select v-model="category" id="category">
+          <option value="Daily">#일기</option>
+          <option value="GROWTH">#성장일지</option>
+          <option value="'EXERCISE">#운동</option>
+          <option value="TRIP">#여행</option>
+          <option value="ETC">#기타</option>
       </select>
 
       <div>
@@ -35,27 +37,31 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { useRouter }from 'vue-router';
+import dayjs from 'dayjs';
+
 
 const props = defineProps({
   selectedDate: String,
 });
 // ㄴ 프롭스로 받은 선택날짜
 
+const emit = defineEmits(['closeForm']);
+
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
-const selectedCategory = ref('Daily'); // 선택된 카테고리
-const categories = ['Daily','GROWTH', 'EXERCISE', 'TRIP', 'ETC']; // 카테고리 리스트
+const category = ref('Daily');
 
 const submitDiary = async () => {
   const diaryData = {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: selectedCategory.value,
+    category: category.value,
     calendarsIdx: 1,
   }
-
+  console.log(diaryData); 
   try {
     const response = await axios.post(
       'http://localhost:8080/diary/create',
@@ -67,21 +73,13 @@ const submitDiary = async () => {
       },
     )
     console.log('Diary Submitted Successfully', response.data)
-
+    emit('closeForm')
   } catch (error) {
     console.error('Failed to submit diary:', error)
   }
   
 }
 
-
-// 취소 버튼 클릭 시 폼 초기화
-const cancelForm = () => {
-  title.value = '';
-  date.value = props.selectedDate || '';
-  selectedCategory.value = 'Daily';
-  content.value = '';
-};
 
 </script>
 
