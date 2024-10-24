@@ -1,37 +1,37 @@
 <template>
   <div class="schedule-form">
-    <h2>일정 작성</h2>
     <form @submit.prevent="submitSchedule">
       <div class="form-grid">
         <!-- 제목 -->
-        <div class="form-row">
+        <div class="form-row" style="width: 450px">
           <label for="title">제목</label>
           <input id="title" v-model="title" placeholder="Enter Title" />
         </div>
 
-        <!-- 색깔 선택 (색상 원으로 표시) -->
-        <div class="form-row">
+        <!-- 색깔 선택 (색상 원으로 표시, 라디오 버튼 숨김) -->
+        <div class="form-row" style="width: 450px">
           <label>색깔 선택</label>
           <div class="color-options">
-            <label v-for="(colorOption, index) in colorList" :key="index">
-              <input type="radio" v-model="color" :value="colorOption.value" :style="{ backgroundColor: colorOption.color }" />
-              <span class="color-circle" :style="{ backgroundColor: colorOption.color }"></span>
+            <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
+              <!-- 색상 선택 부분에서만 라디오 버튼 숨김 -->
+              <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
+              <span class="color-circle" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
             </label>
           </div>
         </div>
 
         <!-- 시작 날짜, 종료 날짜 -->
-        <div class="form-row">
+        <div class="form-row" style="width: 450px">
           <label for="startdate">시작 날짜</label>
           <input id="startdate" v-model="startdate" type="datetime-local" />
         </div>
-        <div class="form-row">
+        <div class="form-row" style="width: 450px">
           <label for="enddate">종료 날짜</label>
           <input id="enddate" v-model="enddate" type="datetime-local" />
         </div>
 
-        <!-- 반복 설정 -->
-        <div class="form-row repeat-row">
+        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
+        <div class="form-row" style="width: 450px">
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
@@ -49,31 +49,30 @@
           </div>
         </div>
 
-        <!-- 장소 입력 -->
+        <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
-          <label for="location">지도 넣는 곳</label>
-          <!-- <input id="location" v-model="location" placeholder="Add Place" /> -->
+          <label for="location">지도</label>
           <KakaoMap />
         </div>
 
         <!-- 내용 입력 -->
-        <div class="form-row">
+        <div class="form-row" style="width: 450px">
           <div class="icon-label">
             <i class="icon-note"></i>
-            <label for="content">Add Note</label>
+            <label for="content">메모</label>
           </div>
           <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
         </div>
 
-        <!-- 저장 및 취소 버튼 -->
         <div class="button-row">
+          <!-- 저장 버튼 -->
           <button type="submit" class="submit-button">
-            <i class="fas fa-check"></i>
-            <!-- 체크 아이콘 -->
+            <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
           </button>
+
+          <!-- 취소 버튼 -->
           <button type="button" @click="cancelForm" class="cancel-button">
-            <i class="fas fa-times"></i>
-            <!-- 엑스 아이콘 -->
+            <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
           </button>
         </div>
       </div>
@@ -89,12 +88,6 @@ import KakaoMap from '@/views/KakaoMap.vue';
 
 const props = defineProps({
   selectedDate: String,
-});
-
-onMounted(() => {
-  if (props.selectedDate) {
-    startdate.value = dayjs(props.selectedDate).format('YYYY-MM-DDTHH:mm');
-  }
 });
 
 const emit = defineEmits(['closeForm']);
@@ -117,7 +110,11 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
-
+onMounted(() => {
+  if (props.selectedDate) {
+    startdate.value = dayjs(props.selectedDate).format('YYYY-MM-DDTHH:mm');
+  }
+});
 
 const submitSchedule = async () => {
 
@@ -171,23 +168,26 @@ const cancelForm = () => {
   background-color: white;
   border-radius: 10px;
   max-width: 600px;
-  margin: auto;
+  margin-top: 100px;
+  padding: 50px 0;
   border: 1px solid #ccc;
 }
 
+/* 그리드를 1열로 변경 */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* 1열로 배치 */
   grid-gap: 20px;
 }
 
 .form-row {
   display: flex;
   flex-direction: column;
+  margin: 0 auto;
 }
 
 .form-row label {
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   font-weight: bold;
 }
 
@@ -207,22 +207,29 @@ textarea {
 /* 색깔 선택 부분 */
 .color-options {
   display: flex;
-  gap: 10px;
+  gap: 20px;
 }
 
 .color-circle {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid #ccc;
   display: inline-block;
+  cursor: pointer;
 }
 
-input[type='radio'] {
-  margin-right: 5px; /* 라디오 버튼을 보여줍니다. */
+/* 색깔 선택 라디오 버튼만 숨김 */
+.color-radio {
+  display: none;
 }
 
-/* 반복 옵션 스타일 */
+/* 선택된 색깔 원에 스타일 추가 */
+input[type='radio']:checked + .color-circle {
+  border: 2px solid black;
+}
+
+/* 반복 옵션 스타일 (라디오 버튼 보이게) */
 .repeat-options {
   display: flex;
   justify-content: space-around;

@@ -49,7 +49,6 @@ const showDiaryForm = () => {
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
   isScheduleFormVisible.value = false;
-  isDiaryFormVisible.value = false;
 };
 
 const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
@@ -101,6 +100,7 @@ const isYearCalendarVisible = ref(false);
 const showYearCalendar = () => {
   isYearCalendarVisible.value = !isYearCalendarVisible.value;
 };
+
 </script>
 
 <template>
@@ -126,12 +126,13 @@ const showYearCalendar = () => {
           <button @click="addMonth()" class="A-Month-button">
             <i>></i>
           </button>
-          <!-- 아래껀 연달력 열기 버튼 -->
-          <div> 
+
+           <!-- 아래껀 연달력 열기 버튼 -->
+           <div> 
             <button @click="showYearCalendar">Yearly Calendar</button>
             <YearCalendar v-if="isYearCalendarVisible" />
           </div>
-
+          
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>
@@ -176,10 +177,10 @@ const showYearCalendar = () => {
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
+          <DiaryForm :selectedDate="selectDate" />
         </div>
 
-        <div>
+        <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">
           <ScheduleDayForm :selectedDate="selectDate" />
         </div>
       </div>

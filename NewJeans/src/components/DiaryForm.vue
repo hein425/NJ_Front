@@ -3,28 +3,29 @@
     <form @submit.prevent="submitDiary">
       <!-- Title과 Category -->
       <div class="row">
-        <div class="title-section">
-          <label for="title">Title</label>
-          <input id="title" v-model="title" class="input-field" />
-        </div>
+        <div class="title-category-row">
+          <div class="title-section">
+            <label for="title" style="width: 50px">제목</label>
+            <input id="title" v-model="title" class="input-field" />
+          </div>
 
-        <div class="category-section">
-          <label for="category">Category</label>
-          <select v-model="category" id="category" class="input-field">
-            <option value="Daily">#일기</option>
-            <option value="GROWTH">#성장일지</option>
-            <option value="EXERCISE">#운동</option>
-            <option value="TRIP">#여행</option>
-            <option value="ETC">#기타</option>
-          </select>
+          <div class="category-section">
+            <select v-model="category" id="category" class="input-field" style="width: 100px">
+              <option value="Daily">#일기</option>
+              <option value="GROWTH">#성장일지</option>
+              <option value="'EXERCISE">#운동</option>
+              <option value="TRIP">#여행</option>
+              <option value="ETC">#기타</option>
+            </select>
+          </div>
         </div>
       </div>
 
       <!-- Date -->
       <div class="row">
         <div class="icon-label">
-          <i class="icon-calendar"></i>
-          <label for="date">Add Date</label>
+          <!-- <i class="icon-calendar"></i> -->
+          <label for="date" style="width: 80px">작성일</label>
         </div>
         <input id="date" v-model="date" type="date" class="input-field" />
       </div>
@@ -32,19 +33,21 @@
       <!-- Note -->
       <div class="row">
         <div class="icon-label">
-          <i class="icon-note"></i>
-          <label for="content">Add Note</label>
+          <!-- <i class="icon-note"></i> -->
+          <label for="content" style="width: 80px">내용</label>
         </div>
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
-      <!-- Save and Cancel Buttons -->
       <div class="button-row">
-        <button type="submit" class="save-button">
-          <i class="check-icon">O</i>
+        <!-- 저장 버튼 -->
+        <button type="submit" class="submit-button">
+          <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
+
+        <!-- 취소 버튼 -->
         <button type="button" @click="cancelForm" class="cancel-button">
-          <i class="cancel-icon">X</i>
+          <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
     </form>
@@ -92,6 +95,7 @@ const submitDiary = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
+
 </script>
 
 <style scoped>
@@ -100,18 +104,27 @@ const cancelForm = () => {
   margin-top: 10vh;
   padding: 20px;
   border-radius: 10px;
+  height: 550px;
 }
 
 /* 전체 레이아웃 */
 .row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   border-bottom: 1px solid #ccc;
   padding: 10px 0;
 }
 
+.title-category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .title-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex: 2;
 }
 
@@ -121,10 +134,15 @@ const cancelForm = () => {
   justify-content: flex-end;
 }
 
+.diary-form label {
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
 .icon-label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 15px;
 }
 
 .icon-calendar::before {
@@ -145,31 +163,38 @@ const cancelForm = () => {
 }
 
 .textarea-field {
-  height: 100px;
+  height: 220px;
   resize: none;
 }
 
 .button-row {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 10px;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+  margin-bottom: 10px;
 }
 
-.save-button,
+.submit-button,
 .cancel-button {
-  background-color: #333;
-  color: white;
-  border: none;
-  padding: 10px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  margin-left: 10px;
-  font-size: 1.2rem;
 }
 
-.save-button:hover,
-.cancel-button:hover {
-  background-color: #555;
+.submit-button {
+  background-color: #343434;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #808080;
+  color: white;
 }
 </style>
