@@ -1,57 +1,75 @@
-
 <template>
   <div class="diary-form">
-    <h2>다이어리 작성</h2>
     <form @submit.prevent="submitDiary">
-      
-      <div>
-        <label for="title">제목</label>
-        <input id="title" v-model="title" />
+      <!-- Title과 Category -->
+      <div class="row">
+        <div class="title-section">
+          <label for="title">Title</label>
+          <input id="title" v-model="title" class="input-field" />
+        </div>
+
+        <div class="category-section">
+          <label for="category">Category</label>
+          <select v-model="category" id="category" class="input-field">
+            <option value="Daily">#일기</option>
+            <option value="GROWTH">#성장일지</option>
+            <option value="'EXERCISE">#운동</option>
+            <option value="TRIP">#여행</option>
+            <option value="ETC">#기타</option>
+          </select>
+        </div>
       </div>
 
-      <label for="category">카테고리</label>
-      <select v-model="category" id="category">
-          <option value="Daily">#일기</option>
-          <option value="GROWTH">#성장일지</option>
-          <option value="'EXERCISE">#운동</option>
-          <option value="TRIP">#여행</option>
-          <option value="ETC">#기타</option>
-      </select>
-
-      <div>
-        <label for="date">날짜</label>
-        <input id="date" v-model="date" type="date" />
+      <!-- Date -->
+      <div class="row">
+        <div class="icon-label">
+          <i class="icon-calendar"></i>
+          <label for="date">Add Date</label>
+        </div>
+        <input id="date" v-model="date" type="date" class="input-field" />
       </div>
 
-      <div>
-        <label for="content">내용</label>
-        <textarea id="content" v-model="content" placeholder="Enter your note"></textarea>
+      <!-- Note -->
+      <div class="row">
+        <div class="icon-label">
+          <i class="icon-note"></i>
+          <label for="content">Add Note</label>
+        </div>
+        <textarea
+          id="content"
+          v-model="content"
+          placeholder="Enter your note"
+          class="input-field textarea-field"
+        ></textarea>
       </div>
 
-      <button type="submit">저장</button>
-      <button type="button" @click="cancelForm">취소</button>
+      <!-- Save and Cancel Buttons -->
+      <div class="button-row">
+        <button type="submit" class="save-button">
+          <i class="check-icon">O</i>
+        </button>
+        <button type="button" @click="cancelForm" class="cancel-button">
+          <i class="cancel-icon">X</i>
+        </button>
+      </div>
     </form>
   </div>
 </template>
- 
-<script setup>
-import { ref } from 'vue';
-import axios from 'axios';
-import { useRouter }from 'vue-router';
-import dayjs from 'dayjs';
 
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
 
 const props = defineProps({
   selectedDate: String,
-});
-// ㄴ 프롭스로 받은 선택날짜
+})
 
 const emit = defineEmits(['closeForm']);
 
-const title = ref('');
-const date = ref(props.selectedDate || '');
-const content = ref('');
-const category = ref('Daily');
+const title = ref('')
+const date = ref(props.selectedDate || '')
+const content = ref('')
+const category = ref('Daily') // 선택된 카테고리
 
 const submitDiary = async () => {
   const diaryData = {
@@ -77,45 +95,86 @@ const submitDiary = async () => {
   } catch (error) {
     console.error('Failed to submit diary:', error)
   }
-  
 }
-
 
 </script>
 
 <style scoped>
-/* 스타일링 */
 .diary-form {
+  border: 1px solid #ccc;
+  margin-top: 10vh;
   padding: 20px;
-  background-color: white;
   border-radius: 10px;
 }
-label {
-  font-weight: bold;
+
+/* 전체 레이아웃 */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
 }
 
-input,
-select,
-textarea {
+.title-section {
+  flex: 2;
+}
+
+.category-section {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.icon-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.icon-calendar::before {
+  content: '\1F4C5'; /* Calendar icon */
+}
+
+.icon-note::before {
+  content: '\270E'; /* Pencil icon */
+}
+
+/* 입력 필드 스타일 */
+.input-field {
+  border: none;
   width: 100%;
   padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 1rem;
 }
 
-button {
-  padding: 10px 20px;
+.textarea-field {
+  height: 100px;
+  resize: none;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.save-button,
+.cancel-button {
   background-color: #333;
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 10px;
+  border-radius: 50%;
   cursor: pointer;
-  margin: 5px;
+  margin-left: 10px;
+  font-size: 1.2rem;
 }
 
-button:hover {
+.save-button:hover,
+.cancel-button:hover {
   background-color: #555;
 }
 </style>
