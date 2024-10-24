@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import ScheduleForm from '@/components/ScheduleForm.vue'
 import DiaryForm from '@/components/DiaryForm.vue'
+import ScheduleDayForm from '@/components/ScheduleDayForm.vue'
 
 const now = ref(dayjs())
 const columns = ref([])
@@ -41,6 +42,11 @@ const showScheduleForm = () => {
 
 const showDiaryForm = () => {
   isDiaryFormVisible.value = true
+  isScheduleFormVisible.value = false
+}
+
+// 스케줄 폼 닫기
+const closeScheduleForm = () => {
   isScheduleFormVisible.value = false
 }
 
@@ -85,7 +91,7 @@ watch(
   {
     immediate: true,
     deep: true,
-  },  
+  },
 )
 </script>
 
@@ -154,12 +160,19 @@ watch(
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
         <div v-if="isScheduleFormVisible" class="form-container">
-          <ScheduleForm :selectedDate="selectDate" />
+          <ScheduleForm
+            :selectedDate="selectDate"
+            @closeForm="closeScheduleForm"
+          />
         </div>
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
           <DiaryForm :selectedDate="selectDate" />
+        </div>
+
+        <div>
+          <ScheduleDayForm :selectedDate="selectDate" />
         </div>
       </div>
     </div>
@@ -364,6 +377,8 @@ watch(
   padding: 20px;
   height: 100%;
   position: relative;
+  max-height: 100%; /* 부모 요소 높이에 맞추어 최대 높이 설정 */
+  overflow-y: auto;
 }
 
 /* 버튼 그룹 스타일 */
@@ -423,10 +438,10 @@ watch(
 
 /* 폼을 담는 컨테이너 스타일 */
 .form-container {
-  background-color: white;
+  /* background-color: white;/// */
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   width: 80%;
   max-width: 600px;
 }

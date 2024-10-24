@@ -92,30 +92,9 @@ const openSignUp = () => {
 }
 
 // 로그인 처리 함수
-const handleLogin = async () => {
-  try {
-    // 서버로 로그인 요청 보내기
-    const response = await axios.post('https://http://192.168.0.5:8080/login', {
-      email: username.value,
-      password: password.value,
-    })
-
-    if (response.status === 200) {
-      // 로그인 성공 시 토큰 등을 저장 (예: localStorage 또는 Vuex)
-      localStorage.setItem('token', response.data.token)
-
-      alert('로그인 성공!')
-      closeModal() // 모달 닫기
-      router.push('/') // 로그인 후 홈으로 이동
-    }
-  } catch (error) {
-    // 로그인 실패 시 에러 처리
-    alert(
-      '로그인 실패: ' +
-        (error.response?.data.message || '로그인에 실패했습니다.'),
-    )
-    console.error('로그인 오류:', error)
-  }
+const handleLogin = () => {
+  console.log(`Logging in with: ${username.value}, ${password.value}`)
+  closeModal() // 로그인 후 모달 닫기
 }
 
 // 모달 닫기 함수

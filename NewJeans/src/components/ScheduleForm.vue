@@ -2,133 +2,93 @@
   <div class="schedule-form">
     <h2>일정 작성</h2>
     <form @submit.prevent="submitSchedule">
-      
+      <!-- 일정 작성 폼 예시 -->
       <div>
         <label for="title">제목</label>
-
         <input id="title" v-model="title" />
       </div>
-      <label for="colors">색깔</label>
-      <select v-model="colors" id="colors">
-        <option
-          v-for="category in categories"
-          :key="category"
-          :value="category"
-        >
-          {{ category }}
-        </option>
-      </select>
-
       <div>
-        <label for="date">날짜</label>
-        <input id="date" v-model="date" type="date" />
+        <label for="color">색깔 선택</label>
+        <select id="color" v-model="color">
+          <option value="PINK">PINK</option>
+          <option value="ORANGE">ORANGE</option>
+          <option value="YELLOW">YELLOW</option>
+          <option value="BLUE">BLUE</option>
+          <option value="GREEN">GREEN</option>
+          <option value="VIOLET">VIOLET</option>
+          <option value="GRAY">GRAY</option>
+        </select>
       </div>
-
       <div>
-        <label for="time">시간</label>
-        <input id="time" v-model="time" type="time" />
+        <label for="startdate">시작날짜</label>
+        <input id="startdate" v-model="startdate" type="datetime-local" />
+        <label for="enddate">종료날짜</label>
+        <input id="enddate" v-model="enddate" type="datetime-local" />
       </div>
-
-
-      <!-- 반복 여부 선택 라디오 버튼 -->
       <div>
-        <label>반복 여부</label>
-        <div>
-          <label>
-            <input type="radio" v-model="repeatOption" value="EY" />
-            매년
-          </label>
-          <label>
-            <input type="radio" v-model="repeatOption" value="EM" />
-            매월
-          </label>
-          <label>
-            <input type="radio" v-model="repeatOption" value="NO" />
-            안함
-          </label>
-        </div>
+        <label for="location">지도 넣는곳</label>
+        <input id="location" v-model="location" />
       </div>
-
-      <!-- 지도 넣을 자리 비워놨습니다 태호형님 여기입니다  -->
-       
       <div>
-        <label for="location">위치</label>
-        <div id="map" style="width:100%;height:300px;"></div>
+        <label for="description">내용</label>
+        <textarea id="description" v-model="description"></textarea>
       </div>
-
-      <!-- 지도 넣을 자리 비워놨습니다 태호형님 여기입니다  -->
-
-      <div>
-        <label for="content">내용</label>
-        <textarea id="content" v-model="content"></textarea>
-      </div>
-
       <button type="submit">저장</button>
-      <button type="button">취소</button>
     </form>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios';
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   selectedDate: String,
 });
+// ㄴ 프롭스로 받은 선택날짜
 
-const title = ref('');
-const date =  ref(props.selectedDate || '');
-const colors = ['빨','주','노','초'];
-const content = ref('');
-const time = ref('');
-const repeatOption = ref('NO'); // 라디오 기본값
+// emit 정의
+const emit = defineEmits(['closeForm']);
 
-const submitSchedule = () => {
-  console.log('Schedule Submitted', {
+const router = useRouter()  // Vue Router 사용
+
+const title = ref('')
+const color = ref('ORANGE')  // 기본 값은 'ORANGE'
+const startdate = ref(props.selectedDate || '')
+const enddate = ref('')
+const location = ref('')
+const description = ref('')
+
+const submitSchedule = async () => {
+  const scheduleData = {
     title: title.value,
-    date: date.value,
-    content: content.value,
-    repeatOption: repeatOption.value,
-    colors: colors.value,
-  })
+    color: color.value,  // color 값이 드롭다운에서 선택한 값으로 설정됨
+    start: startdate.value,
+    end: enddate.value,
+    location: location.value,
+    content: description.value,
+    calendarsIdx: 1
+  }
+  console.log(scheduleData);  // 제출 전 데이터 확인
+  try {
+    const response = await axios.post('http://localhost:8080/schedule/create', scheduleData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    console.log('Schedule Submitted Successfully', response.data)
+    emit('closeForm');
+  } catch (error) {
+    console.error('Failed to submit schedule:', error)
+  }
 }
 </script>
 
 <style scoped>
-/* 스타일링 */
 .schedule-form {
   padding: 20px;
   background-color: white;
   border-radius: 10px;
-}
-
-label {
-  font-weight: bold;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-button {
-  padding: 10px 20px;
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 5px;
-}
-
-button:hover {
-  background-color: #555;
 }
 </style>
