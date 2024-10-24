@@ -27,7 +27,6 @@
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
           <button
-            a
             id="custom-login-btn"
             @click="kakaoLogin()"
             class="social-button kakao-button"
@@ -62,17 +61,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { useAuthStore } from '@/stores/authStore' // Pinia store import
 import { watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
-// useRouter 훅 import
+// Pinia store 사용
+const authStore = useAuthStore()
 
 const router = useRouter() // useRouter 훅 사용
 
 // props 정의
-/* eslint-disable-next-line no-unused-vars */
 const props = defineProps({
   show: {
     type: Boolean,
@@ -87,14 +86,38 @@ const password = ref('')
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
-  const signUpUrl = router.resolve({ path: '/signupp' }).href // this.$router 대신 router 사용
+  const signUpUrl = router.resolve({ path: '/signupp' }).href
   window.open(signUpUrl, '_blank') // 새 창에서 회원가입 페이지 열기
 }
 
-// 로그인 처리 함수
-const handleLogin = () => {
-  console.log(`Logging in with: ${username.value}, ${password.value}`)
-  closeModal() // 로그인 후 모달 닫기
+// 로그인 처리 함수 (일반 로그인)
+const handleLogin = async () => {
+  try {
+    // 서버로 로그인 요청 보내기
+    const response = await axios.post(
+      'https://your-backend-url.com/api/login',
+      {
+        email: username.value,
+        password: password.value,
+      },
+    )
+
+    if (response.status === 200) {
+      // 로그인 성공 시 Pinia store에 상태 업데이트
+      authStore.login(response.data.token, response.data.userName)
+
+      alert('로그인 성공!')
+      closeModal() // 모달 닫기
+      router.push('/') // 로그인 후 홈으로 이동
+    }
+  } catch (error) {
+    // 로그인 실패 시 에러 처리
+    alert(
+      '로그인 실패: ' +
+        (error.response?.data?.message || '로그인에 실패했습니다.'),
+    )
+    console.error('로그인 오류:', error)
+  }
 }
 
 // 모달 닫기 함수
@@ -103,24 +126,30 @@ const closeModal = () => {
 }
 
 //카카오 로그인
-
 const route = useRoute()
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
-    redirectUri: 'http://localhost:5173/kakaologin',
+    redirectUri: 'http://localhost:5173/kakaologin', //카카오 리다이렉트 URI
   })
 }
 
+// 카카오 리다이렉트 후 처리
 watchEffect(() => {
   if (route.query.code) {
     axios
       .get('http://localhost:10000/kakao/login?code=' + route.query.code)
       .then(response => {
-        console.log(response.data)
+        // 서버로부터 받은 토큰을 localStorage에 저장 (로그인 상태 관리)
+        const token = response.data.token
+        localStorage.setItem('token', token) // 토큰을 브라우저에 저장
+        authStore.login(token, response.data.userName) // Pinia에 로그인 상태 저장
+        alert('카카오 로그인 성공!')
+        router.push('/') // 로그인 후 홈으로 리다이렉트
       })
       .catch(error => {
-        console.log(error)
+        console.log('카카오 로그인 실패:', error)
+        alert('카카오 로그인에 실패했습니다.')
       })
   }
 })

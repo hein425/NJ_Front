@@ -23,10 +23,20 @@
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
         </RouterLink>
-        <!-- Sign In 버튼 클릭 시 모달 표시 -->
-        <button class="menu-item sign-in" @click="showModal = true">
+
+        <!-- 로그인 상태에 따라 Sign In / Sign Out 버튼 표시 -->
+        <button
+          v-if="!isLoggedIn"
+          class="menu-item sign-in"
+          @click="showModal = true"
+        >
           <FontAwesomeIcon class="fa-icon" :icon="faSignInAlt" />
           Sign In
+        </button>
+
+        <button v-else class="menu-item sign-in" @click="handleLogout">
+          <FontAwesomeIcon class="fa-icon" :icon="faSignOutAlt" />
+          Sign Out
         </button>
       </nav>
 
@@ -47,15 +57,26 @@ import {
   faUsers,
   faCog,
   faSignInAlt,
+  faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // 로그인 상태 관리
-const isLoggedIn = ref(false)
+const isLoggedIn = ref(!!localStorage.getItem('token')) // 로그인 여부 추적
 const userName = ref('John Doe')
 const profileImage = ref('john-doe-profile.png')
 
 // 모달 표시 상태 관리
 const showModal = ref(false) // 기본값 false로 시작
+
+// 로그아웃 처리 함수
+const handleLogout = () => {
+  localStorage.removeItem('token') // 토큰 제거
+  isLoggedIn.value = false // 로그인 상태 업데이트
+  router.push('/login') // 로그아웃 후 로그인 페이지로 이동
+}
 </script>
 
 <style scoped>
@@ -117,7 +138,7 @@ const showModal = ref(false) // 기본값 false로 시작
   border-top-right-radius: 1rem; /* 우측 상단 모서리 둥글게 */
 }
 
-/* Sign In 버튼 */
+/* Sign In / Sign Out 버튼 */
 .sign-in {
   grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */
   border-bottom-right-radius: 1rem;
@@ -125,8 +146,6 @@ const showModal = ref(false) // 기본값 false로 시작
 }
 
 /* 반응형 디자인을 위한 미디어 쿼리 */
-/*화면 너비가 768px 이하일 때,
-grid-template-columns를 1열로 변경하여 작은 화면에서도 메뉴가 보기 좋게 정렬되도록 설정했습니다.*/
 @media (max-width: 768px) {
   .menu-grid {
     grid-template-columns: 1fr; /* 작은 화면에서는 1열로 변경 */
