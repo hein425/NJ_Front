@@ -7,16 +7,15 @@
           <label for="title">Title</label>
           <input id="title" v-model="title" class="input-field" />
         </div>
+
         <div class="category-section">
           <label for="category">Category</label>
-          <select v-model="selectedCategory" id="category" class="input-field">
-            <option
-              v-for="category in categories"
-              :key="category"
-              :value="category"
-            >
-              {{ category }}
-            </option>
+          <select v-model="category" id="category" class="input-field">
+            <option value="Daily">#일기</option>
+            <option value="GROWTH">#성장일지</option>
+            <option value="'EXERCISE">#운동</option>
+            <option value="TRIP">#여행</option>
+            <option value="ETC">#기타</option>
           </select>
         </div>
       </div>
@@ -47,10 +46,10 @@
       <!-- Save and Cancel Buttons -->
       <div class="button-row">
         <button type="submit" class="save-button">
-          <i class="check-icon"></i>
+          <i class="check-icon">O</i>
         </button>
         <button type="button" @click="cancelForm" class="cancel-button">
-          <i class="cancel-icon"></i>
+          <i class="cancel-icon">X</i>
         </button>
       </div>
     </form>
@@ -65,21 +64,22 @@ const props = defineProps({
   selectedDate: String,
 })
 
+const emit = defineEmits(['closeForm']);
+
 const title = ref('')
 const date = ref(props.selectedDate || '')
 const content = ref('')
-const selectedCategory = ref('Daily') // 선택된 카테고리
-const categories = ['Daily', 'GROWTH', 'EXERCISE', 'TRIP', 'ETC'] // 카테고리 리스트
+const category = ref('Daily') // 선택된 카테고리
 
 const submitDiary = async () => {
   const diaryData = {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: selectedCategory.value,
+    category: category.value,
     calendarsIdx: 1,
   }
-
+  console.log(diaryData); 
   try {
     const response = await axios.post(
       'http://localhost:8080/diary/create',
@@ -91,18 +91,12 @@ const submitDiary = async () => {
       },
     )
     console.log('Diary Submitted Successfully', response.data)
+    emit('closeForm')
   } catch (error) {
     console.error('Failed to submit diary:', error)
   }
 }
 
-// 취소 버튼 클릭 시 폼 초기화
-const cancelForm = () => {
-  title.value = ''
-  date.value = props.selectedDate || ''
-  selectedCategory.value = 'Daily'
-  content.value = ''
-}
 </script>
 
 <style scoped>
