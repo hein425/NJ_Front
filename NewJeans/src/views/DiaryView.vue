@@ -41,8 +41,8 @@
         class="diary-item"
       >
         <h3>{{ diary.title }}</h3>
+        <p>{{ getCategoryLabel(diary.category) }}</p>
         <p>{{ diary.date }}</p>
-        <p>{{ diary.category }}</p>
       </div>
     </div>
     <div v-else>
@@ -127,6 +127,11 @@ const sortedDiaries = computed(() => {
 onMounted(() => {
   fetchDiaries('ALL')
 })
+
+const getCategoryLabel = categoryValue => {
+  const category = categories.find(cat => cat.value === categoryValue)
+  return category ? category.label : '기타'
+}
 </script>
 
 <style scoped>

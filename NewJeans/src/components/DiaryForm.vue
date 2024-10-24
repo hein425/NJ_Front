@@ -64,7 +64,7 @@ const props = defineProps({
   selectedDate: String,
 })
 
-const emit = defineEmits(['closeForm']);
+const emit = defineEmits(['closeForm'])
 
 const title = ref('')
 const date = ref(props.selectedDate || '')
@@ -79,7 +79,7 @@ const submitDiary = async () => {
     category: category.value,
     calendarsIdx: 1,
   }
-  console.log(diaryData); 
+  console.log(diaryData)
   try {
     const response = await axios.post(
       'http://localhost:8080/diary/create',
@@ -96,7 +96,6 @@ const submitDiary = async () => {
     console.error('Failed to submit diary:', error)
   }
 }
-
 </script>
 
 <style scoped>

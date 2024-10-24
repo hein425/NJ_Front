@@ -5,20 +5,10 @@
         <h2>Login</h2>
         <form @submit.prevent="handleLogin">
           <div class="form-group">
-            <input
-              type="text"
-              placeholder="Email"
-              v-model="username"
-              required
-            />
+            <input type="text" placeholder="Email" v-model="username" required />
           </div>
           <div class="form-group">
-            <input
-              type="password"
-              placeholder="Password"
-              v-model="password"
-              required
-            />
+            <input type="password" placeholder="Password" v-model="password" required />
           </div>
           <button type="submit" class="login-button">로그인</button>
           <p class="forgot-password-button">간편 계정 등록 및 회원가입</p>
@@ -26,29 +16,15 @@
 
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
-          <button
-            id="custom-login-btn"
-            @click="kakaoLogin()"
-            class="social-button kakao-button"
-          >
-            <img
-              src="@/assets/kakao.png"
-              alt="Kakao Icon"
-              class="social-icon"
-            />
+          <button id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
+            <img src="@/assets/kakao.png" alt="Kakao Icon" class="social-icon" />
             카카오 계정으로 로그인
           </button>
           <button class="social-button google-button">
-            <img
-              src="@/assets/google.png"
-              alt="Google Icon"
-              class="social-icon"
-            />
+            <img src="@/assets/google.png" alt="Google Icon" class="social-icon" />
             구글 계정으로 로그인
           </button>
-          <button class="social-button naver-button">
-            네이버 계정으로 로그인
-          </button>
+          <button class="social-button naver-button">네이버 계정으로 로그인</button>
         </div>
 
         <!-- 회원가입 버튼 추가 -->
@@ -59,17 +35,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore' // Pinia store import
-import { watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore'; // Pinia store import
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+import axios from 'axios';
 
 // Pinia store 사용
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
-const router = useRouter() // useRouter 훅 사용
+const router = useRouter(); // useRouter 훅 사용
 
 // props 정의
 const props = defineProps({
@@ -77,62 +53,57 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-})
-const emit = defineEmits(['close'])
+});
+
+const emit = defineEmits(['close']);
 
 // 로그인 관련 상태
-const username = ref('')
-const password = ref('')
+const username = ref('');
+const password = ref('');
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
-  const signUpUrl = router.resolve({ path: '/signupp' }).href
-  window.open(signUpUrl, '_blank') // 새 창에서 회원가입 페이지 열기
-}
+  const signUpUrl = router.resolve({ path: '/signupp' }).href;
+  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
+};
 
 // 로그인 처리 함수 (일반 로그인)
 const handleLogin = async () => {
   try {
     // 서버로 로그인 요청 보내기
-    const response = await axios.post(
-      'https://your-backend-url.com/api/login',
-      {
-        email: username.value,
-        password: password.value,
-      },
-    )
+    const response = await axios.post('http://192.168.0.17:8080/auth/login', {
+      email: username.value,
+      password: password.value,
+    });
 
     if (response.status === 200) {
       // 로그인 성공 시 Pinia store에 상태 업데이트
-      authStore.login(response.data.token, response.data.userName)
+      authStore.login(response.data.token, response.data.userName);
 
-      alert('로그인 성공!')
-      closeModal() // 모달 닫기
-      router.push('/') // 로그인 후 홈으로 이동
+      alert('로그인 성공!');
+      closeModal(); // 모달 닫기
+      router.push('/'); // 로그인 후 홈으로 이동
     }
   } catch (error) {
     // 로그인 실패 시 에러 처리
-    alert(
-      '로그인 실패: ' +
-        (error.response?.data?.message || '로그인에 실패했습니다.'),
-    )
-    console.error('로그인 오류:', error)
+    alert('로그인 실패: ' + (error.response?.data?.message || '로그인에 실패했습니다.'));
+    console.error('로그인 오류:', error);
   }
-}
+};
 
 // 모달 닫기 함수
 const closeModal = () => {
-  emit('close') // 부모 컴포넌트에 모달 닫기 이벤트 전달
-}
+  emit('close'); // 부모 컴포넌트에 모달 닫기 이벤트 전달
+};
 
 //카카오 로그인
-const route = useRoute()
+const route = useRoute();
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
     redirectUri: 'http://localhost:5173/kakaologin', //카카오 리다이렉트 URI
-  })
-}
+  });
+};
 
 // 카카오 리다이렉트 후 처리
 watchEffect(() => {
@@ -141,18 +112,18 @@ watchEffect(() => {
       .get('http://localhost:10000/kakao/login?code=' + route.query.code)
       .then(response => {
         // 서버로부터 받은 토큰을 localStorage에 저장 (로그인 상태 관리)
-        const token = response.data.token
-        localStorage.setItem('token', token) // 토큰을 브라우저에 저장
-        authStore.login(token, response.data.userName) // Pinia에 로그인 상태 저장
-        alert('카카오 로그인 성공!')
-        router.push('/') // 로그인 후 홈으로 리다이렉트
+        const token = response.data.token;
+        localStorage.setItem('token', token); // 토큰을 브라우저에 저장
+        authStore.login(token, response.data.userName); // Pinia에 로그인 상태 저장
+        alert('카카오 로그인 성공!');
+        router.push('/'); // 로그인 후 홈으로 리다이렉트
       })
       .catch(error => {
-        console.log('카카오 로그인 실패:', error)
-        alert('카카오 로그인에 실패했습니다.')
-      })
+        console.log('카카오 로그인 실패:', error);
+        alert('카카오 로그인에 실패했습니다.');
+      });
   }
-})
+});
 </script>
 
 <style scoped>
