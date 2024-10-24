@@ -30,9 +30,9 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import
 import axios from 'axios';
 
-const email = ref('aaa@naver.com');
-const password = ref('p@assword123');
-const confirmPassword = ref('p@assword123'); // 비밀번호 확인 필드
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref(''); // 비밀번호 확인 필드
 const nickname = ref(''); // 별명 필드
 const router = useRouter(); // 라우터 객체 초기화
 

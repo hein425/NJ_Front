@@ -26,7 +26,8 @@
           Sign In
         </button>
 
-        <button v-else class="menu-item sign-in" @click="authStore.handleLogout">
+        <!-- 로그아웃 버튼 -->
+        <button v-else class="menu-item sign-in" @click="handleLogout">
           <FontAwesomeIcon class="fa-icon" :icon="faSignOutAlt" />
           Sign Out
         </button>
@@ -41,7 +42,7 @@
 <script setup>
 import { ref } from 'vue';
 import Profile from './ProfileSide.vue';
-import Modal from './MoDal.vue'; // Modal 컴포넌트 import
+import Modal from './MoDal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'vue-router';
@@ -51,20 +52,14 @@ import { useAuthStore } from '@/stores/authStore'; // Pinia store import
 const authStore = useAuthStore();
 const router = useRouter();
 
-// // 로그인 상태 관리
-// const isLoggedIn = ref(!!localStorage.getItem('token')); // 로그인 여부 추적
-// const userName = ref('');
-// const profileImage = ref('');
-
 // 모달 표시 상태 관리
 const showModal = ref(false); // 기본값 false로 시작
 
-// // 로그아웃 처리 함수
-// const handleLogout = () => {
-//   localStorage.removeItem('token'); // 토큰 제거
-//   isLoggedIn.value = false; // 로그인 상태 업데이트
-//   router.push('/login'); // 로그아웃 후 로그인 페이지로 이동
-// };
+// 로그아웃 처리 함수
+const handleLogout = () => {
+  authStore.logout(); // Pinia 스토어에서 로그아웃 처리
+  router.push('/login'); // 로그아웃 후 로그인 페이지로 이동
+};
 </script>
 
 <style scoped>
