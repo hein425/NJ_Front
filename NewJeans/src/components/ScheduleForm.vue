@@ -34,15 +34,15 @@
         <div class="form-row repeat-row">
           <label>반복</label>
           <div class="repeat-options">
-            <label for="yearly">
+            <label for="yearly" class="radio-label">
               <input id="yearly" type="radio" v-model="repeat" value="YEARLY" />
               매년
             </label>
-            <label for="monthly">
+            <label for="monthly" class="radio-label">
               <input id="monthly" type="radio" v-model="repeat" value="MONTHLY" />
               매월
             </label>
-            <label for="none">
+            <label for="none" class="radio-label">
               <input id="none" type="radio" v-model="repeat" value="NONE" />
               안함
             </label>
@@ -196,11 +196,7 @@ textarea {
 }
 
 input[type='radio'] {
-  display: none;
-}
-
-input[type='radio']:checked + .color-circle {
-  border: 2px solid black;
+  margin-right: 5px; /* 라디오 버튼을 보여줍니다. */
 }
 
 /* 반복 옵션 스타일 */
@@ -208,42 +204,6 @@ input[type='radio']:checked + .color-circle {
   display: flex;
   justify-content: space-around;
   align-items: center;
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.radio-label input[type='radio'] {
-  display: none;
-}
-
-.radio-label .radio-custom {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  margin-right: 10px;
-  position: relative;
-}
-
-.radio-label input[type='radio']:checked + .radio-custom {
-  background-color: #343434;
-  border-color: #343434;
-}
-
-.radio-label input[type='radio']:checked + .radio-custom::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background-color: white;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 
 .icon-label {
