@@ -3,28 +3,29 @@
     <form @submit.prevent="submitDiary">
       <!-- Title과 Category -->
       <div class="row">
-        <div class="title-section">
-          <label for="title">Title</label>
-          <input id="title" v-model="title" class="input-field" />
-        </div>
+        <div class="title-category-row">
+          <div class="title-section">
+            <label for="title" style="width: 50px">제목</label>
+            <input id="title" v-model="title" class="input-field" />
+          </div>
 
-        <div class="category-section">
-          <label for="category">Category</label>
-          <select v-model="category" id="category" class="input-field">
-            <option value="Daily">#일기</option>
-            <option value="GROWTH">#성장일지</option>
-            <option value="'EXERCISE">#운동</option>
-            <option value="TRIP">#여행</option>
-            <option value="ETC">#기타</option>
-          </select>
+          <div class="category-section">
+            <select v-model="category" id="category" class="input-field" style="width: 100px">
+              <option value="Daily">#일기</option>
+              <option value="GROWTH">#성장일지</option>
+              <option value="'EXERCISE">#운동</option>
+              <option value="TRIP">#여행</option>
+              <option value="ETC">#기타</option>
+            </select>
+          </div>
         </div>
       </div>
 
       <!-- Date -->
       <div class="row">
         <div class="icon-label">
-          <i class="icon-calendar"></i>
-          <label for="date">Add Date</label>
+          <!-- <i class="icon-calendar"></i> -->
+          <label for="date" style="width: 80px">작성일</label>
         </div>
         <input id="date" v-model="date" type="date" class="input-field" />
       </div>
@@ -32,8 +33,8 @@
       <!-- Note -->
       <div class="row">
         <div class="icon-label">
-          <i class="icon-note"></i>
-          <label for="content">Add Note</label>
+          <!-- <i class="icon-note"></i> -->
+          <label for="content" style="width: 80px">내용</label>
         </div>
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
@@ -97,18 +98,27 @@ const submitDiary = async () => {
   margin-top: 10vh;
   padding: 20px;
   border-radius: 10px;
+  height: 550px;
 }
 
 /* 전체 레이아웃 */
 .row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   border-bottom: 1px solid #ccc;
   padding: 10px 0;
 }
 
+.title-category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .title-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex: 2;
 }
 
@@ -118,10 +128,15 @@ const submitDiary = async () => {
   justify-content: flex-end;
 }
 
+.diary-form label {
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
 .icon-label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 15px;
 }
 
 .icon-calendar::before {
@@ -142,7 +157,7 @@ const submitDiary = async () => {
 }
 
 .textarea-field {
-  height: 100px;
+  height: 220px;
   resize: none;
 }
 
@@ -150,6 +165,8 @@ const submitDiary = async () => {
   display: flex;
   justify-content: center;
   gap: 10px;
+  margin-top: 30px;
+  margin-bottom: 10px;
 }
 
 .submit-button,
