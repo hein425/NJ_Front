@@ -13,7 +13,7 @@
           <select v-model="category" id="category" class="input-field">
             <option value="Daily">#일기</option>
             <option value="GROWTH">#성장일지</option>
-            <option value="'EXERCISE">#운동</option>
+            <option value="EXERCISE">#운동</option>
             <option value="TRIP">#여행</option>
             <option value="ETC">#기타</option>
           </select>
@@ -35,12 +35,7 @@
           <i class="icon-note"></i>
           <label for="content">Add Note</label>
         </div>
-        <textarea
-          id="content"
-          v-model="content"
-          placeholder="Enter your note"
-          class="input-field textarea-field"
-        ></textarea>
+        <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
       <!-- Save and Cancel Buttons -->
@@ -57,19 +52,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
   selectedDate: String,
-})
+});
 
 const emit = defineEmits(['closeForm']);
 
-const title = ref('')
-const date = ref(props.selectedDate || '')
-const content = ref('')
-const category = ref('Daily') // 선택된 카테고리
+const title = ref('');
+const date = ref(props.selectedDate || '');
+const content = ref('');
+const category = ref('Daily'); // 선택된 카테고리
 
 const submitDiary = async () => {
   const diaryData = {
@@ -78,25 +73,25 @@ const submitDiary = async () => {
     content: content.value,
     category: category.value,
     calendarsIdx: 1,
-  }
-  console.log(diaryData); 
+  };
+  console.log(diaryData);
   try {
-    const response = await axios.post(
-      'http://localhost:8080/diary/create',
-      diaryData,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    const response = await axios.post('http://192.168.0.17:8080/diary/create', diaryData, {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
-    console.log('Diary Submitted Successfully', response.data)
-    emit('closeForm')
+    });
+    console.log('Diary Submitted Successfully', response.data);
+    emit('closeForm');
   } catch (error) {
-    console.error('Failed to submit diary:', error)
+    console.error('Failed to submit diary:', error);
+    emit('closeForm');
   }
-}
+};
 
+const cancelForm = () => {
+  emit('closeForm');
+};
 </script>
 
 <style scoped>

@@ -1,11 +1,7 @@
 <template>
   <header>
     <div class="nav_wrapper">
-      <Profile
-        :isLoggedIn="isLoggedIn"
-        :userName="userName"
-        :profileImage="profileImage"
-      />
+      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="profile" />
       <nav class="menu-grid">
         <RouterLink to="/" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
@@ -25,15 +21,12 @@
         </RouterLink>
 
         <!-- 로그인 상태에 따라 Sign In / Sign Out 버튼 표시 -->
-        <button
-          v-if="!isLoggedIn"
-          class="menu-item sign-in"
-          @click="showModal = true"
-        >
+        <button v-if="!authStore.isLoggedIn" class="menu-item sign-in" @click="showModal = true">
           <FontAwesomeIcon class="fa-icon" :icon="faSignInAlt" />
           Sign In
         </button>
 
+        <!-- 로그아웃 버튼 -->
         <button v-else class="menu-item sign-in" @click="handleLogout">
           <FontAwesomeIcon class="fa-icon" :icon="faSignOutAlt" />
           Sign Out
@@ -47,36 +40,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import Profile from './ProfileSide.vue'
-import Modal from './MoDal.vue' // Modal 컴포넌트 import
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import {
-  faCalendarAlt,
-  faBook,
-  faUsers,
-  faCog,
-  faSignInAlt,
-  faSignOutAlt,
-} from '@fortawesome/free-solid-svg-icons'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue';
+import Profile from './ProfileSide.vue';
+import Modal from './MoDal.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore'; // Pinia store import
 
-const router = useRouter()
-
-// 로그인 상태 관리
-const isLoggedIn = ref(!!localStorage.getItem('token')) // 로그인 여부 추적
-const userName = ref('John Doe')
-const profileImage = ref('john-doe-profile.png')
+// Pinia store 사용
+const authStore = useAuthStore();
+const router = useRouter();
 
 // 모달 표시 상태 관리
-const showModal = ref(false) // 기본값 false로 시작
+const showModal = ref(false); // 기본값 false로 시작
 
 // 로그아웃 처리 함수
-const handleLogout = () => {
-  localStorage.removeItem('token') // 토큰 제거
-  isLoggedIn.value = false // 로그인 상태 업데이트
-  router.push('/login') // 로그아웃 후 로그인 페이지로 이동
-}
+const handleLogout = async () => {
+  await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
+  router.push('/'); // 로그아웃 후 로그인 페이지로 이동
+};
 </script>
 
 <style scoped>

@@ -5,40 +5,20 @@
     </div>
     <form @submit.prevent="handleSignUp">
       <div class="form-group">
-        <input
-          type="email"
-          placeholder="이메일 (아이디)"
-          v-model="email"
-          required
-        />
+        <input type="email" placeholder="이메일 (아이디)" v-model="email" required />
       </div>
       <div class="form-group">
-        <input
-          type="password"
-          placeholder="비밀번호"
-          v-model="password"
-          required
-        />
+        <input type="password" placeholder="비밀번호" v-model="password" required />
       </div>
       <div class="form-group">
-        <input
-          type="password"
-          placeholder="비밀번호 확인"
-          v-model="confirmPassword"
-          required
-        />
+        <input type="password" placeholder="비밀번호 확인" v-model="confirmPassword" required />
         <p class="password-rule">
           영문/숫자/특수문자 중 2가지 이상 포함,<br />
           8자 이상 20자 이하 입력 (공백 제외)
         </p>
       </div>
       <div class="form-group">
-        <input
-          type="text"
-          placeholder="별명 (Username)"
-          v-model="nickname"
-          required
-        />
+        <input type="text" placeholder="별명 (Username)" v-model="nickname" required />
       </div>
       <button type="submit" class="signup-button">회원가입</button>
     </form>
@@ -46,21 +26,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router' // 라우터 사용을 위해 import
-import axios from 'axios'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import
+import axios from 'axios';
 
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('') // 비밀번호 확인 필드
-const nickname = ref('') // 별명 필드
-const router = useRouter() // 라우터 객체 초기화
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref(''); // 비밀번호 확인 필드
+const nickname = ref(''); // 별명 필드
+const router = useRouter(); // 라우터 객체 초기화
 
 const handleSignUp = async () => {
   // 비밀번호 확인 (예: 비밀번호와 비밀번호 확인이 일치하는지 검사)
   if (password.value !== confirmPassword.value) {
-    alert('비밀번호가 일치하지 않습니다.')
-    return
+    alert('비밀번호가 일치하지 않습니다.');
+    return;
   }
 
   try {
@@ -68,35 +48,32 @@ const handleSignUp = async () => {
     const signUpDate = {
       email: email.value,
       password: password.value,
-      nickname: nickname.value,
-    }
+      userName: nickname.value,
+    };
 
     //백엔드로 회원가입 요청 보내기(백엔드에서 url 받아서 집어넣으면 됨)
-    const response = await axios.post(
-      'https://your-backend-url.com/api/signup',
-      signUpDate,
-    )
+    const response = await axios.post('http://192.168.0.17:8080/join', signUpDate);
 
     // 성공적으로 회원가입이 완료된 경우
     if (response.status === 200) {
-      alert('회원가입이 완료되었습니다!')
-      router.push('/login') // 회원가입 후 로그인 페이지로 이동
+      alert('회원가입이 완료되었습니다!');
+      router.push('/login'); // 회원가입 후 로그인 페이지로 이동
     }
   } catch (error) {
     // 오류가 발생한 경우
-    console.error('회원가입 오류:', error)
+    console.error('회원가입 오류:', error);
     if (error.response && error.response.data && error.response.data.message) {
-      alert(`회원가입 실패: ${error.response.data.message}`)
+      alert(`회원가입 실패: ${error.response.data.message}`);
     } else {
-      alert('회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.')
+      alert('회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
   }
-}
+};
 
 // 로고 클릭 시 메인 페이지로 이동
 const goToMainPage = () => {
-  router.push('/') // 메인 페이지 경로로 이동
-}
+  router.push('/'); // 메인 페이지 경로로 이동
+};
 </script>
 
 <style scoped>
@@ -111,10 +88,7 @@ const goToMainPage = () => {
   position: fixed; /* 화면에 고정 */
   top: 50%; /* 화면의 세로 중앙 */
   left: 50%; /* 화면의 가로 중앙 */
-  transform: translate(
-    -50%,
-    -50%
-  ); /* 정확한 중앙 정렬을 위해 수평, 수직으로 이동 */
+  transform: translate(-50%, -50%); /* 정확한 중앙 정렬을 위해 수평, 수직으로 이동 */
   z-index: 1000; /* 필요 시 다른 요소 위에 오게 설정 */
 }
 
