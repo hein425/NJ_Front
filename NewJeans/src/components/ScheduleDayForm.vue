@@ -2,8 +2,8 @@
   <div>
     <!-- 일정 및 일기 조회 섹션 -->
     <div class="day-form" v-if="showDayView">
-      <!-- <h2>{{ formattedDate }} 일정 및 일기</h2>
-      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1> -->
+      <h2>{{ formattedDate }} 일정 및 일기</h2>
+      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1>
       <div class="schedule-section">
         <h3>일정</h3>
         <div v-if="schedules.length > 0">
