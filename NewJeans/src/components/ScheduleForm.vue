@@ -138,6 +138,7 @@ const submitSchedule = async () => {
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit schedule:', error);
+    emit('closeForm');
   }
 };
 

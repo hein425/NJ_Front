@@ -1,12 +1,12 @@
 <template>
   <div class="map_wrap">
-    <div id="map" style="width: 450px; height: 250px"></div>
+    <div id="map" style="width: 450px; height: 300px"></div>
 
     <div id="menu_wrap" class="bg_white">
       <div class="option">
         <form @submit.prevent="searchPlaces">
           키워드 : <input type="text" v-model="keyword" id="keyword" size="15" />
-          <button type="submit" class="searchBtn">검색하기</button>
+          <button type="submit" class="SeachBtn">검색하기</button>
         </form>
       </div>
       <hr />
@@ -84,10 +84,9 @@ const displayPlaces = places => {
     const placePosition = new kakao.maps.LatLng(place.y, place.x);
     const marker = addMarker(placePosition, i);
 
-    const itemEl = document.createElement('li');
-    itemEl.className = 'item';
-    itemEl.innerHTML = `<h5>${place.place_name}</h5>`;
+    const itemEl = getListItem(i, place);
 
+    // 마커 및 리스트 항목에 마우스 이벤트 추가
     kakao.maps.event.addListener(marker, 'mouseover', () => {
       displayInfowindow(marker, place.place_name);
     });
@@ -102,6 +101,12 @@ const displayPlaces = places => {
       infowindow.close();
     };
 
+    // 리스트 항목 클릭 이벤트 추가
+    itemEl.onclick = () => {
+      map.value.setCenter(placePosition); // 해당 장소로 지도 중심 이동
+      displayInfowindow(marker, place.place_name); // 해당 장소에 대한 인포윈도우 열기
+    };
+
     listEl.appendChild(itemEl);
     bounds.extend(placePosition);
   });
@@ -109,11 +114,35 @@ const displayPlaces = places => {
   map.value.setBounds(bounds);
 };
 
+const getListItem = (index, place) => {
+  const el = document.createElement('li');
+  el.className = 'item';
+  const itemStr = `
+    <span class="markerbg marker_${index + 1}"></span>
+    <div class="info">
+      <h5>${place.place_name}</h5>
+      ${place.road_address_name ? `<span>${place.road_address_name}</span><span class="jibun gray">${place.address_name}</span>` : `<span>${place.address_name}</span>`}
+      <span class="tel">${place.phone}</span>
+    </div>`;
+  el.innerHTML = itemStr;
+  return el;
+};
+
 const addMarker = (position, idx) => {
+  const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png'; // 마커 이미지 URL
+  const imageSize = new kakao.maps.Size(36, 37); // 마커 이미지의 크기
+  const imgOptions = {
+    spriteSize: new kakao.maps.Size(36, 691), // 스프라이트 이미지의 크기
+    spriteOrigin: new kakao.maps.Point(0, idx * 46 + 10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표
+    offset: new kakao.maps.Point(13, 37), // 마커 좌표에 일치시킬 이미지 내에서의 좌표
+  };
+  const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions);
   const marker = new kakao.maps.Marker({
     position: position,
     map: map.value,
+    image: markerImage, // 이미지 적용
   });
+
   markers.value.push(marker);
   return marker;
 };
@@ -157,12 +186,10 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
+<style>
 .map_wrap {
   position: relative;
   width: 100%;
-  height: 50%;
-  text-align: center;
 }
 
 #menu_wrap {
@@ -171,7 +198,6 @@ onMounted(() => {
   left: 0;
   bottom: 0;
   width: 300px;
-  height: 100%;
   margin: 10px 0 30px 10px;
   padding: 5px;
   overflow-y: auto;
@@ -181,8 +207,8 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.searchBtn {
-  margin-left: 20px;
+.SeachBtn {
+  margin-left: 15px;
 }
 
 #placesList li {
@@ -192,6 +218,62 @@ onMounted(() => {
   cursor: pointer;
 }
 
+#placesList .item {
+  position: relative;
+  border-bottom: 1px solid #888;
+  overflow: hidden;
+  cursor: pointer;
+  min-height: 65px;
+}
+
+#placesList .item span {
+  display: block;
+  margin-top: 4px;
+}
+
+#placesList .item h5,
+#placesList .item .info {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#placesList .item .info {
+  padding: 10px 0 10px 55px;
+}
+
+#placesList .info .gray {
+  color: #8a8a8a;
+}
+
+#placesList .info .jibun {
+  padding-left: 26px;
+  background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/places_jibun.png') no-repeat;
+}
+
+#placesList .info .tel {
+  color: #009900;
+}
+
+#placesList .item .markerbg {
+  float: left;
+  position: absolute;
+  width: 36px;
+  height: 37px;
+  margin: 10px 0 0 10px;
+  background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png') no-repeat;
+}
+
+#placesList .item .marker_1 {
+  background-position: 0 -10px;
+}
+#placesList .item .marker_2 {
+  background-position: 0 -56px;
+}
+#placesList .item .marker_3 {
+  background-position: 0 -102px;
+}
+/* 추가로 marker_4~marker_15까지 마커에 대한 스타일 추가 가능 */
 #pagination a {
   margin-right: 5px;
   cursor: pointer;

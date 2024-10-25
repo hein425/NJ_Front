@@ -48,6 +48,7 @@ const showDiaryForm = () => {
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
   isScheduleFormVisible.value = false;
+  isDiaryFormVisible.value = false;
 };
 
 const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
@@ -162,7 +163,7 @@ watch(
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate" />
+          <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
         <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">

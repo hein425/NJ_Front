@@ -11,7 +11,7 @@
 
           <div class="category-section">
             <select v-model="category" id="category" class="input-field" style="width: 100px">
-              <option value="Daily">#일기</option>
+              <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="'EXERCISE">#운동</option>
               <option value="TRIP">#여행</option>
@@ -67,7 +67,7 @@ const emit = defineEmits(['closeForm']);
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
-const category = ref('Daily'); // 선택된 카테고리
+const category = ref('DAILY'); // 선택된 카테고리
 
 const submitDiary = async () => {
   const diaryData = {
@@ -88,7 +88,12 @@ const submitDiary = async () => {
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit diary:', error);
+    emit('closeForm');
   }
+};
+
+const cancelForm = () => {
+  emit('closeForm');
 };
 </script>
 
