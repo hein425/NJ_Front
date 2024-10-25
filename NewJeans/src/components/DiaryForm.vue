@@ -11,9 +11,9 @@
 
           <div class="category-section">
             <select v-model="category" id="category" class="input-field" style="width: 100px">
-              <option value="Daily">#일기</option>
+              <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
-              <option value="'EXERCISE">#운동</option>
+              <option value="EXERCISE">#운동</option>
               <option value="TRIP">#여행</option>
               <option value="ETC">#기타</option>
             </select>
@@ -57,6 +57,7 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 const props = defineProps({
   selectedDate: String,
@@ -67,9 +68,20 @@ const emit = defineEmits(['closeForm']);
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
-const category = ref('Daily'); // 선택된 카테고리
+const category = ref('DAILY'); // 선택된 카테고리
 
 const submitDiary = async () => {
+
+  if (!title.value) {
+    alert('제목을 입력하세요.');
+    return;
+  }
+  if (!date.value) {
+    alert('날짜를 입력하세요.');
+    return;
+  }
+   // 빈칸 있으면 못지나간다
+
   const diaryData = {
     title: title.value,
     date: date.value,

@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 import dayjs from 'dayjs';
 
-const now = ref(dayjs()); // 현재 날짜 (기준 연도)
+const now = ref(dayjs()); // 현재 날짜
 
-// 연도 변경하기 (다음/이전 연도로 이동)
+// 연도 변경
 const changeYear = direction => {
   if (direction === 'next') {
     now.value = now.value.add(1, 'year');
@@ -13,7 +13,6 @@ const changeYear = direction => {
   }
 };
 
-// 해당 월의 일자들을 계산하는 함수
 const getDaysInMonth = month => {
   const days = [];
   const startOfMonth = dayjs()
@@ -27,16 +26,15 @@ const getDaysInMonth = month => {
 
   let currentDay = startOfMonth;
 
-  // 해당 월의 시작일부터 종료일까지 날짜를 추가
   while (currentDay.isBefore(endOfMonth) || currentDay.isSame(endOfMonth, 'day')) {
     days.push({
-      date: currentDay.toDate(), // 날짜 정보 저장
-      dayOfWeek: currentDay.day(), // 요일 계산 (0: 일요일 ~ 6: 토요일)
+      date: currentDay.toDate(),
+      dayOfWeek: currentDay.day(),
     });
-    currentDay = currentDay.add(1, 'day'); // 하루씩 증가
+    currentDay = currentDay.add(1, 'day'); 
   }
 
-  return days; // 해당 월의 일자 배열 반환
+  return days;
 };
 
 // 12개월 배열 생성

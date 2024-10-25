@@ -48,6 +48,7 @@ const showDiaryForm = () => {
 
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
+  isDiaryFormVisible.value = false;
   isScheduleFormVisible.value = false;
 };
 
@@ -128,10 +129,10 @@ const showYearCalendar = () => {
           </button>
 
            <!-- 아래껀 연달력 열기 버튼 -->
-           <div> 
+           <!-- <div> 
             <button @click="showYearCalendar">Yearly Calendar</button>
             <YearCalendar v-if="isYearCalendarVisible" />
-          </div>
+           </div> -->
           
         </h1>
         <div class="DOWgrid">
@@ -177,7 +178,7 @@ const showYearCalendar = () => {
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate" />
+          <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
         <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">

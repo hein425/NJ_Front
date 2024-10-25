@@ -131,7 +131,6 @@ const submitSchedule = async () => {
     return;
   }  // 빈칸 있으면 못지나간다
 
-
   const scheduleData = {
     title: title.value,
     color: color.value,
