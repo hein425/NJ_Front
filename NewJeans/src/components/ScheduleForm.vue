@@ -117,20 +117,6 @@ onMounted(() => {
 });
 
 const submitSchedule = async () => {
-
-  if (!title.value) {
-    alert('제목을 입력하세요.');
-    return;
-  }
-  if (!startdate.value || !enddate.value) {
-    alert('날짜를 입력하세요.');
-    return;
-  }
-  if (dayjs(startdate.value).isAfter(dayjs(enddate.value))) {
-    alert('시작 날짜는 종료 날짜보다 이전이어야 합니다.');
-    return;
-  }  // 빈칸 있으면 못지나간다
-
   const scheduleData = {
     title: title.value,
     color: color.value,

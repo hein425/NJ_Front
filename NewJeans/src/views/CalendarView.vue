@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
-import YearCalendar from '@/components/YearCalendar.vue';
 
 const now = ref(dayjs());
 const columns = ref([]);
@@ -48,8 +47,8 @@ const showDiaryForm = () => {
 
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
-  isDiaryFormVisible.value = false;
   isScheduleFormVisible.value = false;
+  isDiaryFormVisible.value = false;
 };
 
 const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
@@ -95,13 +94,6 @@ watch(
     deep: true,
   },
 );
-
-const isYearCalendarVisible = ref(false);
-
-const showYearCalendar = () => {
-  isYearCalendarVisible.value = !isYearCalendarVisible.value;
-};
-
 </script>
 
 <template>
@@ -127,13 +119,6 @@ const showYearCalendar = () => {
           <button @click="addMonth()" class="A-Month-button">
             <i>></i>
           </button>
-
-           <!-- 아래껀 연달력 열기 버튼 -->
-           <!-- <div> 
-            <button @click="showYearCalendar">Yearly Calendar</button>
-            <YearCalendar v-if="isYearCalendarVisible" />
-           </div> -->
-          
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>

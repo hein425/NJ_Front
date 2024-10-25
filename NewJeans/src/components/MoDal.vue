@@ -78,7 +78,7 @@ const handleLogin = async () => {
 
     if (response.status === 200) {
       // 로그인 성공 시 Pinia store에 상태 업데이트
-      authStore.login(response.data.token, response.data.userName);
+      authStore.login(response.data.accessToken, response.data.userName);
 
       alert('로그인 성공!');
       closeModal(); // 모달 닫기
