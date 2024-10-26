@@ -154,6 +154,7 @@ const toggleExpand = index => {
 
 // 컴포넌트가 마운트될 때 데이터 조회 함수 호출
 onMounted(fetchDayData);
+
 </script>
 
 <style scoped>
