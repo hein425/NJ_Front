@@ -2,8 +2,8 @@
   <div>
     <!-- 일정 및 일기 조회 섹션 -->
     <div class="day-form" v-if="showDayView">
-      <!-- <h2>{{ formattedDate }} 일정 및 일기</h2>
-      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1> -->
+      <h2>{{ formattedDate }} 일정 및 일기</h2>
+      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1>
       <div class="schedule-section">
         <h3>일정</h3>
         <div v-if="schedules.length > 0">
@@ -154,7 +154,6 @@ const toggleExpand = index => {
 
 // 컴포넌트가 마운트될 때 데이터 조회 함수 호출
 onMounted(fetchDayData);
-
 </script>
 
 <style scoped>

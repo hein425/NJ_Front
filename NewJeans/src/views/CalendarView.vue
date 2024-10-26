@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
-import axios from 'axios';
 
 const now = ref(dayjs());
 const columns = ref([]);
@@ -46,12 +45,10 @@ const showDiaryForm = () => {
   isScheduleFormVisible.value = false;
 };
 
-// 스케줄 폼(다이어리 폼도 같이) 닫기
+// 스케줄 폼 닫기
 const closeScheduleForm = () => {
   isScheduleFormVisible.value = false;
   isDiaryFormVisible.value = false;
-
- 
 };
 
 const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
@@ -97,8 +94,6 @@ watch(
     deep: true,
   },
 );
-
-
 </script>
 
 <template>
@@ -171,12 +166,9 @@ watch(
           <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
-
-        <!-- v-if="!isScheduleFormVisible && !isDiaryFormVisible" -->
-        <div >
+        <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">
           <ScheduleDayForm :selectedDate="selectDate" />
         </div>
-
       </div>
     </div>
   </div>
