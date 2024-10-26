@@ -166,7 +166,7 @@ watch(
           <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
-        <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">
+        <div v-show="!isScheduleFormVisible && !isDiaryFormVisible">
           <ScheduleDayForm :selectedDate="selectDate" />
         </div>
       </div>
