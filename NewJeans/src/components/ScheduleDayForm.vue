@@ -15,6 +15,11 @@
             <div v-if="isScheduleExpanded[index]">
               <p><strong>시작:</strong> {{ schedule.start }}</p>
               <p><strong>종료:</strong> {{ schedule.end }}</p>
+
+              <!-- 이미지 표시 -->
+              <div v-if="schedule.imageUrl">
+                <img :src="schedule.imageUrl" alt="일정 이미지" class="item-image" />
+              </div>
             </div>
           </div>
         </div>
@@ -30,6 +35,12 @@
             <h4>{{ diary.title }}</h4>
             <p>{{ diary.content }}</p>
             <p><strong>카테고리:</strong> {{ diary.category }}</p>
+
+            <!-- 이미지 표시 -->
+            <div v-if="diary.imageUrl">
+              <img :src="diary.imageUrl" alt="일기 이미지" class="item-image" />
+            </div>
+            
           </div>
         </div>
         <div v-else>
@@ -104,14 +115,23 @@ const fetchDayData = async selectedDate => {
 
     // 일정 조회
     const scheduleResponse = await axios.get(`http://192.168.0.17:8080/schedule/${idx}/${year}/${month}/${day}`);
-    schedules.value = scheduleResponse.data;
+    // schedules.value = scheduleResponse.data;-이미지기능 추가 전
+
+    schedules.value = scheduleResponse.data.map(schedule => ({
+      ...schedule,
+      imageUrl: schedule.imageUrl || null, // 이미지 URL이 없는 경우 null로 설정
+    }));
 
     // 일정 수만큼 isScheduleExpanded 배열 초기화
     isScheduleExpanded.value = schedules.value.map(() => false);
 
     // 일기 조회
     const diaryResponse = await axios.get(`http://192.168.0.17:8080/diary/${idx}/${year}/${month}/${day}`);
-    diaries.value = diaryResponse.data;
+    // diaries.value = diaryResponse.data;-이미지기능 추가 전
+    diaries.value = diaryResponse.data.map(diary => ({
+      ...diary,
+      imageUrl: diary.imageUrl || null, // 이미지 URL이 없는 경우 null로 설정
+    }));
 
     formattedDate.value = formatDate(year, month, day);
   } catch (error) {
@@ -192,6 +212,16 @@ onMounted(fetchDayData);
 .diary-item h4 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+/* 이미지 표현해주는 부분 */
+/* 집에서 해서 어케 나올지 몰라? */
+.item-image {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 8px;
 }
 
 .schedule-item p,

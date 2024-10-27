@@ -38,6 +38,12 @@
         </div>
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
+      
+      <!-- 이미지추가 -->
+      <div class="row">
+        <label for="image" style="width: 80px">이미지</label>
+        <input id="image" type="file" @change="handleImageUpload" class="input-field" />
+      </div>
 
       <div class="button-row">
         <!-- 저장 버튼 -->
@@ -67,21 +73,34 @@ const emit = defineEmits(['closeForm']);
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
-const category = ref('DAILY'); // 선택된 카테고리
+const category = ref('DAILY');
+const imageFile = ref(null); // 이미지 파일 저장
+
+// 이미지 업로드 핸들러
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    imageFile.value = file;
+  }
+};
 
 const submitDiary = async () => {
-  const diaryData = {
-    title: title.value,
-    date: date.value,
-    content: content.value,
-    category: category.value,
-    calendarsIdx: 1,
-  };
-  console.log(diaryData);
+  const formData = new FormData();
+  formData.append('title', title.value);
+  formData.append('date', date.value);
+  formData.append('content', content.value);
+  formData.append('category', category.value);
+  formData.append('calendarsIdx', 1);
+  
+  // 이미지 파일이 선택된 경우 FormData에 추가
+  if (imageFile.value) {
+    formData.append('image', imageFile.value);
+  }
+
   try {
-    const response = await axios.post('http://192.168.0.17:8080/diary/create', diaryData, {
+    const response = await axios.post('http://192.168.0.17:8080/diary/create', formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     });
     console.log('Diary Submitted Successfully', response.data);
@@ -96,6 +115,7 @@ const cancelForm = () => {
   emit('closeForm');
 };
 </script>
+
 
 <style scoped>
 .diary-form {
