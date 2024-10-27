@@ -66,7 +66,7 @@
 
         <!-- 이미지 업로드 -->
         <div class="form-row" style="width: 450px">
-          <label for="image">이미지 추가</label>
+          <label for="image">이미지</label>
           <input id="image" type="file" @change="handleImageUpload" />
         </div>
 
