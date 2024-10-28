@@ -64,6 +64,12 @@
           <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
         </div>
 
+        <!-- 이미지 업로드 -->
+        <div class="form-row" style="width: 450px">
+          <label for="image">이미지</label>
+          <input id="image" type="file" @change="handleImageUpload" />
+        </div>
+
         <div class="button-row">
           <!-- 저장 버튼 -->
           <button type="submit" class="submit-button">
@@ -99,6 +105,7 @@ const enddate = ref('');
 const location = ref('');
 const description = ref('');
 const repeat = ref('NONE');
+const imageFiles = ref(null); // 이미지 파일을 저장
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -116,8 +123,17 @@ onMounted(() => {
   }
 });
 
+// 이미지 업로드 핸들러
+const handleImageUpload = event => {
+  const file = event.target.files[0];
+  if (file) {
+    imageFiles.value = file;
+  }
+};
+
 const submitSchedule = async () => {
-  const scheduleData = {
+  // diaryRequest JSON 객체 생성
+  const scheduleRequest = {
     title: title.value,
     color: color.value,
     start: startdate.value,
@@ -128,19 +144,62 @@ const submitSchedule = async () => {
     calendarsIdx: 1,
   };
 
+  // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
+  const formData = new FormData();
+  formData.append(
+    'scheduleRequest',
+    new Blob([JSON.stringify(scheduleRequest)], {
+      type: 'application/json',
+    }),
+  ); // JSON 데이터를 문자열로 변환해 추가
+
+  // 이미지 파일이 선택된 경우 FormData에 추가
+  if (imageFiles.value) {
+    formData.append('imageFiles', imageFiles.value);
+  }
+
   try {
-    const response = await axios.post('http://192.168.0.17:8080/schedule/create', scheduleData, {
+    const response = await axios.post('http://192.168.0.17:8080/schedule/create', formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     });
     console.log('Schedule Submitted Successfully', response.data);
     emit('closeForm');
   } catch (error) {
-    console.error('Failed to submit schedule:', error);
+    console.error('Failed to submit Schedule:', error);
     emit('closeForm');
   }
 };
+
+// const submitSchedule = async () => {
+//   const formData = new FormData();
+//   formData.append('title', title.value);
+//   formData.append('color', color.value);
+//   formData.append('start', startdate.value);
+//   formData.append('end', enddate.value);
+//   formData.append('location', location.value);
+//   formData.append('content', description.value);
+//   formData.append('repeat', repeat.value);
+//   formData.append('calendarsIdx', 1);
+
+//   if (imageFiles.value) {
+//     formData.append('image', imageFiles.value);
+//   }
+
+//   try {
+//     const response = await axios.post('http://192.168.0.17:8080/schedule/create', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       },
+//     });
+//     console.log('Schedule Submitted Successfully', response.data);
+//     emit('closeForm');
+//   } catch (error) {
+//     console.error('Failed to submit schedule:', error);
+//     emit('closeForm');
+//   }
+// };
 
 const cancelForm = () => {
   emit('closeForm');

@@ -11,10 +11,12 @@
           <FontAwesomeIcon class="fa-icon" :icon="faBook" />
           Diary
         </RouterLink>
+
         <RouterLink to="/teams" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
           Teams
         </RouterLink>
+        
         <RouterLink to="/setting" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting

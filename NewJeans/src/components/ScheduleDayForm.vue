@@ -2,16 +2,24 @@
   <div>
     <!-- 일정 및 일기 조회 섹션 -->
     <div class="day-form" v-if="showDayView">
+      <!-- <h2>{{ formattedDate }} 일정 및 일기</h2>
+      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1> -->
       <div class="schedule-section">
+        <h3>일정</h3>
         <div v-if="schedules.length > 0">
-          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleExpand(index)">
+          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ backgroundColor: schedule.color }" @click="toggleExpand(index)">
             <h4>{{ schedule.title }}</h4>
             <p>{{ schedule.content }}</p>
-            <p>{{ schedule.location }}</p>
+            <p><strong>장소:</strong> {{ schedule.location }}</p>
 
             <div v-if="isScheduleExpanded[index]">
               <p><strong>시작:</strong> {{ schedule.start }}</p>
               <p><strong>종료:</strong> {{ schedule.end }}</p>
+
+              <!-- 이미지 표시 -->
+              <div v-if="schedule.imageUrl">
+                <img :src="schedule.imageUrl" alt="일정 이미지" class="item-image" />
+              </div>
             </div>
           </div>
         </div>
@@ -21,11 +29,17 @@
       </div>
 
       <div class="diary-section">
+        <h3>일기</h3>
         <div v-if="diaries.length > 0">
           <div v-for="(diary, index) in diaries" :key="index" class="diary-item">
             <h4>{{ diary.title }}</h4>
             <p>{{ diary.content }}</p>
-            <p>{{ diary.category }}</p>
+            <p><strong>카테고리:</strong> {{ diary.category }}</p>
+
+            <!-- 이미지 표시 -->
+            <div v-if="diary.imageUrl">
+              <img :src="diary.imageUrl" alt="일기 이미지" class="item-image" />
+            </div>
           </div>
         </div>
         <div v-else>
@@ -100,14 +114,23 @@ const fetchDayData = async selectedDate => {
 
     // 일정 조회
     const scheduleResponse = await axios.get(`http://192.168.0.17:8080/schedule/${idx}/${year}/${month}/${day}`);
-    schedules.value = scheduleResponse.data;
+    // schedules.value = scheduleResponse.data;-이미지기능 추가 전
+
+    schedules.value = scheduleResponse.data.map(schedule => ({
+      ...schedule,
+      imageUrl: schedule.imageUrl || null, // 이미지 URL이 없는 경우 null로 설정
+    }));
 
     // 일정 수만큼 isScheduleExpanded 배열 초기화
     isScheduleExpanded.value = schedules.value.map(() => false);
 
     // 일기 조회
     const diaryResponse = await axios.get(`http://192.168.0.17:8080/diary/${idx}/${year}/${month}/${day}`);
-    diaries.value = diaryResponse.data;
+    // diaries.value = diaryResponse.data;-이미지기능 추가 전
+    diaries.value = diaryResponse.data.map(diary => ({
+      ...diary,
+      imageUrl: diary.imageUrl || null, // 이미지 URL이 없는 경우 null로 설정
+    }));
 
     formattedDate.value = formatDate(year, month, day);
   } catch (error) {
@@ -154,34 +177,16 @@ onMounted(fetchDayData);
 
 <style scoped>
 .day-form {
-  margin-top: 20px;
+  margin-top: 100px;
   padding: 20px;
   background-color: white;
   border-radius: 10px;
-  max-width: 800px;
-  margin: auto;
 }
 
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.form-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.form-button:hover {
-  background-color: #555;
+.schedule-form {
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
 }
 
 .schedule-section,
@@ -191,28 +196,35 @@ onMounted(fetchDayData);
 
 .schedule-item,
 .diary-item {
-  border: 2px solid; /* 테두리만 남기기 */
-  border-radius: 8px;
-  padding: 15px;
   margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
   color: black;
-  background-color: transparent; /* 배경색 제거 */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  cursor: pointer;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+  overflow: hidden;
 }
 
 .schedule-item h4,
 .diary-item h4 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+/* 이미지 표현해주는 부분 */
+/* 집에서 해서 어케 나올지 몰라? */
+.item-image {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 8px;
 }
 
 .schedule-item p,
 .diary-item p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: gray;
+  margin: 5px 0;
 }
 </style>

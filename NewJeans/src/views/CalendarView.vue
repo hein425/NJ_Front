@@ -14,6 +14,11 @@ const isFlipped = ref(false);
 
 const isScheduleFormVisible = ref(false);
 const isDiaryFormVisible = ref(false);
+const isYearlyView = ref(false); // 연달력 띄우기
+
+const goYearCal = () => {
+  isYearlyView.value = true;
+};
 
 const flipBack = () => {
   isFlipped.value = false;
@@ -103,12 +108,14 @@ watch(
       height: weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
     }"
   >
+  
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
     <div class="calendar-container" :class="{ flipped: isFlipped }">
       <!-- 달력 앞면 영역 -->
       <div class="vv front">
         <h1 class="Calender-title">
           <button @click="goToday" class="Today-button">Today</button>
+          <button @click="$router.push('/yearlyCalendar')" class="Yealy-button">Yeary</button>
           <button @click="subMonth()" class="B-Month-button">
             <i><</i>
           </button>
@@ -146,7 +153,7 @@ watch(
           </div>
         </div>
       </div>
-
+      
       <!-- 뒤집힌 화면에서 일정 및 다이어리 버튼, 폼 렌더링 -->
       <div class="flipped-content">
         <div class="button-group">
@@ -166,12 +173,13 @@ watch(
           <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
-        <div v-if="!isScheduleFormVisible && !isDiaryFormVisible">
+        <div v-show="!isScheduleFormVisible && !isDiaryFormVisible">
           <ScheduleDayForm :selectedDate="selectDate" />
         </div>
       </div>
     </div>
   </div>
+
 </template>
 
 <style scoped>
@@ -185,12 +193,11 @@ watch(
   padding-bottom: 20px;
   padding-left: 50px;
   padding-right: 50px;
-  min-height: 520px;
+  min-height: 500px;
   width: 65%;
   padding-top: 30px;
   margin-left: 50px;
   margin-right: 50px;
-  margin-bottom: 20px;
   overflow: hidden;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
@@ -219,6 +226,19 @@ watch(
   position: absolute; /* 절대 위치 설정 */
   left: 10px; /* 왼쪽 정렬 */
 }
+
+.Yealy-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  position: absolute;
+  left: 100px;
+}
+
 .YMYM {
   width: 120px; /* 고정 너비를 설정하여 월 이름에 상관없이 동일한 너비 유지 */
   display: flex;
