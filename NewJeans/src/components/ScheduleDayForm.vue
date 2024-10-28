@@ -2,15 +2,12 @@
   <div>
     <!-- 일정 및 일기 조회 섹션 -->
     <div class="day-form" v-if="showDayView">
-      <h2>{{ formattedDate }} 일정 및 일기</h2>
-      <h1>ㅁㅁㅁㅁㅁ {{ selectedDate }}</h1>
       <div class="schedule-section">
-        <h3>일정</h3>
         <div v-if="schedules.length > 0">
-          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ backgroundColor: schedule.color }" @click="toggleExpand(index)">
+          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleExpand(index)">
             <h4>{{ schedule.title }}</h4>
             <p>{{ schedule.content }}</p>
-            <p><strong>장소:</strong> {{ schedule.location }}</p>
+            <p>{{ schedule.location }}</p>
 
             <div v-if="isScheduleExpanded[index]">
               <p><strong>시작:</strong> {{ schedule.start }}</p>
@@ -24,12 +21,11 @@
       </div>
 
       <div class="diary-section">
-        <h3>일기</h3>
         <div v-if="diaries.length > 0">
           <div v-for="(diary, index) in diaries" :key="index" class="diary-item">
             <h4>{{ diary.title }}</h4>
             <p>{{ diary.content }}</p>
-            <p><strong>카테고리:</strong> {{ diary.category }}</p>
+            <p>{{ diary.category }}</p>
           </div>
         </div>
         <div v-else>
@@ -158,16 +154,34 @@ onMounted(fetchDayData);
 
 <style scoped>
 .day-form {
-  margin-top: 100px;
+  margin-top: 20px;
   padding: 20px;
   background-color: white;
   border-radius: 10px;
+  max-width: 800px;
+  margin: auto;
 }
 
-.schedule-form {
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-button:hover {
+  background-color: #555;
 }
 
 .schedule-section,
@@ -177,25 +191,28 @@ onMounted(fetchDayData);
 
 .schedule-item,
 .diary-item {
-  margin-bottom: 15px;
-  padding: 15px;
+  border: 2px solid; /* 테두리만 남기기 */
   border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
   color: black;
-  cursor: pointer;
-  transition:
-    max-height 0.3s ease,
-    opacity 0.3s ease;
-  overflow: hidden;
+  background-color: transparent; /* 배경색 제거 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .schedule-item h4,
 .diary-item h4 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .schedule-item p,
 .diary-item p {
-  margin: 5px 0;
+  margin: 0;
+  font-size: 0.9rem;
+  color: gray;
 }
 </style>

@@ -155,7 +155,7 @@ const cancelForm = () => {
 /* 입력 필드 스타일 */
 .input-field {
   border: none;
-  width: 100%;
+  width: 90%;
   padding: 10px;
   border-radius: 5px;
   font-size: 1rem;
