@@ -11,10 +11,15 @@
       </div>
       <div class="profile-details">
         <div class="name-edit">
-          <!-- 로그인한 사용자의 닉네임 표시 -->
-          <h1 class="profile-name">{{ userName }}</h1>
-          <button @click="editProfile" class="edit-btn">닉네임 변경</button>
+          <!-- 로그인한 사용자의 닉네임 표시 및 수정 기능 -->
+          <h1 v-if="!isEditingName" class="profile-name">{{ userName }}</h1>
+          <input v-else v-model="newUserName" class="name-input" placeholder="새 닉네임 입력" />
+
+          <button @click="isEditingName ? saveUserName() : startEditingName()" class="edit-btn">
+            {{ isEditingName ? '저장' : '닉네임 변경' }}
+          </button>
         </div>
+
         <!-- 로그인한 사용자의 이메일 표시 -->
         <p class="profile-email">{{ userEmail }}</p>
 
@@ -57,6 +62,30 @@ const authStore = useAuthStore();
 const userName = computed(() => authStore.userName); // 로그인한 사용자 이름
 const userEmail = computed(() => authStore.email); // 로그인한 사용자 이메일
 const profileImage = computed(() => authStore.profile); // 로그인한 사용자 프로필 이미지
+
+// 상태 관리
+const isEditingName = ref(false); // 닉네임 수정 중인지 여부
+const newUserName = ref(userName.value); // 새 닉네임
+
+// 닉네임 변경 시작 함수
+const startEditingName = () => {
+  isEditingName.value = true;
+  newUserName.value = userName.value; // 기존 닉네임을 입력 필드에 설정
+};
+
+// 닉네임 저장 함수
+const saveUserName = async () => {
+  try {
+    // 서버에 닉네임 업데이트 요청
+    await axios.put('http://your-server-url/update-username', { newUserName: newUserName.value });
+
+    // 성공 시 Pinia 상태 업데이트
+    authStore.userName = newUserName.value;
+    isEditingName.value = false;
+  } catch (error) {
+    console.error('닉네임 저장 중 오류:', error);
+  }
+};
 
 // 테마 데이터 및 선택된 테마 관리
 const themes = [

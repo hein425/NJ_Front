@@ -122,12 +122,12 @@ watch(
 // 색깔 바꾸기
 const hexToRgba = (hex, opacity) => {
   if (hex.startsWith('#')) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
+    const r = parseInt(hex.slice(1, 3), 16); // 빨강
+    const g = parseInt(hex.slice(3, 5), 16); // 초록
+    const b = parseInt(hex.slice(5, 7), 16); // 파랑
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
-  return hex; // hex 형식이 아니면 그대로 반환
+  return hex;
 };
 </script>
 
@@ -185,8 +185,8 @@ const hexToRgba = (hex, opacity) => {
               v-for="schedule in getSchedulesForDate(column)"
               :key="schedule.id"
               :style="{
-                backgroundColor: hexToRgba(schedule.color, 10), // 배경을 투명하게
-                border: `1px solid ${schedule.color}`, // 테두리는 원래 색상으로
+                backgroundColor: hexToRgba(schedule.color, 0.3), // 투명한 배경색
+                border: `1px solid ${schedule.color}`, // 테두리 색상
               }"
               class="schedule-title"
             >
