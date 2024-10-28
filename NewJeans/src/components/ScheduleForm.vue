@@ -131,20 +131,29 @@ const handleImageUpload = (event) => {
   }
 };
 
+
 const submitSchedule = async () => {
+  // diaryRequest JSON 객체 생성
+  const scheduleRequest = {
+    title: title.value,
+    color: color.value,
+    start: startdate.value,
+    end: enddate.value,
+    location: location.value,
+    content: description.value,
+    repeat: repeat.value,
+    calendarsIdx: 1
+  };
+
+  // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
   const formData = new FormData();
-  formData.append('title', title.value);
-  formData.append('color', color.value);
-  formData.append('start', startdate.value);
-  formData.append('end', enddate.value);
-  formData.append('location', location.value);
-  formData.append('content', description.value);
-  formData.append('repeat', repeat.value);
-  formData.append('calendarsIdx', 1);
-  
+  formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], {
+      type: "application/json"
+    })); // JSON 데이터를 문자열로 변환해 추가
+
   // 이미지 파일이 선택된 경우 FormData에 추가
   if (imageFiles.value) {
-    formData.append('image', imageFiles.value);
+    formData.append('imageFiles', imageFiles.value);
   }
 
   try {
@@ -156,10 +165,46 @@ const submitSchedule = async () => {
     console.log('Schedule Submitted Successfully', response.data);
     emit('closeForm');
   } catch (error) {
-    console.error('Failed to submit schedule:', error);
+    console.error('Failed to submit Schedule:', error);
     emit('closeForm');
   }
 };
+
+
+
+
+
+
+
+
+// const submitSchedule = async () => {
+//   const formData = new FormData();
+//   formData.append('title', title.value);
+//   formData.append('color', color.value);
+//   formData.append('start', startdate.value);
+//   formData.append('end', enddate.value);
+//   formData.append('location', location.value);
+//   formData.append('content', description.value);
+//   formData.append('repeat', repeat.value);
+//   formData.append('calendarsIdx', 1);
+  
+//   if (imageFiles.value) {
+//     formData.append('image', imageFiles.value);
+//   }
+
+//   try {
+//     const response = await axios.post('http://192.168.0.17:8080/schedule/create', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       },
+//     });
+//     console.log('Schedule Submitted Successfully', response.data);
+//     emit('closeForm');
+//   } catch (error) {
+//     console.error('Failed to submit schedule:', error);
+//     emit('closeForm');
+//   }
+// };
 
 const cancelForm = () => {
   emit('closeForm');

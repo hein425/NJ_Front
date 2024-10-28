@@ -2,11 +2,11 @@
   <div class="profile">
     <div class="profile-container" v-if="isLoggedIn">
       <!-- 프로필 이미지와 사용자명을 함께 표시 -->
-      <img :src="profile" alt="Profile Picture" class="profile-image" />
+      <img :src="profile || defaultProfileImage" alt="Profile Picture" class="profile-image" />
       <p>Welcome, {{ userName }}!</p>
     </div>
     <div class="profile-container" v-else>
-      <img src="@/assets/profile.png" alt="Default Profile Picture" class="profile-image" />
+      <img :src="defaultProfileImage" alt="Default Profile Picture" class="profile-image" />
       <div class="welcome-text">
         <p class="f1">Welcome!</p>
         <p class="f2">로그인 후 이용해주세요</p>
@@ -18,13 +18,14 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지 경로 지정
 
 const authStore = useAuthStore(); // Pinia 스토어 사용
 
 // 반응형으로 값을 가져오도록 computed 사용
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const userName = computed(() => authStore.userName);
-const profile = computed(() => authStore.profile);
+const profile = computed(() => authStore.profile); // 프로필 이미지 상태를 반응형으로 가져옴
 
 // localStorage 값 확인
 console.log('Token in localStorage:', localStorage.getItem('token'));
