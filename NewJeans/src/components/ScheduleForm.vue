@@ -64,11 +64,11 @@
           <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
         </div>
 
-        <!-- 이미지 업로드
+         <!-- 이미지 업로드 -->
         <div class="form-row" style="width: 450px">
           <label for="image">이미지</label>
           <input id="image" type="file" @change="handleImageUpload" />
-        </div> -->
+        </div> 
 
         <div class="button-row">
           <!-- 저장 버튼 -->
@@ -105,7 +105,7 @@ const enddate = ref('');
 const location = ref('');
 const description = ref('');
 const repeat = ref('NONE');
-// const imageFile = ref(null); // 이미지 파일을 저장
+const imageFiles = ref(null); // 이미지 파일을 저장
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -124,12 +124,12 @@ onMounted(() => {
 });
 
 // 이미지 업로드 핸들러
-// const handleImageUpload = (event) => {
-//   const file = event.target.files[0];
-//   if (file) {
-//     imageFile.value = file;
-//   }
-// };
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    imageFiles.value = file;
+  }
+};
 
 const submitSchedule = async () => {
   const formData = new FormData();
@@ -143,9 +143,9 @@ const submitSchedule = async () => {
   formData.append('calendarsIdx', 1);
   
   // 이미지 파일이 선택된 경우 FormData에 추가
-  // if (imageFile.value) {
-  //   formData.append('image', imageFile.value);
-  // }
+  if (imageFiles.value) {
+    formData.append('image', imageFiles.value);
+  }
 
   try {
     const response = await axios.post('http://192.168.0.17:8080/schedule/create', formData, {
