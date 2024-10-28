@@ -74,13 +74,13 @@ const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
-const imageFile = ref(null); // 이미지 파일 저장
+const imageFiles = ref(null); // 이미지 파일 저장
 
 // 이미지 업로드 핸들러
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
-    imageFile.value = file;
+    imageFiles.value = file;
   }
 };
 
@@ -93,8 +93,8 @@ const submitDiary = async () => {
   formData.append('calendarsIdx', 1);
   
   // 이미지 파일이 선택된 경우 FormData에 추가
-  if (imageFile.value) {
-    formData.append('image', imageFile.value);
+  if (imageFiles.value) {
+    formData.append('image', imageFiles.value);
   }
 
   try {
