@@ -51,10 +51,15 @@ import axios from 'axios';
 
 const selectedDiary = ref(null); // 선택된 일기 상세 정보
 
-// 선택된 일기의 상세 정보를 표시하는 함수
-const viewDiary = diary => {
-  selectedDiary.value = diary; // 클릭한 게시글을 selectedDiary로 설정
-  console.log('Selected diary:', selectedDiary.value); // 내용 확인을 위한 로그
+const viewDiary = async diary => {
+  try {
+    // 백엔드에 일기 상세 조회 요청 보내기
+    const response = await axios.get(`http://192.168.0.17:8080/diary/${diary.idx}`);
+    selectedDiary.value = response.data; // 응답 데이터를 selectedDiary에 저장
+    console.log('Selected diary:', selectedDiary.value); // 확인용 로그
+  } catch (error) {
+    console.error('일기 상세 조회 중 오류 발생:', error);
+  }
 };
 
 // 다이어리 목록 상태
