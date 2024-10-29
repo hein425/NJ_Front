@@ -77,7 +77,7 @@ const startEditingName = () => {
 const saveUserName = async () => {
   try {
     // 서버에 닉네임 업데이트 요청
-    await axios.put('http://192.168.0.17:8080/update-username', { newUserName: newUserName.value });
+    await axios.put('http://your-server-url/update-username', { newUserName: newUserName.value });
 
     // 성공 시 Pinia 상태 업데이트
     authStore.userName = newUserName.value;
@@ -125,7 +125,7 @@ const uploadProfileImage = async file => {
   formData.append('profileImage', file);
 
   try {
-    const response = await axios.post('http://192.168.0.17:8080/upload-profile-image', formData, {
+    const response = await axios.post('http://your-server-url/upload-profile-image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Profile image uploaded successfully:', response.data);

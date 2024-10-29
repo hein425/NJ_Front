@@ -190,11 +190,7 @@ onMounted(fetchDayData);
 
 .schedule-item,
 .diary-item {
-<<<<<<< HEAD
   border: 2px solid #c7c7c7; /* 테두리만 남기기 */
-=======
-  border: 2px solid; /* 테두리만 남기기 */
->>>>>>> HEIN
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;

@@ -38,11 +38,7 @@
         </div>
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> HEIN
       <!-- 이미지추가 -->
       <div class="row">
         <label for="image" style="width: 80px">이미지</label>
@@ -81,11 +77,7 @@ const category = ref('DAILY');
 const imageFiles = ref(null); // 이미지 파일 저장
 
 // 이미지 업로드 핸들러
-<<<<<<< HEAD
 const handleImageUpload = event => {
-=======
-const handleImageUpload = (event) => {
->>>>>>> HEIN
   const file = event.target.files[0];
   if (file) {
     imageFiles.value = file;
@@ -99,16 +91,11 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value,
-<<<<<<< HEAD
     calendarsIdx: 1,
-=======
-    calendarsIdx: 1
->>>>>>> HEIN
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
   const formData = new FormData();
-<<<<<<< HEAD
   formData.append(
     'diaryRequest',
     new Blob([JSON.stringify(diaryRequest)], {
@@ -119,15 +106,6 @@ const submitDiary = async () => {
   // 이미지 파일이 선택된 경우 FormData에 추가
   if (imageFiles.value) {
     formData.append('imageFiles', imageFiles.value);
-=======
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], {
-      type: "application/json"
-    })); // JSON 데이터를 문자열로 변환해 추가
-
-  // 이미지 파일이 선택된 경우 FormData에 추가
-  if (imageFiles.value) {
-    formData.append('imageFiles', imageFiles.value || '');
->>>>>>> HEIN
   }
 
   try {
@@ -147,15 +125,8 @@ const submitDiary = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
-<<<<<<< HEAD
 </script>
 
-=======
-
-</script>
-
-
->>>>>>> HEIN
 <style scoped>
 .diary-form {
   border: 1px solid #ccc;

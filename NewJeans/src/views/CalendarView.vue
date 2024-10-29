@@ -1,61 +1,24 @@
 <script setup>
-<<<<<<< HEAD
 import { ref, watch } from 'vue';
-=======
-import { ref, watch, onMounted } from 'vue';
-import axios from 'axios';
->>>>>>> HEIN
 import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 
-<<<<<<< HEAD
-=======
-const schedules = ref([]); // 현재 월의 일정 데이터를 저장
->>>>>>> HEIN
 const now = ref(dayjs());
 const columns = ref([]);
 const groupColumns = ref([]);
 
-<<<<<<< HEAD
-=======
-const MonthlySchedules = async () => {
-  try {
-    const response = await axios.get(`http://192.168.0.17:8080/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
-    schedules.value = response.data;
-  } catch (error) {
-    console.error('Failed to show monthly schedules:', error);
-  }
-};
-
-// 컴포넌트가 로드될 때 일정 데이터를 가져옴
-onMounted(() => {
-  MonthlySchedules();
-});
-
-// 달이 바뀔 때마다 새 데이터를 불러오도록 watch 사용
-watch(now, MonthlySchedules);
-
-// 날짜에 해당하는 일정을 필터링하는 함수
-const getSchedulesForDate = date => {
-  return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 3);
-};
-
->>>>>>> HEIN
 const selectDate = ref(null);
 const isFlipped = ref(false);
 
 const isScheduleFormVisible = ref(false);
 const isDiaryFormVisible = ref(false);
-<<<<<<< HEAD
 const isYearlyView = ref(false); // 연달력 띄우기
 
 const goYearCal = () => {
   isYearlyView.value = true;
 };
-=======
->>>>>>> HEIN
 
 const flipBack = () => {
   isFlipped.value = false;
@@ -136,20 +99,6 @@ watch(
     deep: true,
   },
 );
-<<<<<<< HEAD
-=======
-
-// 색깔 바꾸기
-const hexToRgba = (hex, opacity) => {
-  if (hex.startsWith('#')) {
-    const r = parseInt(hex.slice(1, 3), 16); // 빨강
-    const g = parseInt(hex.slice(3, 5), 16); // 초록
-    const b = parseInt(hex.slice(5, 7), 16); // 파랑
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  return hex;
-};
->>>>>>> HEIN
 </script>
 
 <template>
@@ -159,10 +108,7 @@ const hexToRgba = (hex, opacity) => {
       height: weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
     }"
   >
-<<<<<<< HEAD
   
-=======
->>>>>>> HEIN
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
     <div class="calendar-container" :class="{ flipped: isFlipped }">
       <!-- 달력 앞면 영역 -->
@@ -204,7 +150,6 @@ const hexToRgba = (hex, opacity) => {
             }"
           >
             <span class="date-number">{{ column.get('date') }}</span>
-<<<<<<< HEAD
           </div>
         </div>
       </div>
@@ -218,34 +163,6 @@ const hexToRgba = (hex, opacity) => {
           <button class="diary-btn" @click="showDiaryForm">Diary</button>
         </div>
 
-=======
-
-            <!-- 일정표시창 -->
-            <div
-              v-for="schedule in getSchedulesForDate(column)"
-              :key="schedule.id"
-              :style="{
-                backgroundColor: hexToRgba(schedule.color, 0.3), // 투명한 배경색
-                border: `1px solid ${schedule.color}`, // 테두리 색상
-              }"
-              class="schedule-title"
-            >
-              {{ schedule.title }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 뒤집힌 화면에서 일정 및 다이어리 버튼, 폼 렌더링 -->
-      <div class="flipped-content">
-        <div class="button-group">
-          <button class="schedule-btn" @click="showScheduleForm">Schedule</button>
-          <button class="flip-back-btn" @click="flipBack">&orarr;</button>
-          <!-- ㄴ 달력 다시 뒤집기 버튼 -->
-          <button class="diary-btn" @click="showDiaryForm">Diary</button>
-        </div>
-
->>>>>>> HEIN
         <!-- ScheduleForm 컴포넌트 렌더링 -->
         <div v-if="isScheduleFormVisible" class="form-container">
           <ScheduleForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
@@ -417,14 +334,6 @@ const hexToRgba = (hex, opacity) => {
     background-color 0.2s,
     border 0.2s;
   aspect-ratio: 1 / 1; /* 정사각형 유지 */
-<<<<<<< HEAD
-=======
-  flex-direction: column; /* 세로 배치 */
-  align-items: flex-start;
-  padding: 5px;
-  cursor: pointer;
-  overflow: hidden;
->>>>>>> HEIN
 }
 
 .date-number {
@@ -552,22 +461,4 @@ const hexToRgba = (hex, opacity) => {
   width: 80%;
   max-width: 600px;
 }
-<<<<<<< HEAD
-=======
-
-/* 일정 제목 스타일 */
-.schedule-title {
-  width: 100%; /* 셀의 너비를 꽉 차게 설정 */
-  box-sizing: border-box; /* padding 포함하여 너비를 계산 */
-  font-size: 0.8rem;
-  color: white;
-  padding: 2px 5px; /* 내부 여백 */
-  border-radius: 3px;
-  margin-top: 4px;
-  text-align: left;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
->>>>>>> HEIN
 </style>
