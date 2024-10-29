@@ -142,7 +142,7 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     repeat: repeat.value,
-    calendarsIdx: 1
+    calendarsIdx: 1,
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
