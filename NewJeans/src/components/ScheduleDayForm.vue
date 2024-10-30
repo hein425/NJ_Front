@@ -6,14 +6,12 @@
       <div class="schedule-section">
         <div v-if="schedules.length > 0">
           <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleScheduleExpand(index)">
-            <!-- 제목과 날짜/카테고리 고정 위치 -->
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ schedule.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
               <p class="date">{{ schedule.date }}</p>
             </div>
 
-            <!-- 일정 상세 내용 슬라이드 애니메이션 -->
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
@@ -28,7 +26,10 @@
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
-                <!-- 수정/삭제 버튼 그룹 -->
+                <div v-if="schedule.mapUrl" class="map-container">
+                  <img :src="schedule.mapUrl" alt="Map" class="map-image" />
+                </div>
+
                 <div class="button-group">
                   <button v-if="editIndex !== index" @click.stop="startEdit('schedule', index)">Edit</button>
                   <button v-else @click.stop="saveEdit('schedule', index)">Save</button>
@@ -62,7 +63,10 @@
                 <p v-if="editIndex !== index">{{ diary.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
-                <!-- 수정/삭제 버튼 그룹 -->
+                <div v-if="diary.images && diary.images.length" class="diary-images">
+                  <img v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                </div>
+
                 <div class="button-group">
                   <button v-if="editIndex !== index" @click.stop="startEdit('diary', index)">Edit</button>
                   <button v-else @click.stop="saveEdit('diary', index)">Save</button>
