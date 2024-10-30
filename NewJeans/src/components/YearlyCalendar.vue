@@ -108,20 +108,6 @@ const resetToCurrentYear = () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
 
-/* .calendar-wrapper {
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px 50px;
-  min-height: 500px;
-  width: 80%;
-  margin: 50px auto;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative; /* year-selector 절대 위치를 위해 추가 
-} */
-
 .year-selector {
   display: flex;
   align-items: center;

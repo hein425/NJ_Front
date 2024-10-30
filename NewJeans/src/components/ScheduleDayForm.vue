@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, watchEffect } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
@@ -142,6 +142,10 @@ const fetchDayData = async selectedDate => {
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
+  watchEffect(async () => {
+  if (props.selectedDate) {
+    await fetchDayData(props.selectedDate);
+  }});
 };
 
 const toggleScheduleExpand = index => {
