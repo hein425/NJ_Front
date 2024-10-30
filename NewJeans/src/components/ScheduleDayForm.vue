@@ -4,15 +4,25 @@
     <div class="day-form" v-if="showDayView">
       <div class="schedule-section">
         <div v-if="schedules.length > 0">
-          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleExpand(index)">
+          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleScheduleExpand(index)">
+            <!-- 타이틀과 날짜만 표시 -->
             <h4>{{ schedule.title }}</h4>
-            <p>{{ schedule.content }}</p>
-            <p>{{ schedule.location }}</p>
+            <p>{{ schedule.date }}</p>
 
-            <div v-if="isScheduleExpanded[index]">
-              <p><strong>시작:</strong> {{ schedule.start }}</p>
-              <p><strong>종료:</strong> {{ schedule.end }}</p>
-            </div>
+            <!-- 일정 상세 내용 슬라이드 애니메이션 -->
+            <transition name="slide-fade">
+              <div v-show="isScheduleExpanded[index]" class="expanded-content">
+                <p><strong>Time:</strong> {{ schedule.time }}</p>
+                <p><strong>Address:</strong> {{ schedule.address }}</p>
+                <p>{{ schedule.content }}</p>
+
+                <!-- 수정/닫기 버튼 그룹 -->
+                <div class="button-group">
+                  <button @click.stop="editSchedule(index)">Edit</button>
+                  <button @click.stop="toggleScheduleExpand(index)">Close</button>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
         <div v-else>
@@ -22,10 +32,35 @@
 
       <div class="diary-section">
         <div v-if="diaries.length > 0">
-          <div v-for="(diary, index) in diaries" :key="index" class="diary-item">
+          <div v-for="(diary, index) in diaries" :key="index" class="diary-item" @click="toggleDiaryExpand(index)">
+            <!-- 타이틀과 카테고리만 표시 -->
             <h4>{{ diary.title }}</h4>
-            <p>{{ diary.content }}</p>
             <p>{{ diary.category }}</p>
+
+            <!-- 일기 상세 내용 슬라이드 애니메이션 -->
+            <transition name="slide-fade">
+              <div v-show="isDiaryExpanded[index]" class="expanded-content">
+                <p>{{ diary.content }}</p>
+                
+                <!-- 이미지 렌더링 -->
+                <div v-if="diary.images && diary.images.length" class="diary-images">
+                  <img
+                    v-for="(imageUrl, imgIndex) in diary.images"
+                    :key="imgIndex"
+                    :src="`http://112.222.157.156:10004/diary/${imageUrl}`"
+                    alt="Diary Image"
+                    style="width: 150px; margin: 5px;"
+                  />
+                </div>
+
+
+                <!-- 수정/닫기 버튼 그룹 -->
+                <div class="button-group">
+                  <button @click.stop="editDiary(index)">Edit</button>
+                  <button @click.stop="toggleDiaryExpand(index)">Close</button>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
         <div v-else>
@@ -65,34 +100,15 @@ const schedules = ref([]); // 일정 목록
 const diaries = ref([]); // 일기 목록
 const formattedDate = ref('');
 const isScheduleExpanded = ref([]); // 일정 확장/축소 상태
+const isDiaryExpanded = ref([]); // 일기 확장/축소 상태
 const showDayView = ref(true); // 일정 및 일기 조회 화면이 보일지 여부
 
-// 일정 작성 관련 상태
-const title = ref('');
-const color = ref('ORANGE');
-const startdate = ref('');
-const enddate = ref('');
-const location = ref('');
-const description = ref('');
-
-// 날짜 포맷팅 함수
-const formatDate = (year, month, day) => {
-  return `${year}.${month}.${day}`;
-};
-
 // 일정 및 일기 조회 함수
-// const fetchDayData = async () => {
-//   // route.params가 유효한지 확인하고, 유효하지 않으면 기본 값을 제공
-//   const params = route.params || {};  // params가 undefined일 경우 빈 객체로 대체
-//   const { idx = 1, year = '', month = '', day = '' } = params;  // params에서 값 추출, 기본값 제공
-
-// 아래 fetchDayData 함수에서 selectedDate를 활용
 const fetchDayData = async selectedDate => {
-  const [year, month, day] = selectedDate.split('-'); // 선택된 날짜를 분해하여 year, month, day 값 생성
+  const [year, month, day] = selectedDate.split('-');
   const idx = 1; // 테스트를 위한 고정 idx 값
 
   try {
-    // 값 출력해서 확인
     console.log('idx = ' + idx);
     console.log('year = ' + year);
     console.log('month = ' + month);
@@ -109,43 +125,32 @@ const fetchDayData = async selectedDate => {
     const diaryResponse = await axios.get(`http://112.222.157.156:10004/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data;
 
-    formattedDate.value = formatDate(year, month, day);
+    // 일기 수만큼 isDiaryExpanded 배열 초기화
+    isDiaryExpanded.value = diaries.value.map(() => false);
+
+    formattedDate.value = `${year}.${month}.${day}`;
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
 
-// 일정 작성 후 조회 페이지로 이동
-const submitSchedule = async () => {
-  const scheduleData = {
-    title: title.value,
-    color: color.value,
-    start: startdate.value,
-    end: enddate.value,
-    location: location.value,
-    content: description.value,
-    calendarsIdx: 1,
-  };
-
-  try {
-    const response = await axios.post('http://192.168.0.17:8080/schedule/create', scheduleData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('Schedule Submitted Successfully', response.data);
-
-    // 일정 저장이 완료되면 일정 조회 페이지로 이동
-    showDayView.value = true;
-    fetchDayData(); // 새로운 데이터 조회
-  } catch (error) {
-    console.error('Failed to submit schedule:', error);
-  }
+// 일정 확장/축소 상태 토글 함수
+const toggleScheduleExpand = index => {
+  isScheduleExpanded.value[index] = !isScheduleExpanded.value[index];
 };
 
-// 일정 확장/축소 상태 토글 함수
-const toggleExpand = index => {
-  isScheduleExpanded.value[index] = !isScheduleExpanded.value[index];
+// 일기 확장/축소 상태 토글 함수
+const toggleDiaryExpand = index => {
+  isDiaryExpanded.value[index] = !isDiaryExpanded.value[index];
+};
+
+// 수정 기능 (임시 기능으로 로그 출력)
+const editSchedule = index => {
+  console.log(`Editing schedule at index: ${index}`);
+};
+
+const editDiary = index => {
+  console.log(`Editing diary at index: ${index}`);
 };
 
 // 컴포넌트가 마운트될 때 데이터 조회 함수 호출
@@ -161,28 +166,6 @@ onMounted(fetchDayData);
   width: 700px;
 }
 
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.form-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.form-button:hover {
-  background-color: #555;
-}
-
 .schedule-section,
 .diary-section {
   margin-bottom: 20px;
@@ -190,12 +173,12 @@ onMounted(fetchDayData);
 
 .schedule-item,
 .diary-item {
-  border: 2px solid; /* 테두리만 남기기 */
+  border: 2px solid;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
   color: black;
-  background-color: transparent; /* 배경색 제거 */
+  background-color: transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -213,5 +196,32 @@ onMounted(fetchDayData);
   margin: 0;
   font-size: 0.9rem;
   color: gray;
+}
+
+/* 상세 내용 및 버튼 그룹 스타일 */
+.expanded-content {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* 트랜지션 애니메이션 */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
 }
 </style>
