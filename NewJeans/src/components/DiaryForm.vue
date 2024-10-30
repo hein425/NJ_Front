@@ -85,6 +85,44 @@ const handleImageUpload = event => {
   }
 };
 
+// const submitDiary = async () => {
+//   // diaryRequest JSON 객체 생성
+//   const diaryRequest = {
+//     title: title.value,
+//     date: date.value,
+//     content: content.value,
+//     category: category.value,
+//     calendarsIdx: 1,
+//   };
+
+//   // FormData 생성 및 diaryRequest JSON 추가
+//   const formData = new FormData();
+//   formData.append(
+//     'diaryRequest',
+//     new Blob([JSON.stringify(diaryRequest)], {
+//       type: 'application/json',
+//     }),
+//   ); // JSON 데이터를 Blob으로 변환하여 추가
+
+//   // 이미지 파일이 선택된 경우에만 FormData에 추가
+//   if (imageFiles.value) {
+//     formData.append('imageFiles', imageFiles.value);
+//   }
+
+//   try {
+//     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
+//       headers: {
+//         // Content-Type은 명시하지 않음. axios가 자동으로 설정하도록 함
+//       },
+//     });
+//     console.log('Diary Submitted Successfully', response.data);
+//     emit('closeForm');
+//   } catch (error) {
+//     console.error('Failed to submit diary:', error);
+//     emit('closeForm');
+//   }
+// };
+
 const submitDiary = async () => {
   // diaryRequest JSON 객체 생성
   const diaryRequest = {
@@ -95,31 +133,33 @@ const submitDiary = async () => {
     calendarsIdx: 1,
   };
 
-  // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
+  // FormData 생성 및 diaryRequest JSON 추가
   const formData = new FormData();
   formData.append(
     'diaryRequest',
     new Blob([JSON.stringify(diaryRequest)], {
       type: 'application/json',
-    }),
-  ); // JSON 데이터를 문자열로 변환해 추가
+    })
+  );
 
-  // 이미지 파일이 선택된 경우 FormData에 추가
+  // 이미지 파일이 선택된 경우에만 FormData에 추가, 없을 경우 빈 파일 설정
   if (imageFiles.value) {
     formData.append('imageFiles', imageFiles.value);
+  } else {
+    formData.append('imageFiles', new Blob()); // 빈 Blob 추가
   }
 
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Content-Type 생략하여 Axios가 자동으로 설정하도록 함
       },
     });
     console.log('Diary Submitted Successfully', response.data);
     emit('closeForm');
   } catch (error) {
-    console.error('Failed to submit diary:', error);
-    emit('closeForm');
+    console.error('Failed to submit diary:', error.response?.data || error.message);
+    alert(`Error: ${error.response?.data?.message || error.message}`);
   }
 };
 
