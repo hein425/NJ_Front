@@ -14,7 +14,7 @@ const groupColumns = ref([]);
 
 const MonthlySchedules = async () => {
   try {
-    const response = await axios.get(`http://192.168.0.17:8080/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`http://112.222.157.156:10004/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);

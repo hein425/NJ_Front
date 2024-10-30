@@ -82,9 +82,9 @@ const fetchDiaries = async category => {
 
   // 카테고리가 ALL일 경우에는 여러 카테고리를 합쳐서 조회
   if (category === 'ALL') {
-    url = `http://192.168.0.17:8080/diary/${userIdx}/ALL`;
+    url = `http://112.222.157.156:10004/diary/${userIdx}/ALL`;
   } else {
-    url = `http://192.168.0.17:8080/diary/${userIdx}/${category}`;
+    url = `http://112.222.157.156:10004/diary/${userIdx}/${category}`;
   }
 
   try {

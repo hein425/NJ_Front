@@ -109,7 +109,7 @@ const submitDiary = async () => {
   }
 
   try {
-    const response = await axios.post('http://192.168.0.17:8080/diary/create', formData, {
+    const response = await axios.post('http://112.222.157.156:10004/diary/create', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

@@ -21,7 +21,7 @@ const daysInMonth = ref([]);
 const fetchDiaries = async () => {
   const idx = 1; // 사용자의 idx를 여기에 설정
   try {
-    const response = await axios.get(`http://192.168.0.17:8080/diary/${idx}/${year.value}/${month.value}`);
+    const response = await axios.get(`http://112.222.157.156:10004/diary/${idx}/${year.value}/${month.value}`);
     const diaries = response.data;
 
     // 달력의 날짜와 일기 여부를 매칭

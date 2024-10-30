@@ -71,7 +71,7 @@ const openSignUp = () => {
 const handleLogin = async () => {
   try {
     // 서버로 로그인 요청 보내기
-    const response = await axios.post('http://192.168.0.17:8080/auth/login', {
+    const response = await axios.post('http://112.222.157.156:10004/auth/login', {
       email: username.value,
       password: password.value,
     });

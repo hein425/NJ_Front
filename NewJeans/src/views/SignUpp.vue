@@ -52,7 +52,7 @@ const handleSignUp = async () => {
     };
 
     //백엔드로 회원가입 요청 보내기(백엔드에서 url 받아서 집어넣으면 됨)
-    const response = await axios.post('http://192.168.0.17:8080/join', signUpDate);
+    const response = await axios.post('http://112.222.157.156:10004/join', signUpDate);
 
     // 성공적으로 회원가입이 완료된 경우
     if (response.status === 200) {

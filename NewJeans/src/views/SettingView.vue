@@ -125,7 +125,7 @@ const uploadProfileImage = async file => {
   formData.append('profileImage', file);
 
   try {
-    const response = await axios.post('http://192.168.0.17:8080/update', formData, {
+    const response = await axios.post('http://112.222.157.156:10004/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Profile image uploaded successfully:', response.data);
