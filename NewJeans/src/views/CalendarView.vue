@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
-
+import { BASE_URL } from '@/config';
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
 const columns = ref([]);
@@ -13,7 +13,7 @@ const groupColumns = ref([]);
 
 const MonthlySchedules = async () => {
   try {
-    const response = await axios.get(`http://192.168.0.17:8080/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);

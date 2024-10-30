@@ -103,23 +103,23 @@ const resetToCurrentYear = () => {
 }
 
 .this-year-button {
-  background-color: #333!important;
-  color: white!important;
-  border: none!important;
-  padding: 0.5rem 1rem!important;
-  border-radius: 20px!important;
-  font-size: 0.9rem!important;
-  cursor: pointer!important;
+  background-color: #333 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
 }
 
 .monthly-button {
-  background-color: #333!important;
-  color: white!important;
-  border: none!important;
-  padding: 0.5rem 1rem!important;
-  border-radius: 20px!important;
-  font-size: 0.9rem!important;
-  cursor: pointer!important;
+  background-color: #333 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
 }
 
 /* 캘린더 그리드 */
@@ -181,5 +181,4 @@ const resetToCurrentYear = () => {
 .blank {
   background-color: transparent;
 }
-
 </style>

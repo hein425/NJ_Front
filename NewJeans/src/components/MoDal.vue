@@ -40,6 +40,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore'; // Pinia store import
 import { watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
+import { BASE_URL } from '@/config';
 import axios from 'axios';
 
 // Pinia store 사용
@@ -71,7 +72,7 @@ const openSignUp = () => {
 const handleLogin = async () => {
   try {
     // 서버로 로그인 요청 보내기
-    const response = await axios.post('http://192.168.0.17:8080/auth/login', {
+    const response = await axios.post(`${BASE_URL}/auth/login`, {
       email: username.value,
       password: password.value,
     });

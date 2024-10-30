@@ -48,13 +48,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 const selectedDiary = ref(null); // 선택된 일기 상세 정보
 
 const viewDiary = async diary => {
   try {
     // 백엔드에 일기 상세 조회 요청 보내기
-    const response = await axios.get(`http://192.168.0.17:8080/diary/${diary.idx}`);
+    const response = await axios.get(`${BASE_URL}/diary/${diary.idx}`);
     selectedDiary.value = response.data; // 응답 데이터를 selectedDiary에 저장
     console.log('Selected diary:', selectedDiary.value); // 확인용 로그
   } catch (error) {
@@ -87,9 +88,9 @@ const fetchDiaries = async category => {
 
   // 카테고리가 ALL일 경우에는 여러 카테고리를 합쳐서 조회
   if (category === 'ALL') {
-    url = `http://192.168.0.17:8080/diary/${userIdx}/ALL`;
+    url = `${BASE_URL}/diary/${userIdx}/ALL`;
   } else {
-    url = `http://192.168.0.17:8080/diary/${userIdx}/${category}`;
+    url = `${BASE_URL}/diary/${userIdx}/${category}`;
   }
 
   try {

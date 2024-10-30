@@ -56,6 +56,7 @@ import { ref, computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 // Pinia 스토어 사용
 const authStore = useAuthStore();
@@ -105,7 +106,7 @@ const saveUserName = async () => {
       ),
     );
 
-    await axios.post('http://192.168.0.17:8080/user/update', formData, {
+    await axios.post(`${BASE_URL}/user/update`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
