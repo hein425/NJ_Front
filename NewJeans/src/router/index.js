@@ -7,6 +7,7 @@ import Setting from '../views/SettingView.vue';
 import SignUpp from '../views/SignUpp.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import SearchForm from '@/components/searchForm.vue';
+import DiaryDetail from '@/views/DiaryDetail.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,12 @@ const router = createRouter({
       path: '/diary',
       name: 'diary',
       component: Diary,
+    },
+    {
+      path: '/diary/:idx',
+      name: 'DiaryDetail',
+      component: DiaryDetail,
+      props: true,
     },
     {
       path: '/teams',
@@ -52,6 +59,7 @@ const router = createRouter({
       path: '/searchForm',
       name: 'SearchForm',
       component: SearchForm, // SearchResults 컴포넌트를 SearchForm 경로에 연결
+      props: true,
     },
   ],
 });
