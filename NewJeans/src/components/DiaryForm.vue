@@ -106,7 +106,7 @@ const submitDiary = async () => {
 
   // 이미지 파일이 선택된 경우 FormData에 추가
   if (imageFiles.value) {
-    formData.append('imageFiles', imageFiles.value || '');
+    formData.append('imageFiles', imageFiles.value);
   }
 
   try {

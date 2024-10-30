@@ -44,7 +44,7 @@
 
                 <!-- 이미지 렌더링 -->
                 <div v-if="diary.images && diary.images.length" class="diary-images">
-                  <img v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" :src="`${BASE_URL}/auth/login/diary/${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                  <img v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                 </div>
 
                 <!-- 수정/닫기 버튼 그룹 -->
