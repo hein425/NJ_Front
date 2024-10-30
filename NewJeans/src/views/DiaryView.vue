@@ -1,42 +1,28 @@
 <template>
   <div class="diary-view-container">
-    <!-- 카테고리 버튼과 정렬 버튼을 포함한 툴바 -->
     <div class="toolbar">
-      <!-- 카테고리 버튼 섹션 -->
       <div class="category-buttons">
         <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
           {{ category.label }}
         </button>
       </div>
-
-      <!-- 정렬 버튼 섹션 -->
       <div class="sort-buttons">
         <button @click="sortDiaries('LATEST')" :class="{ selected: sortOrder === 'LATEST' }">최신순</button>
         <button @click="sortDiaries('OLDEST')" :class="{ selected: sortOrder === 'OLDEST' }">오래된순</button>
       </div>
     </div>
-
-    <!-- 일기 목록 출력 -->
-    <div v-if="!selectedDiary && paginatedDiaries.length > 0" class="diary-list">
-      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="viewDiary(diary)">
+    
+    <div v-if="paginatedDiaries.length > 0" class="diary-list">
+      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
         <h3>{{ diary.title }}</h3>
         <p>{{ getCategoryLabel(diary.category) }}</p>
         <p>{{ diary.date }}</p>
       </div>
     </div>
-    <div v-else-if="!selectedDiary">
+    <div v-else>
       <p>해당 카테고리의 일기가 없습니다.</p>
     </div>
 
-    <!-- 상세 내용 표시 -->
-    <div v-if="selectedDiary" class="diary-detail">
-      <h2>{{ selectedDiary.title }}</h2>
-      <p>{{ getCategoryLabel(selectedDiary.category) }} - {{ selectedDiary.date }}</p>
-      <p>{{ selectedDiary.content }}</p>
-      <button @click="selectedDiary = null">목록으로 돌아가기</button>
-    </div>
-
-    <!-- 페이지네이션 -->
     <div class="pagination">
       <button v-for="page in totalPages" :key="page" @click="goToPage(page)" :class="{ active: currentPage === page }">
         {{ page }}
@@ -47,28 +33,18 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
-const selectedDiary = ref(null); // 선택된 일기 상세 정보
-
-const viewDiary = async diary => {
-  try {
-    // 백엔드에 일기 상세 조회 요청 보내기
-    const response = await axios.get(`${BASE_URL}/diary/${diary.idx}`);
-    selectedDiary.value = response.data; // 응답 데이터를 selectedDiary에 저장
-    console.log('Selected diary:', selectedDiary.value); // 확인용 로그
-  } catch (error) {
-    console.error('일기 상세 조회 중 오류 발생:', error);
-  }
-};
-
-// 다이어리 목록 상태
+const router = useRouter();
 const diaries = ref([]);
-const sortOrder = ref('LATEST'); // 기본 정렬은 최신순
-const selectedCategory = ref('ALL'); // 기본 카테고리는 전체보기
+const sortOrder = ref('LATEST');
+const selectedCategory = ref('ALL');
+const userIdx = 1;
+const currentPage = ref(1);
+const itemsPerPage = 6;
 
-// 카테고리 목록
 const categories = [
   { label: '전체보기', value: 'ALL' },
   { label: '#일기', value: 'DAILY' },
@@ -78,82 +54,72 @@ const categories = [
   { label: '#기타', value: 'ETC' },
 ];
 
-// 유저 idx
-const userIdx = 1; // 예시로 고정값, 실제로는 로그인한 유저의 idx를 가져와야 함
-
-// 일기 조회 함수
 const fetchDiaries = async category => {
   selectedCategory.value = category;
-  let url = '';
-
-  // 카테고리가 ALL일 경우에는 여러 카테고리를 합쳐서 조회
-  if (category === 'ALL') {
-    url = `${BASE_URL}/diary/${userIdx}/ALL`;
-  } else {
-    url = `${BASE_URL}/diary/${userIdx}/${category}`;
-  }
-
+  let url = category === 'ALL' ? `${BASE_URL}/diary/${userIdx}/ALL` : `${BASE_URL}/diary/${userIdx}/${category}`;
   try {
     const response = await axios.get(url);
     diaries.value = response.data;
-    // 리스트 가져온 후 기본 정렬은 최신순으로
     sortOrder.value = 'LATEST';
   } catch (error) {
     console.error('일기 조회 중 오류 발생:', error);
   }
 };
 
-// 정렬 함수
 const sortDiaries = order => {
   sortOrder.value = order;
 };
 
-// 정렬된 다이어리 목록 (computed로 동적 정렬)
 const sortedDiaries = computed(() => {
   return [...diaries.value].sort((a, b) => {
-    if (sortOrder.value === 'LATEST') {
-      return new Date(b.date) - new Date(a.date);
-    } else {
-      return new Date(a.date) - new Date(b.date);
-    }
+    return sortOrder.value === 'LATEST' ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date);
   });
 });
 
-// 컴포넌트가 처음 로드될 때 전체보기 호출
-onMounted(() => {
-  fetchDiaries('ALL');
-});
-
-const getCategoryLabel = categoryValue => {
-  const category = categories.find(cat => cat.value === categoryValue);
-  return category ? category.label : '기타';
-};
-
-// 추가 상태 정의
-const itemsPerPage = 6; // 페이지당 표시할 다이어리 수
-const currentPage = ref(1); // 현재 페이지
-
-// 전체 페이지 수 계산
-const totalPages = computed(() => {
-  return Math.ceil(sortedDiaries.value.length / itemsPerPage);
-});
-
-// 현재 페이지의 다이어리 목록 계산
 const paginatedDiaries = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return sortedDiaries.value.slice(start, end);
 });
 
-// 페이지 이동 함수
+const totalPages = computed(() => {
+  return Math.ceil(sortedDiaries.value.length / itemsPerPage);
+});
+
+const goToDiaryDetail = idx => {
+  router.push({ name: 'DiaryDetail', params: { idx } });
+};
+
 const goToPage = page => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
   }
 };
+
+const getCategoryLabel = categoryValue => {
+  const category = categories.find(cat => cat.value === categoryValue);
+  return category ? category.label : '기타';
+};
+
+onMounted(() => {
+  fetchDiaries('ALL');
+});
 </script>
 
+
+
 <style scoped>
+
+.diary-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.diary-item:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
 .diary-view-container {
   width: 70%;
   /* height: 100%; */
