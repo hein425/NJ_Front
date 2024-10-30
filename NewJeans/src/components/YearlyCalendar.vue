@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const calendar = ref([]);
@@ -11,7 +12,7 @@ const schedules = ref([]); // 연도별 일정 데이터
 // 연간 일정 데이터를 불러오는 함수
 const loadYearlySchedules = async () => {
   try {
-    const response = await axios.get(`http://112.222.157.156:10004/schedule/1/${currentYear.value}`);
+    const response = await axios.get(`${BASE_URL}/schedule/1/${currentYear.value}`);
     schedules.value = response.data;
     console.log("Loaded schedules data:", schedules.value);
     generateCalendar(); // 일정 데이터 로드 후 캘린더 생성

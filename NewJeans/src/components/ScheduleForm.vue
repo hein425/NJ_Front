@@ -91,6 +91,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
+import { BASE_URL } from '@/config';
 
 const props = defineProps({
   selectedDate: String,
@@ -157,7 +158,7 @@ const submitSchedule = async () => {
   }
 
   try {
-    const response = await axios.post('http://112.222.157.156:10004/schedule/create', formData, {
+    const response = await axios.post('${BASE_URL}/schedule/create', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

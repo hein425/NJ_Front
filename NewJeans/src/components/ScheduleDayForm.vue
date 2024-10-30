@@ -47,7 +47,7 @@
                   <img
                     v-for="(imageUrl, imgIndex) in diary.images"
                     :key="imgIndex"
-                    :src="`http://112.222.157.156:10004/diary/${imageUrl}`"
+                    :src="`${BASE_URL}/auth/login/diary/${imageUrl}`"
                     alt="Diary Image"
                     style="width: 150px; margin: 5px;"
                   />
@@ -75,6 +75,7 @@
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
+import { BASE_URL } from '@/config';
 
 const router = useRouter();
 const route = useRoute();
@@ -115,14 +116,14 @@ const fetchDayData = async selectedDate => {
     console.log('day = ' + day);
 
     // 일정 조회
-    const scheduleResponse = await axios.get(`http://112.222.157.156:10004/schedule/${idx}/${year}/${month}/${day}`);
+    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
     schedules.value = scheduleResponse.data;
 
     // 일정 수만큼 isScheduleExpanded 배열 초기화
     isScheduleExpanded.value = schedules.value.map(() => false);
 
     // 일기 조회
-    const diaryResponse = await axios.get(`http://112.222.157.156:10004/diary/${idx}/${year}/${month}/${day}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data;
 
     // 일기 수만큼 isDiaryExpanded 배열 초기화

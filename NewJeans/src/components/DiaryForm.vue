@@ -63,6 +63,7 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 const props = defineProps({
   selectedDate: String,
@@ -109,7 +110,7 @@ const submitDiary = async () => {
   }
 
   try {
-    const response = await axios.post('http://112.222.157.156:10004/diary/create', formData, {
+    const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

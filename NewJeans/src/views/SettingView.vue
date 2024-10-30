@@ -53,33 +53,65 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
-import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지
+import { useAuthStore } from '@/stores/authStore';
+import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 // Pinia 스토어 사용
 const authStore = useAuthStore();
-const userName = computed(() => authStore.userName); // 로그인한 사용자 이름
-const userEmail = computed(() => authStore.email); // 로그인한 사용자 이메일
-const profileImage = computed(() => authStore.profile); // 로그인한 사용자 프로필 이미지
+const userName = computed(() => authStore.userName);
+const userEmail = computed(() => authStore.email);
+const profileImage = computed(() => authStore.profile);
 
 // 상태 관리
-const isEditingName = ref(false); // 닉네임 수정 중인지 여부
-const newUserName = ref(userName.value); // 새 닉네임
+const isEditingName = ref(false);
+const newUserName = ref(userName.value);
 
 // 닉네임 변경 시작 함수
 const startEditingName = () => {
   isEditingName.value = true;
-  newUserName.value = userName.value; // 기존 닉네임을 입력 필드에 설정
+  newUserName.value = userName.value;
 };
 
-// 닉네임 저장 함수
-const saveUserName = async () => {
-  try {
-    // 서버에 닉네임 업데이트 요청
-    await axios.put('http://http://192.168.0.17:8080/update', { newUserName: newUserName.value });
+// authStore에 idx와 email이 있는지 확인하는 함수
+const checkAuthStoreLoaded = () => {
+  if (!authStore.idx || !authStore.email) {
+    console.warn('authStore에 idx 또는 email이 없습니다. restoreLogin이 제대로 실행되었는지 확인하십시오.');
+    return false;
+  }
+  return true;
+};
 
-    // 성공 시 Pinia 상태 업데이트
+const saveUserName = async () => {
+  if (!checkAuthStoreLoaded()) {
+    console.error('authStore에 필요한 정보가 없습니다. restoreLogin이 제대로 실행되었는지 확인하십시오.');
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append(
+      'userUpdate',
+      new Blob(
+        [
+          JSON.stringify({
+            idx: authStore.idx,
+            email: authStore.email,
+            password: null,
+            userName: newUserName.value,
+          }),
+        ],
+        { type: 'application/json' },
+      ),
+    );
+
+    await axios.post(`${BASE_URL}/user/update`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
     authStore.userName = newUserName.value;
     isEditingName.value = false;
   } catch (error) {
@@ -95,12 +127,11 @@ const themes = [
   { value: 'sky', label: 'Sky Theme' },
 ];
 
-const selectedTheme = ref(themes[0].value); // 초기 선택 테마
+const selectedTheme = ref(themes[0].value);
 
 // 파일 입력 요소 참조
 const fileInput = ref(null);
 
-// 프로필 이미지 변경 핸들러
 const openFilePicker = () => {
   fileInput.value.click();
 };
@@ -109,30 +140,46 @@ const openFilePicker = () => {
 const handleFileChange = async event => {
   const file = event.target.files[0];
   if (file) {
-    // 파일을 미리 보기 및 업로드 처리 로직 (예: base64로 인코딩하여 미리보기)
     const reader = new FileReader();
     reader.onload = () => {
-      authStore.profile = reader.result; // Pinia 스토어의 프로필 상태 업데이트
-      uploadProfileImage(file); // 서버 업로드
+      authStore.profile = reader.result;
+      uploadProfileImage(file);
     };
     reader.readAsDataURL(file);
   }
 };
 
-// 서버에 프로필 이미지 업로드
 const uploadProfileImage = async file => {
+  if (!checkAuthStoreLoaded()) {
+    console.error('authStore에 필요한 정보가 없습니다.');
+    return;
+  }
+
   const formData = new FormData();
-  formData.append('profileImage', file);
+  formData.append('profileUpdate', file);
+  formData.append(
+    'userUpdate',
+    new Blob(
+      [
+        JSON.stringify({
+          idx: authStore.idx,
+          email: authStore.email,
+          password: null,
+          userName: authStore.userName,
+        }),
+      ],
+      { type: 'application/json' },
+    ),
+  );
 
   try {
-    const response = await axios.post('http://112.222.157.156:10004/update', formData, {
+    const response = await axios.post('http://192.168.0.17:8080/user/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log('Profile image uploaded successfully:', response.data);
-    // 성공 시 프로필 이미지 URL을 업데이트합니다.
-    authStore.profile = response.data.profileImageUrl; // 예: 서버가 URL을 반환한다고 가정
+    console.log('프로필 이미지가 성공적으로 업로드되었습니다:', response.data);
+    authStore.profile = response.data.profileImageUrl;
   } catch (error) {
-    console.error('Error uploading profile image:', error);
+    console.error('프로필 이미지 업로드 중 오류:', error);
   }
 };
 
@@ -142,7 +189,6 @@ const applyTheme = () => {
   document.documentElement.classList.add(`${selectedTheme.value}-theme`);
 };
 
-// 클릭 이벤트 핸들러들
 const editProfile = () => {
   console.log('닉네임 변경 클릭');
 };
