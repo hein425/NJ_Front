@@ -6,6 +6,8 @@ import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import { BASE_URL } from '@/config';
+import YearlyCalendar from '@/components/YearlyCalendar.vue';
+
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
 const columns = ref([]);
@@ -38,6 +40,7 @@ const isFlipped = ref(false);
 
 const isScheduleFormVisible = ref(false);
 const isDiaryFormVisible = ref(false);
+const isYearlyView = ref(false); // 기본값: 일반 달력
 
 const flipBack = () => {
   isFlipped.value = false;
@@ -132,7 +135,11 @@ const hexToRgba = (hex, opacity) => {
 </script>
 
 <template>
+  <div v-if="isYearlyView">
+    <YearlyCalendar @toMonthlyView="isYearlyView = false" />
+  </div>
   <div
+    v-else
     class="calendar-wrapper"
     :style="{
       height: weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
@@ -144,7 +151,8 @@ const hexToRgba = (hex, opacity) => {
       <div class="vv front">
         <h1 class="Calender-title">
           <button @click="goToday" class="Today-button">Today</button>
-          <button @click="$router.push('/yearlyCalendar')" class="Yealy-button">Yeary</button>
+          <!-- <button @click="$router.push('/yearlyCalendar')" class="Yealy-button">Yeary</button> -->
+          <button @click="isYearlyView = true" class="Yealy-button">Yeary</button>
           <button @click="subMonth()" class="B-Month-button">
             <i><</i>
           </button>

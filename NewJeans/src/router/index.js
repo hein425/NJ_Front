@@ -6,6 +6,7 @@ import YearlyCalendar from '@/components/YearlyCalendar.vue'
 import Setting from '../views/SettingView.vue'
 import SignUpp from '../views/SignUpp.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue'
+import searchForm from '@/components/searchForm.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,11 +41,18 @@ const router = createRouter({
       name: 'ScheduleDay',
       component: ScheduleDayForm,  // 일정 조회 컴포넌트
       props: true  // 경로 파라미터를 컴포넌트로 전달
-    },{
+    },
+    {
       path: '/yearlyCalendar',
       name: 'YearlyCalendar',
       component: YearlyCalendar,
       props: true  
+    },
+    {
+      path: '/searchForm',
+      name: 'SearchForm',
+      component: searchForm,
+      props: true
     },
   ],
 })

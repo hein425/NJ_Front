@@ -2,7 +2,7 @@
   <header class="header">
     <div class="search-container">
       <input type="text" placeholder="Search" class="search-input" />
-      <button class="search-btn">
+      <button class="search-btn" @click="goToSearchForm">
         <!-- Font Awesome의 돋보기 아이콘을 사용 -->
         <font-awesome-icon :icon="['fas', 'search']" />
       </button>
@@ -18,6 +18,12 @@
 
 <script setup>
 // Font Awesome Vue 아이콘 컴포넌트는 이미 main.js에 설정되어 있으므로 추가적으로 가져올 필요는 없습니다.
+import { useRouter } from 'vue-router'; 
+const router = useRouter();
+const goToSearchForm = () => {
+  router.push('/searchForm'); 
+};
+
 </script>
 
 <style scoped>
