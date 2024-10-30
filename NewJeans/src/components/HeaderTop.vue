@@ -1,14 +1,18 @@
 <template>
   <header class="header">
     <div class="search-container">
-      <input type="text" placeholder="Search" class="search-input" />
+      <div class="toggle-list">
+        <button v-for="option in toggleOptions" :key="option.value" :class="{ active: selectedOption === option.value }" @click="selectOption(option.value)">
+          {{ option.label }}
+        </button>
+      </div>
+
+      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" />
       <button class="search-btn" @click="goToSearchForm">
-        <!-- Font Awesome의 돋보기 아이콘을 사용 -->
         <font-awesome-icon :icon="['fas', 'search']" />
       </button>
     </div>
     <div class="logo">
-      <!-- RouterLink를 사용하여 홈 경로로 이동 -->
       <RouterLink to="/">
         <img src="@/assets/logo.png" alt="Logo" />
       </RouterLink>
@@ -17,16 +21,50 @@
 </template>
 
 <script setup>
-// Font Awesome Vue 아이콘 컴포넌트는 이미 main.js에 설정되어 있으므로 추가적으로 가져올 필요는 없습니다.
-import { useRouter } from 'vue-router'; 
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+
 const router = useRouter();
-const goToSearchForm = () => {
-  router.push('/searchForm'); 
+const searchQuery = ref('');
+const selectedOption = ref('ALL'); // '전체'가 기본 선택되도록 설정
+
+const toggleOptions = [
+  { label: '전체', value: 'ALL' },
+  { label: '일정', value: 'SCHEDULE' },
+  { label: '일기', value: 'DIARY' },
+];
+
+// 버튼 클릭 시 선택된 옵션 업데이트
+const selectOption = value => {
+  selectedOption.value = value;
 };
 
+const goToSearchForm = () => {
+  router.push({
+    path: '/searchForm',
+    query: { query: searchQuery.value, filterType: selectedOption.value },
+  });
+};
 </script>
 
 <style scoped>
+.toggle-list {
+  display: flex;
+  margin-right: 1rem;
+}
+.toggle-list button {
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #ddd;
+  cursor: pointer;
+  border-radius: 1rem;
+}
+.toggle-list button.active {
+  background-color: #333;
+  color: #fff;
+}
+
 .header {
   display: flex;
   justify-content: center; /* 요소를 수평 중앙에 배치 */
@@ -51,11 +89,11 @@ const goToSearchForm = () => {
   width: 100%;
   max-width: 30vw; /* 화면 너비의 40%로 설정 */
   position: relative;
-  left: 7vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
+  right: 7vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
 }
 
 .search-input {
-  width: 40%; /* 검색창의 너비를 60%로 설정 */
+  width: 35%; /* 검색창의 너비를 60%로 설정 */
   border: 1px solid #ccc;
   border-radius: 1.5rem; /* 둥근 모서리 크기를 rem 단위로 설정 */
   font-size: 1rem; /* 폰트 크기 설정 */
