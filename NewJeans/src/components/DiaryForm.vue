@@ -13,7 +13,7 @@
             <select v-model="category" id="category" class="input-field" style="width: 100px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
-              <option value="'EXERCISE">#운동</option>
+              <option value="EXERCISE">#운동</option>
               <option value="TRIP">#여행</option>
               <option value="ETC">#기타</option>
             </select>
@@ -23,26 +23,27 @@
 
       <!-- Date -->
       <div class="row">
-        <div class="icon-label">
-          <!-- <i class="icon-calendar"></i> -->
-          <label for="date" style="width: 80px">작성일</label>
-        </div>
+        <label for="date" style="width: 80px">작성일</label>
         <input id="date" v-model="date" type="date" class="input-field" />
       </div>
 
       <!-- Note -->
       <div class="row">
-        <div class="icon-label">
-          <!-- <i class="icon-note"></i> -->
-          <label for="content" style="width: 80px">내용</label>
-        </div>
+        <label for="content" style="width: 80px">내용</label>
         <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
-      <!-- 이미지추가 -->
+      <!-- 이미지 미리보기 -->
       <div class="row">
         <label for="image" style="width: 80px">이미지</label>
-        <input id="image" type="file" @change="handleImageUpload" class="input-field" />
+        <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+      </div>
+
+      <div class="image-preview">
+        <div v-for="(image, index) in images" :key="index" class="image-container">
+          <img :src="image.url" alt="Preview" />
+          <button class="delete-btn" @click="removeImage(index)">X</button>
+        </div>
       </div>
 
       <div class="button-row">
@@ -69,62 +70,27 @@ const props = defineProps({
   selectedDate: String,
 });
 
-const emit = defineEmits(['closeForm']);
+const emit = defineEmits(['closeForm', 'updateList']);
 
 const title = ref('');
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
-const imageFiles = ref(null); // 이미지 파일 저장
+const images = ref([]); // 이미지 리스트
 
-// 이미지 업로드 핸들러
 const handleImageUpload = event => {
-  const file = event.target.files[0];
-  if (file) {
-    imageFiles.value = file;
-  }
+  const files = Array.from(event.target.files); // 선택한 모든 파일을 배열로 변환
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      images.value.push({ file, url: e.target.result }); // 이미지 파일과 URL을 모두 추가
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = ''; // 입력 초기화
 };
 
-// const submitDiary = async () => {
-//   // diaryRequest JSON 객체 생성
-//   const diaryRequest = {
-//     title: title.value,
-//     date: date.value,
-//     content: content.value,
-//     category: category.value,
-//     calendarsIdx: 1,
-//   };
-
-//   // FormData 생성 및 diaryRequest JSON 추가
-//   const formData = new FormData();
-//   formData.append(
-//     'diaryRequest',
-//     new Blob([JSON.stringify(diaryRequest)], {
-//       type: 'application/json',
-//     }),
-//   ); // JSON 데이터를 Blob으로 변환하여 추가
-
-//   // 이미지 파일이 선택된 경우에만 FormData에 추가
-//   if (imageFiles.value) {
-//     formData.append('imageFiles', imageFiles.value);
-//   }
-
-//   try {
-//     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
-//       headers: {
-//         // Content-Type은 명시하지 않음. axios가 자동으로 설정하도록 함
-//       },
-//     });
-//     console.log('Diary Submitted Successfully', response.data);
-//     emit('closeForm');
-//   } catch (error) {
-//     console.error('Failed to submit diary:', error);
-//     emit('closeForm');
-//   }
-// };
-
 const submitDiary = async () => {
-  // diaryRequest JSON 객체 생성
   const diaryRequest = {
     title: title.value,
     date: date.value,
@@ -133,33 +99,26 @@ const submitDiary = async () => {
     calendarsIdx: 1,
   };
 
-  // FormData 생성 및 diaryRequest JSON 추가
   const formData = new FormData();
-  formData.append(
-    'diaryRequest',
-    new Blob([JSON.stringify(diaryRequest)], {
-      type: 'application/json',
-    })
-  );
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-  // 이미지 파일이 선택된 경우에만 FormData에 추가, 없을 경우 빈 파일 설정
-  if (imageFiles.value) {
-    formData.append('imageFiles', imageFiles.value);
-  } else {
-    formData.append('imageFiles', new Blob()); // 빈 Blob 추가
-  }
+  // 이미지 파일을 서버에 추가
+  images.value.forEach(image => {
+    formData.append('imageFiles', image.file); // 이미지 파일을 추가
+  });
 
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
       headers: {
-        // Content-Type 생략하여 Axios가 자동으로 설정하도록 함
+        'Content-Type': 'multipart/form-data',
       },
     });
     console.log('Diary Submitted Successfully', response.data);
     emit('closeForm');
+    emit('updateList'); // 작성 후 목록 새로고침 이벤트
   } catch (error) {
-    console.error('Failed to submit diary:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.message || error.message}`);
+    console.error('Failed to submit diary:', error);
+    emit('closeForm');
   }
 };
 
@@ -215,14 +174,6 @@ const cancelForm = () => {
   gap: 15px;
 }
 
-.icon-calendar::before {
-  content: '\1F4C5'; /* Calendar icon */
-}
-
-.icon-note::before {
-  content: '\270E'; /* Pencil icon */
-}
-
 /* 입력 필드 스타일 */
 .input-field {
   border: none;
@@ -235,6 +186,39 @@ const cancelForm = () => {
 .textarea-field {
   height: 220px;
   resize: none;
+}
+
+/* 이미지 미리보기 */
+.image-preview {
+  display: flex;
+  flex-wrap: wrap; /* 여러 줄로 표시 */
+  margin-top: 10px;
+}
+
+.image-container {
+  position: relative;
+  margin: 5px;
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .button-row {

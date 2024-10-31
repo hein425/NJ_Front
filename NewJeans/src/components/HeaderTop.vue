@@ -92,7 +92,7 @@ const goToSearchForm = () => {
   width: 100%;
   max-width: 30vw; /* 화면 너비의 40%로 설정 */
   position: relative;
-  right: 7vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
+  right: 6.5vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
 }
 
 .search-input {
