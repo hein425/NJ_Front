@@ -7,7 +7,7 @@
         </button>
       </div>
 
-      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" />
+      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" @keyup.enter="goToSearchForm" />
       <button class="search-btn" @click="goToSearchForm">
         <font-awesome-icon :icon="['fas', 'search']" />
       </button>
@@ -40,6 +40,9 @@ const selectOption = value => {
 };
 
 const goToSearchForm = () => {
+  if (!searchQuery.value.trim()) {
+    return;
+  }
   router.push({
     path: '/searchForm',
     query: { query: searchQuery.value, filterType: selectedOption.value },

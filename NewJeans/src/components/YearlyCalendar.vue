@@ -3,9 +3,11 @@
     <div class="year-selector">
       <button class="this-year-button" @click="resetToCurrentYear">This year</button>
       <button @click="$emit('toMonthlyView')" class="monthly-button">Monthly</button>
-      <button @click="changeYear(-1)">◀</button>
-      <h1>{{ currentYear }}</h1>
-      <button @click="changeYear(1)">▶</button>
+      <div class="yearCha">
+        <button @click="changeYear(-1)">◀</button>
+        <h1>{{ currentYear }}</h1>
+        <button @click="changeYear(1)">▶</button>
+      </div>
     </div>
     <div class="calendar-grid">
       <div v-for="month in calendar" :key="month.month" class="month">
@@ -105,6 +107,13 @@ const resetToCurrentYear = () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
 
+.yearCha {
+  display: flex;
+  align-items: center; /* 수직 정렬 */
+  justify-content: center; /* 수평 가운데 정렬 */
+  gap: 10px; /* 버튼과 텍스트 사이 간격 */
+}
+
 .year-selector {
   display: flex;
   align-items: center;
@@ -113,8 +122,8 @@ const resetToCurrentYear = () => {
   font-weight: 500;
   margin-bottom: 20px;
   position: absolute; /* 캘린더 래퍼의 좌상단에 위치 */
-  top: 20px; /* 상단 간격 */
-  left: 20px; /* 좌측 간격 */
+  top: 57px; /* 상단 간격 */
+  left: 71px; /* 좌측 간격 */
 }
 
 .year-selector h1 {

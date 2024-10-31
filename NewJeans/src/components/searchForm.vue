@@ -27,30 +27,32 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
 const route = useRoute();
+const router = useRouter();
 const results = ref([]);
 const loading = ref(false);
 const error = ref(null);
+const searchQuery = ref(route.query.query || '');
+const selectedOption = ref(route.query.filterType || 'ALL');
 
+// 날짜 포맷 함수
 const formatDate = date => {
   return date ? new Date(date).toLocaleDateString() : '';
 };
 
-onMounted(async () => {
-  const query = route.query.query || '';
-  const filterType = route.query.filterType || 'ALL';
-
+// 검색 요청 함수 분리
+const fetchResults = async () => {
   loading.value = true;
   error.value = null;
 
   try {
     const response = await axios.get(`${BASE_URL}/home/search`, {
-      params: { query, filterType },
+      params: { query: searchQuery.value, filterType: selectedOption.value },
     });
     results.value = response.data;
   } catch (err) {
@@ -59,7 +61,29 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+};
+
+// 컴포넌트가 마운트될 때 초기 검색
+onMounted(fetchResults);
+
+// route.query가 변경될 때마다 검색 실행
+watch(
+  () => route.query,
+  newQuery => {
+    searchQuery.value = newQuery.query || '';
+    selectedOption.value = newQuery.filterType || 'ALL';
+    fetchResults();
+  },
+);
+
+// 검색 버튼 클릭 시 호출
+const goToSearchForm = () => {
+  if (!searchQuery.value.trim()) return; // 검색어가 비어있으면 검색 실행하지 않음
+  router.push({
+    path: '/searchForm',
+    query: { query: searchQuery.value, filterType: selectedOption.value },
+  });
+};
 </script>
 
 <style scoped>
