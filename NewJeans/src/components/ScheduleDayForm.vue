@@ -160,20 +160,42 @@ const startEdit = (type, index) => {
 };
 
 const saveEdit = async (type, index) => {
-  const dataToUpdate = type === 'schedule' ? schedules.value[index] : diaries.value[index];
-  const id = dataToUpdate.id; // 수정할 항목의 ID
+  if (type !== 'diary') return; // 다이어리만 처리
+
+  const diaryToUpdate = diaries.value[index];
+  const diaryUpdateData = {
+    title: editData.value.title,
+    content: editData.value.content,
+    date: editData.value.date,
+    category: diaryToUpdate.category, // 기존 카테고리를 유지하거나 변경할 경우 수정
+    imageFiles: editData.value.imageFiles || [], // 새 이미지 파일 (필요 시 추가)
+  };
+  const imageIdsToDelete = diaryToUpdate.imageIdsToDelete || []; // 삭제할 이미지 ID 목록
 
   try {
-    // API 요청: 일정 또는 일기에 따라 URL을 결정
-    await axios.post(`${BASE_URL}/${type === 'schedule' ? 'schedule' : 'diary'}/update/${id}`, editData.value);
+    // 1. 다이어리 업데이트 요청
+    const updateResponse = await axios.post(`${BASE_URL}/diary/update/${diaryToUpdate.id}`, {
+      diaryRequest: diaryUpdateData,
+      imageFiles: diaryUpdateData.imageFiles,
+    });
 
-    // 서버에서 응답받은 데이터를 UI에 반영
-    Object.assign(dataToUpdate, editData.value); // 수정된 데이터로 업데이트
-    console.log(`${type} data saved to DB:`, dataToUpdate);
+    console.log('Diary updated successfully:', updateResponse.data);
+
+    // 2. 이미지 삭제 요청
+    if (imageIdsToDelete && imageIdsToDelete.length > 0) {
+      const deleteResponse = await axios.delete(`${BASE_URL}/image/delete`, {
+        data: { imageIds: imageIdsToDelete },
+      });
+
+      console.log('Images deleted successfully:', deleteResponse.data);
+    }
+
+    // 업데이트된 데이터를 UI에 반영
+    Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
-    console.error(`Failed to save ${type} data:`, error);
+    console.error('Error occurred during diary update or image deletion:', error.response ? error.response.data : error.message);
   } finally {
-    editIndex.value = null; // 수정 완료 후 편집 모드 종료
+    editIndex.value = null; // 편집 모드 종료
   }
 };
 
@@ -207,7 +229,6 @@ onMounted(fetchDayData);
 </script>
 
 <style scoped>
-/* 스타일 코드 그대로 유지 */
 .day-form {
   margin-top: 100px;
   padding: 20px;
