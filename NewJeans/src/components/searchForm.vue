@@ -4,20 +4,18 @@
     <p v-if="loading">Loading...</p>
     <p v-if="error">{{ error }}</p>
 
-    <div v-if="results.length > 0 && !loading && !error">
-      <div v-for="item in results" :key="item.idx">
+    <div v-if="results.length > 0 && !loading && !error" class="results-container">
+      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }">
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
-        <!-- 일정 데이터 표시 -->
         <template v-if="item.type === 'SCHEDULE'">
-          <p>시작 날짜: {{ formatDate(item.startDate) }}</p>
-          <p>내용: {{ item.content }}</p>
+          <p><strong>시작 날짜:</strong> {{ formatDate(item.startDate) }}</p>
+          <p><strong>내용:</strong> {{ item.content }}</p>
         </template>
 
-        <!-- 일기 데이터 표시 -->
         <template v-else-if="item.type === 'DIARY'">
-          <p>날짜: {{ formatDate(item.date) }}</p>
-          <p>카테고리: {{ item.category }}</p>
+          <p><strong>날짜:</strong> {{ formatDate(item.date) }}</p>
+          <p><strong>카테고리:</strong> {{ item.category }}</p>
         </template>
       </div>
     </div>
@@ -39,12 +37,10 @@ const results = ref([]);
 const loading = ref(false);
 const error = ref(null);
 
-// 날짜 포맷 함수
 const formatDate = date => {
   return date ? new Date(date).toLocaleDateString() : '';
 };
 
-// 컴포넌트가 마운트될 때 검색 요청
 onMounted(async () => {
   const query = route.query.query || '';
   const filterType = route.query.filterType || 'ALL';
@@ -77,7 +73,52 @@ onMounted(async () => {
   padding: 20px 50px;
   min-height: 500px;
   width: 65%;
-  margin: 50px auto;
+  margin: 0 6vh;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.result-item {
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s,
+    background-color 0.3s;
+  cursor: pointer;
+}
+
+.result-item:hover {
+  transform: translateY(-5px);
+  background-color: #f9f9f9;
+}
+
+.result-item.schedule {
+  border-left: 4px solid #ff9933; /* 일정 구분을 위한 왼쪽 테두리 */
+}
+
+.result-item.diary {
+  border-left: 4px solid #2196f3; /* 일기 구분을 위한 왼쪽 테두리 */
+}
+
+.result-item h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.result-item p {
+  margin: 0.25rem 0;
+  color: #555;
+}
+
+.result-item p strong {
+  color: #333;
 }
 </style>

@@ -11,7 +11,7 @@
         <button @click="sortDiaries('OLDEST')" :class="{ selected: sortOrder === 'OLDEST' }">오래된순</button>
       </div>
     </div>
-    
+
     <div v-if="paginatedDiaries.length > 0" class="diary-list">
       <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
         <h3>{{ diary.title }}</h3>
@@ -62,7 +62,7 @@ const fetchDiaries = async category => {
     diaries.value = response.data;
     sortOrder.value = 'LATEST';
   } catch (error) {
-    console.error('일기 조회 중 오류 발생:', error);
+    console.error('일기 조회 중 오류 발생:', error.response?.data || error.message);
   }
 };
 
@@ -106,10 +106,7 @@ onMounted(() => {
 });
 </script>
 
-
-
 <style scoped>
-
 .diary-item {
   cursor: pointer;
   transition: background-color 0.3s ease;
