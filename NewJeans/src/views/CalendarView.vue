@@ -132,8 +132,6 @@ const hexToRgba = (hex, opacity) => {
   }
   return hex;
 };
-
-
 </script>
 
 <template>

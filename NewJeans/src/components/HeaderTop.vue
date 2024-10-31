@@ -7,7 +7,7 @@
         </button>
       </div>
 
-      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" />
+      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" @keyup.enter="goToSearchForm" />
       <button class="search-btn" @click="goToSearchForm">
         <font-awesome-icon :icon="['fas', 'search']" />
       </button>
@@ -40,6 +40,9 @@ const selectOption = value => {
 };
 
 const goToSearchForm = () => {
+  if (!searchQuery.value.trim()) {
+    return;
+  }
   router.push({
     path: '/searchForm',
     query: { query: searchQuery.value, filterType: selectedOption.value },
@@ -89,7 +92,7 @@ const goToSearchForm = () => {
   width: 100%;
   max-width: 30vw; /* 화면 너비의 40%로 설정 */
   position: relative;
-  right: 7vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
+  right: 6.5vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
 }
 
 .search-input {

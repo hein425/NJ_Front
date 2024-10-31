@@ -1,3 +1,34 @@
+<template>
+  <div class="calendar-wrapper">
+    <div class="year-selector">
+      <button class="this-year-button" @click="resetToCurrentYear">This year</button>
+      <button @click="$emit('toMonthlyView')" class="monthly-button">Monthly</button>
+      <div class="yearCha">
+        <button @click="changeYear(-1)">◀</button>
+        <h1>{{ currentYear }}</h1>
+        <button @click="changeYear(1)">▶</button>
+      </div>
+    </div>
+    <div class="calendar-grid">
+      <div v-for="month in calendar" :key="month.month" class="month">
+        <h2>{{ month.name }}</h2>
+        <div class="grid">
+          <div v-for="day in weekDays" :key="day" :class="['day', day === 'Sun' ? 'sunday' : day === 'Sat' ? 'saturday' : '']">{{ day }}</div>
+          <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
+          <div
+            v-for="date in month.days"
+            :key="date"
+            class="date"
+            :class="{ 'has-schedule': getSchedulesForDate(dayjs(`${currentYear.value}-${String(month.month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`)).length > 0 }"
+          >
+            <span class="date-type">{{ date }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
@@ -57,38 +88,6 @@ const resetToCurrentYear = () => {
 };
 </script>
 
-<template>
-  <div class="calendar-wrapper">
-    <div class="year-selector">
-      <!-- This year 버튼 오른쪽에 배치 -->
-      <button class="this-year-button" @click="resetToCurrentYear">This year</button>
-      <button @click="$emit('toMonthlyView')" class="monthly-button">Monthly</button>
-      <button @click="changeYear(-1)">◀</button>
-      <h1>{{ currentYear }}</h1>
-      <button @click="changeYear(1)">▶</button>
-    </div>
-    <div class="calendar-grid">
-      <div v-for="month in calendar" :key="month.month" class="month">
-        <h2>{{ month.name }}</h2>
-        <div class="grid">
-          <div v-for="day in weekDays" :key="day" :class="['day', day === 'Sun' ? 'sunday' : day === 'Sat' ? 'saturday' : '']">{{ day }}</div>
-          <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
-          <div v-for="date in month.days" :key="date" class="date">
-            <span class="date-type">{{ date }}</span>
-            <!-- 일정이 있는 경우 색상 점 표시 -->
-            <span
-              v-for="schedule in getSchedulesForDate(dayjs(`${currentYear.value}-${String(month.month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`))"
-              :key="schedule.id"
-              class="color-dot"
-              :style="{ backgroundColor: schedule.color }"
-            ></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
 .calendar-wrapper {
   background-color: white;
@@ -108,6 +107,13 @@ const resetToCurrentYear = () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
 
+.yearCha {
+  display: flex;
+  align-items: center; /* 수직 정렬 */
+  justify-content: center; /* 수평 가운데 정렬 */
+  gap: 10px; /* 버튼과 텍스트 사이 간격 */
+}
+
 .year-selector {
   display: flex;
   align-items: center;
@@ -116,8 +122,8 @@ const resetToCurrentYear = () => {
   font-weight: 500;
   margin-bottom: 20px;
   position: absolute; /* 캘린더 래퍼의 좌상단에 위치 */
-  top: 20px; /* 상단 간격 */
-  left: 20px; /* 좌측 간격 */
+  top: 57px; /* 상단 간격 */
+  left: 71px; /* 좌측 간격 */
 }
 
 .year-selector h1 {
@@ -208,17 +214,22 @@ const resetToCurrentYear = () => {
 .date {
   background-color: #f1f3f5;
   color: #333;
+  position: relative; /* 위치 설정 */
+}
+
+.has-schedule {
+  /* 일정이 있는 경우 동그라미 테두리 추가 */
+  border: 2px solid #333; /* 테두리 색상 설정 */
+  border-radius: 50%; /* 동그라미 형태 */
+  width: 40px; /* 원하는 크기로 설정 */
+  height: 40px; /* 원하는 크기로 설정 */
+  display: flex; /* flexbox 사용 */
+  align-items: center; /* 중앙 정렬 */
+  justify-content: center; /* 중앙 정렬 */
+  margin: 0 auto; /* 가운데 정렬 */
 }
 
 .blank {
   background-color: transparent;
-}
-
-.color-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-top: 4px;
 }
 </style>

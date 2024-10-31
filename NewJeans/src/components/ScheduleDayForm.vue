@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watchEffect, onBeforeUnmount } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
@@ -93,41 +93,15 @@ const props = defineProps({
   selectedDate: String,
 });
 
-let pollInterval;
-
-const startPolling = () => {
-  pollInterval = setInterval(async () => {
-    await fetchDayData(props.selectedDate); // 주기적으로 데이터 갱신
-  }, 1000); // 0.8초 간격
-};
-
-const stopPolling = () => {
-  clearInterval(pollInterval);
-};
-
-onMounted(() => {
-  startPolling(); // 컴포넌트가 마운트될 때 폴링 시작
-});
-
-onBeforeUnmount(() => {
-  stopPolling(); // 컴포넌트가 언마운트될 때 폴링 중지
-});
-
-// watch(
-//   () => props.selectedDate,
-//   async newDate => {
-//     if (newDate) {
-//       await fetchDayData(newDate);
-//     }
-//   },
-//   { immediate: true },
-// );
-
-watchEffect(async () => {
-  if (props.selectedDate) {
-    await fetchDayData(props.selectedDate);
-  }
-});
+watch(
+  () => props.selectedDate,
+  async newDate => {
+    if (newDate) {
+      await fetchDayData(newDate);
+    }
+  },
+  { immediate: true },
+);
 
 const schedules = ref([]);
 const diaries = ref([]);
@@ -142,11 +116,6 @@ const fetchDayData = async selectedDate => {
   const idx = 1;
 
   try {
-    // 기존 확장 상태를 저장
-    const expandedScheduleStates = [...isScheduleExpanded.value];
-    const expandedDiaryStates = [...isDiaryExpanded.value];
-
-    // 스케줄 데이터 가져오기
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
     schedules.value = scheduleResponse.data.map(schedule => ({
       ...schedule,
@@ -157,11 +126,9 @@ const fetchDayData = async selectedDate => {
       address: schedule.location || 'No address provided',
       content: schedule.content || 'No details provided',
     }));
-    
-    // 새로운 스케줄 데이터 크기에 맞춰 확장 상태를 복원
-    isScheduleExpanded.value = schedules.value.map((_, index) => expandedScheduleStates[index] || false);
 
-    // 다이어리 데이터 가져오기
+    isScheduleExpanded.value = schedules.value.map(() => false);
+
     const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
@@ -171,13 +138,11 @@ const fetchDayData = async selectedDate => {
       category: diary.category || 'Uncategorized',
     }));
 
-    // 새로운 다이어리 데이터 크기에 맞춰 확장 상태를 복원
-    isDiaryExpanded.value = diaries.value.map((_, index) => expandedDiaryStates[index] || false);
+    isDiaryExpanded.value = diaries.value.map(() => false);
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
-
 
 const toggleScheduleExpand = index => {
   if (editIndex.value === index) return; // 수정 중일 때 닫기 방지
