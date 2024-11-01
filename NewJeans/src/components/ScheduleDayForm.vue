@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
@@ -111,7 +111,16 @@ const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', time: '', repeat: '' });
 const showDayView = ref(true);
 
+let pollingInterval = null; // 풀링으로 시간마다 돌리기 하게
+
 const fetchDayData = async selectedDate => {
+
+  // 현재 UI 상태 보존
+  const previousExpandedStates = {
+    schedules: [...isScheduleExpanded.value],
+    diaries: [...isDiaryExpanded.value],
+  };
+
   const [year, month, day] = selectedDate.split('-');
   const idx = 1;
 
@@ -127,7 +136,10 @@ const fetchDayData = async selectedDate => {
       content: schedule.content || 'No details provided',
     }));
 
-    isScheduleExpanded.value = schedules.value.map(() => false);
+    // 스케줄 확장 상태 복원
+    isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
+
+    //isScheduleExpanded.value = schedules.value.map(() => false);
 
     const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
@@ -138,11 +150,59 @@ const fetchDayData = async selectedDate => {
       category: diary.category || 'Uncategorized',
     }));
 
-    isDiaryExpanded.value = diaries.value.map(() => false);
+    //다이어리 확장 상태 복원
+    isDiaryExpanded.value = diaries.value.map((_, index) => previousExpandedStates.diaries[index] || false);
+
+    //isDiaryExpanded.value = diaries.value.map(() => false);
+
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
+
+
+// 폴링 시작 함수
+const startPolling = selectedDate => {
+  // 먼저 데이터를 가져옴
+  fetchDayData(selectedDate);
+
+  // 5초마다 fetchDayData 호출
+  pollingInterval = setInterval(() => {
+    fetchDayData(selectedDate);
+  }, 1100); // 5000ms = 5초
+};
+
+// 폴링 중지 함수
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+  }
+};
+
+// 컴포넌트가 마운트될 때 폴링 시작
+onMounted(() => {
+  if (props.selectedDate) {
+    startPolling(props.selectedDate);
+  }
+});
+
+// 컴포넌트가 파괴될 때 폴링 중지
+onUnmounted(() => {
+  stopPolling();
+});
+
+// selectedDate가 변경될 때마다 폴링 재설정
+watch(
+  () => props.selectedDate,
+  newDate => {
+    stopPolling();
+    if (newDate) {
+      startPolling(newDate);
+    }
+  },
+  { immediate: true },
+);
+
 
 const toggleScheduleExpand = index => {
   if (editIndex.value === index) return;

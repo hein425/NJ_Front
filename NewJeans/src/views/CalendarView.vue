@@ -12,6 +12,25 @@ const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
 const columns = ref([]);
 const groupColumns = ref([]);
+const holidays = ref([]);
+const countryCode = 'KR';
+
+// Nager.Date API에서 공휴일 데이터를 가져오는 함수
+const fetchHolidays = async () => {
+  const year = now.value.format('YYYY');
+  try {
+    const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`);
+    holidays.value = response.data;
+    console.log(`공휴일 (${year}): `, holidays.value);
+  } catch (error) {
+    console.error('Failed to fetch holidays:', error);
+  }
+};
+
+watch(
+  () => now.value.format('YYYY'), // now의 연도 부분만 추적
+  fetchHolidays,
+);
 
 const MonthlySchedules = async () => {
   try {
@@ -24,6 +43,7 @@ const MonthlySchedules = async () => {
 
 // 컴포넌트가 로드될 때 일정 데이터를 가져옴
 onMounted(() => {
+  fetchHolidays();
   MonthlySchedules();
 });
 
@@ -186,7 +206,12 @@ const hexToRgba = (hex, opacity) => {
               today: column.isSame(dayjs(), 'day'),
             }"
           >
-            <span class="date-number">{{ column.get('date') }}</span>
+            <template v-for="holiday in holidays" :key="holiday">
+              <span v-if="holiday.date == column.format('YYYY-MM-DD')">
+                {{ holiday.localName }}
+              </span>
+              <span class="date-number">{{ column.get('date') }}</span>
+            </template>
 
             <!-- 일정표시창 -->
             <div
