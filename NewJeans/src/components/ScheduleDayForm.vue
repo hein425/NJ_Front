@@ -20,7 +20,7 @@
                 <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
                 <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Address:</strong> {{ schedule.address }}</p>
+                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
                 <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -87,6 +87,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
 
 const props = defineProps({
