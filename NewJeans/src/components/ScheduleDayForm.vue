@@ -115,7 +115,6 @@ const showDayView = ref(true);
 let pollingInterval = null; // 풀링으로 시간마다 돌리기 하게
 
 const fetchDayData = async selectedDate => {
-
   // 현재 UI 상태 보존
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
@@ -155,12 +154,10 @@ const fetchDayData = async selectedDate => {
     isDiaryExpanded.value = diaries.value.map((_, index) => previousExpandedStates.diaries[index] || false);
 
     //isDiaryExpanded.value = diaries.value.map(() => false);
-
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
-
 
 // 폴링 시작 함수
 const startPolling = selectedDate => {
@@ -203,7 +200,6 @@ watch(
   },
   { immediate: true },
 );
-
 
 const toggleScheduleExpand = index => {
   if (editIndex.value === index) return;
@@ -341,9 +337,37 @@ onMounted(fetchDayData);
 
 .button-group {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  justify-content: center; /* 버튼들을 가운데 정렬 */
   margin-top: 10px;
+  margin-right: 0; /* 오른쪽 여백 제거 */
+}
+
+.button-group button {
+  background-color: #343434; /* 기본 파란색 배경 */
+  color: white; /* 흰색 글자 */
+  border: none; /* 테두리 제거 */
+  border-radius: 5px; /* 둥근 모서리 */
+  padding: 8px 18px; /* 버튼 안쪽 여백 */
+  font-size: 0.9rem; /* 폰트 크기 */
+  cursor: pointer; /* 커서가 버튼 위에 있을 때 포인터로 변경 */
+  transition:
+    background-color 0.3s,
+    transform 0.2s; /* 색상 및 크기 변환 효과 */
+  margin-right: 5px; /* 버튼 사이의 간격 */
+}
+
+.button-group button:last-child {
+  margin-right: 0; /* 마지막 버튼의 오른쪽 여백 제거 */
+}
+
+.button-group button:hover {
+  background-color: #808080; /* 호버 시 더 어두운 색상 */
+  transform: translateY(-2px); /* 호버 시 살짝 올라가는 효과 */
+}
+
+.button-group button:active {
+  background-color: #004080; /* 클릭 시 더 어두운 색상 */
+  transform: translateY(0); /* 클릭 시 원래 위치로 돌아옴 */
 }
 
 .map-container {

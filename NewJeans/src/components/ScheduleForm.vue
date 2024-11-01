@@ -157,15 +157,13 @@ const submitSchedule = async () => {
   // 이미지 파일이 선택된 경우 FormData에 추가
   if (imageFiles.value) {
     formData.append('imageFiles', imageFiles.value);
-  }else {
+  } else {
     formData.append('imageFiles', new Blob()); // 빈 Blob 추가
   }
 
   try {
     const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
-      headers: {
-     
-      },
+      headers: {},
     });
     console.log('Schedule Submitted Successfully', response.data);
     emit('closeForm');
