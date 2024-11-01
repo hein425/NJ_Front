@@ -112,6 +112,7 @@ const resetToCurrentYear = () => {
   align-items: center; /* 수직 정렬 */
   justify-content: center; /* 수평 가운데 정렬 */
   gap: 10px; /* 버튼과 텍스트 사이 간격 */
+  margin-left: 142px; /* 오른쪽으로 이동시키기 위한 마진 */
 }
 
 .year-selector {
@@ -120,7 +121,6 @@ const resetToCurrentYear = () => {
   gap: 10px;
   font-size: 1.5rem;
   font-weight: 500;
-  margin-bottom: 20px;
   position: absolute; /* 캘린더 래퍼의 좌상단에 위치 */
   top: 57px; /* 상단 간격 */
   left: 71px; /* 좌측 간격 */
@@ -166,7 +166,7 @@ const resetToCurrentYear = () => {
   grid-template-columns: repeat(3, 1fr); /* 3열로 설정하여 3x4 배치 */
   gap: 20px;
   width: 100%;
-  margin-top: 80px; /* year-selector와 떨어지게 조정 */
+  margin-top: 100px; /* year-selector와 떨어지게 조정 */
 }
 
 /* 기타 스타일은 그대로 유지 */
