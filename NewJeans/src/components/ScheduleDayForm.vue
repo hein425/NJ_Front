@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
@@ -107,19 +107,11 @@ const schedules = ref([]);
 const diaries = ref([]);
 const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
-const editIndex = ref(null); // 현재 수정 중인 항목 인덱스
+const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', time: '', repeat: '' });
 const showDayView = ref(true);
 
-let pollingInterval = null; // 풀링으로 시간마다 돌리기 하게
-
 const fetchDayData = async selectedDate => {
-  // 현재 UI 상태 보존
-  const previousExpandedStates = {
-    schedules: [...isScheduleExpanded.value],
-    diaries: [...isDiaryExpanded.value],
-  };
-
   const [year, month, day] = selectedDate.split('-');
   const idx = 1;
 
@@ -127,7 +119,7 @@ const fetchDayData = async selectedDate => {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
     schedules.value = scheduleResponse.data.map(schedule => ({
       ...schedule,
-      date: `${year}.${month}.${day}`,
+      date: `${year}-${month}-${day}`,
       mapUrl: schedule.mapUrl || null,
       time: schedule.start ? `${schedule.start} - ${schedule.end}` : '',
       repeat: schedule.repeat || 'N/A',
@@ -135,101 +127,36 @@ const fetchDayData = async selectedDate => {
       content: schedule.content || 'No details provided',
     }));
 
-    // 스케줄 확장 상태 복원
-    isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
-
-//    isScheduleExpanded.value = schedules.value.map(() => false);
+    isScheduleExpanded.value = schedules.value.map(() => false);
 
     const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
-      date: `${year}.${month}.${day}`,
+      date: `${year}-${month}-${day}`,
       content: diary.content || 'No content available',
       category: diary.category || 'Uncategorized',
     }));
 
-    isDiaryExpanded.value = diaries.value.map((_, index) => previousExpandedStates.diaries[index] || false);
-
- //   isDiaryExpanded.value = diaries.value.map(() => false);
-
+    isDiaryExpanded.value = diaries.value.map(() => false);
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
 
-// 폴링 시작 함수
-const startPolling = selectedDate => {
-  // 먼저 데이터를 가져옴
-  fetchDayData(selectedDate);
-
-  // 5초마다 fetchDayData 호출
-  pollingInterval = setInterval(() => {
-    fetchDayData(selectedDate);
-  }, 1100); // 5000ms = 5초
-};
-
-// 폴링 중지 함수
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-  }
-};
-
-// 컴포넌트가 마운트될 때 폴링 시작
-onMounted(() => {
-  if (props.selectedDate) {
-    startPolling(props.selectedDate);
-  }
-});
-
-// 컴포넌트가 파괴될 때 폴링 중지
-onUnmounted(() => {
-  stopPolling();
-});
-
-// selectedDate가 변경될 때마다 폴링 재설정
-watch(
-  () => props.selectedDate,
-  newDate => {
-    stopPolling();
-    if (newDate) {
-      startPolling(newDate);
-    }
-  },
-  { immediate: true },
-);
-
 const toggleScheduleExpand = index => {
-  if (editIndex.value === index) return; // 수정 중일 때 닫기 방지
+  if (editIndex.value === index) return;
   isScheduleExpanded.value[index] = !isScheduleExpanded.value[index];
 };
 
 const toggleDiaryExpand = index => {
-  if (editIndex.value === index) return; // 수정 중일 때 닫기 방지
+  if (editIndex.value === index) return;
   isDiaryExpanded.value[index] = !isDiaryExpanded.value[index];
 };
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-
-  if (type === 'schedule') {
-    editData.value = { ...schedules.value[index] };
-  } else if (type === 'diary') {
-    // 다이어리 항목 편집 시 데이터 복사
-    const diary = diaries.value[index];
-
-    // 날짜를 "yyyy-MM-dd" 형식으로 변환
-    const formatDateToISO = dateString => {
-      const [year, month, day] = dateString.split('.');
-      return `${year}-${month}-${day}`;
-    };
-
-    editData.value = {
-      ...diary,
-      date: formatDateToISO(diary.date), // 날짜를 ISO 형식으로 설정
-    };
-  }
+  editData.value = type === 'schedule' ? { ...schedules.value[index] } : { ...diaries.value[index] };
 };
 
 const saveEdit = async (type, index) => {
@@ -237,43 +164,36 @@ const saveEdit = async (type, index) => {
 
   const diaryToUpdate = diaries.value[index];
 
-  // 날짜 형식을 "yyyy-MM-dd"로 변환
-  const formatDateToISO = dateString => {
-    const [year, month, day] = dateString.split('.');
-    return `${year}-${month}-${day}`;
-  };
-
-  // 다이어리 업데이트에 필요한 데이터 구성
   const diaryRequest = {
     idx: diaryToUpdate.id,
     title: editData.value.title,
-    date: formatDateToISO(editData.value.date),
+    date: editData.value.date, // 수정된 날짜 그대로 사용
     content: editData.value.content,
     category: diaryToUpdate.category,
   };
 
-  // FormData 객체 생성
   const formData = new FormData();
-  formData.append('diaryRequest', JSON.stringify(diaryRequest)); // Postman에서 Text로 추가한 것처럼
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-  // 이미지 파일 추가
   if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
     editData.value.imageFiles.forEach(image => {
-      formData.append('imageFiles', image.file); // 이미지 파일 추가
+      formData.append('imageFiles', image.file);
     });
   }
 
   try {
-    // FormData 전송
-    const response = await axios.post(`${BASE_URL}/diary/update`, formData);
+    const response = await axios({
+      method: 'post',
+      url: `${BASE_URL}/diary/update`,
+      data: formData,
+    });
     console.log('Diary updated successfully:', response.data);
 
-    // UI에 업데이트된 데이터를 반영합니다.
     Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
-    editIndex.value = null; // 편집 모드 종료
+    editIndex.value = null;
   }
 };
 
