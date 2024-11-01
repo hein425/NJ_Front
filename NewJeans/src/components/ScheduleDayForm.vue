@@ -177,9 +177,8 @@ const startEdit = (type, index) => {
 };
 
 const saveEdit = async (type, index) => {
-  if (type !== 'diary') return; // 다이어리 항목만 처리
+  if (type !== 'diary') return;
 
-  // 수정할 다이어리 항목을 가져옵니다.
   const diaryToUpdate = diaries.value[index];
 
   // 날짜 형식을 "yyyy-MM-dd"로 변환
@@ -190,19 +189,18 @@ const saveEdit = async (type, index) => {
 
   // 다이어리 업데이트에 필요한 데이터 구성
   const diaryRequest = {
-    idx: diaryToUpdate.id, // 다이어리의 고유 ID
-    title: editData.value.title, // 수정된 제목
-    date: formatDateToISO(editData.value.date), // 수정된 날짜
-    content: editData.value.content, // 수정된 내용
-    category: diaryToUpdate.category, // 기존 카테고리 유지
+    idx: diaryToUpdate.id,
+    title: editData.value.title,
+    date: formatDateToISO(editData.value.date),
+    content: editData.value.content,
+    category: diaryToUpdate.category,
   };
 
   // FormData 객체 생성
   const formData = new FormData();
-  // JSON 문자열로 변환 후 Blob 객체로 추가 (FormData에서는 JSON을 Blob으로 감싸야 할 수 있음)
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+  formData.append('diaryRequest', JSON.stringify(diaryRequest)); // Postman에서 Text로 추가한 것처럼
 
-  // 이미지 파일을 서버에 추가 (필요한 경우)
+  // 이미지 파일 추가
   if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
     editData.value.imageFiles.forEach(image => {
       formData.append('imageFiles', image.file); // 이미지 파일 추가
@@ -210,22 +208,16 @@ const saveEdit = async (type, index) => {
   }
 
   try {
-    // 다이어리 업데이트 요청
-    const response = await axios.post(`${BASE_URL}/diary/update`, formData, {
-      headers: {
-        // Content-Type을 설정하지 않음: axios가 FormData의 Content-Type을 자동으로 설정
-      },
-    });
+    // FormData 전송
+    const response = await axios.post(`${BASE_URL}/diary/update`, formData);
     console.log('Diary updated successfully:', response.data);
 
     // UI에 업데이트된 데이터를 반영합니다.
     Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
-    // 오류 발생 시 로그 출력
-    console.error('Error occurred during diary update or image deletion:', error.response ? error.response.data : error.message);
+    console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
-    // 편집 모드를 종료합니다.
-    editIndex.value = null;
+    editIndex.value = null; // 편집 모드 종료
   }
 };
 
