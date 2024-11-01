@@ -102,11 +102,14 @@ const submitDiary = async () => {
   const formData = new FormData();
   formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-  // 이미지 파일을 서버에 추가
-  images.value.forEach(image => {
-    formData.append('imageFiles', image.file); // 이미지 파일을 추가
-  });
-
+  // 이미지 파일 추가 여부를 확인
+  if (images.value.length > 0) {
+    images.value.forEach(image => {
+      formData.append('imageFiles', image.file); // 이미지 파일 추가
+    });
+  } else {
+    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
+  }
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
       headers: {

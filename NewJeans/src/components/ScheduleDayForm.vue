@@ -156,7 +156,24 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value = type === 'schedule' ? { ...schedules.value[index] } : { ...diaries.value[index] };
+
+  if (type === 'schedule') {
+    editData.value = { ...schedules.value[index] };
+  } else if (type === 'diary') {
+    // 다이어리 항목 편집 시 데이터 복사
+    const diary = diaries.value[index];
+
+    // 날짜를 "yyyy-MM-dd" 형식으로 변환
+    const formatDateToISO = dateString => {
+      const [year, month, day] = dateString.split('.');
+      return `${year}-${month}-${day}`;
+    };
+
+    editData.value = {
+      ...diary,
+      date: formatDateToISO(diary.date), // 날짜를 ISO 형식으로 설정
+    };
+  }
 };
 
 const saveEdit = async (type, index) => {
@@ -166,23 +183,24 @@ const saveEdit = async (type, index) => {
   const diaryToUpdate = diaries.value[index];
 
   // 날짜 형식을 "yyyy-MM-dd"로 변환
-  // const formatDateToISO = dateString => {
-  //   const [year, month, day] = dateString.split('.');
-  //   return `${year}-${month}-${day}`;
-  // };
+  const formatDateToISO = dateString => {
+    const [year, month, day] = dateString.split('.');
+    return `${year}-${month}-${day}`;
+  };
 
   // 다이어리 업데이트에 필요한 데이터 구성
   const diaryRequest = {
     idx: diaryToUpdate.id, // 다이어리의 고유 ID
     title: editData.value.title, // 수정된 제목
-    // date: formatDateToISO(editData.value.date), // 수정된 날짜
+    date: formatDateToISO(editData.value.date), // 수정된 날짜
     content: editData.value.content, // 수정된 내용
     category: diaryToUpdate.category, // 기존 카테고리 유지
   };
 
   // FormData 객체 생성
   const formData = new FormData();
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' })); // JSON 문자열로 변환하여 추가
+  // JSON 문자열로 변환 후 Blob 객체로 추가 (FormData에서는 JSON을 Blob으로 감싸야 할 수 있음)
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   // 이미지 파일을 서버에 추가 (필요한 경우)
   if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
@@ -194,7 +212,9 @@ const saveEdit = async (type, index) => {
   try {
     // 다이어리 업데이트 요청
     const response = await axios.post(`${BASE_URL}/diary/update`, formData, {
-      // Content-Type을 설정하지 않음: axios가 자동으로 설정하게 둠
+      headers: {
+        // Content-Type을 설정하지 않음: axios가 FormData의 Content-Type을 자동으로 설정
+      },
     });
     console.log('Diary updated successfully:', response.data);
 
@@ -309,7 +329,7 @@ onMounted(fetchDayData);
 
 .input-field {
   border: none;
-  width: 100%;
+  width: 20%;
   padding: 10px;
   border-radius: 5px;
   font-size: 1rem;
