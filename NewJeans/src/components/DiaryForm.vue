@@ -110,6 +110,7 @@ const submitDiary = async () => {
   } else {
     formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
   }
+
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
       headers: {
@@ -117,8 +118,7 @@ const submitDiary = async () => {
       },
     });
     console.log('Diary Submitted Successfully', response.data);
-    emit('closeForm');
-    emit('updateList'); // 작성 후 목록 새로고침 이벤트
+    emit('closeForm'); 
   } catch (error) {
     console.error('Failed to submit diary:', error);
     emit('closeForm');

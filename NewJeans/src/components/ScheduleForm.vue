@@ -65,9 +65,17 @@
         </div>
 
         <!-- 이미지 업로드 -->
-        <div class="form-row" style="width: 450px">
-          <label for="image">이미지</label>
-          <input id="image" type="file" @change="handleImageUpload" />
+
+        <div class="form-row">
+          <label for="image" style="width: 450px">이미지</label>
+          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+        </div>
+
+        <div class="image-preview">
+          <div v-for="(image, index) in images" :key="index" class="image-container">
+            <img :src="image.url" alt="Preview" />
+            <button class="delete-btn" @click="removeImage(index)">X</button>
+          </div>
         </div>
 
         <div class="button-row">
@@ -106,7 +114,7 @@ const enddate = ref('');
 const location = ref('');
 const description = ref('');
 const repeat = ref('NONE');
-const imageFiles = ref(null); // 이미지 파일을 저장
+const images = ref([]); // 이미지 파일을 저장
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -126,10 +134,15 @@ onMounted(() => {
 
 // 이미지 업로드 핸들러
 const handleImageUpload = event => {
-  const file = event.target.files[0];
-  if (file) {
-    imageFiles.value = file;
-  }
+  const files = Array.from(event.target.files); // 선택한 모든 파일을 배열로 변환
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      images.value.push({ file, url: e.target.result }); // 이미지 파일과 URL을 모두 추가
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = ''; // 입력 초기화
 };
 
 const submitSchedule = async () => {
@@ -155,15 +168,17 @@ const submitSchedule = async () => {
   ); // JSON 데이터를 문자열로 변환해 추가
 
   // 이미지 파일이 선택된 경우 FormData에 추가
-  if (imageFiles.value) {
-    formData.append('imageFiles', imageFiles.value);
+  if (images.value.length > 0) {
+    images.value.forEach(image => {
+      formData.append('imageFiles', image.file); // 이미지 파일 추가
+    });
   } else {
-    formData.append('imageFiles', new Blob()); // 빈 Blob 추가
+    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
   }
 
   try {
     const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
-      headers: {},
+      headers: {'Content-Type': 'multipart/form-data',},
     });
     console.log('Schedule Submitted Successfully', response.data);
     emit('closeForm');
@@ -331,5 +346,11 @@ input[type='radio']:checked + .color-circle {
 .cancel-button {
   background-color: #808080;
   color: white;
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap; /* 여러 줄로 표시 */
+  margin-top: 10px;
 }
 </style>

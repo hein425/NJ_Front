@@ -36,7 +36,7 @@ const fetchDiaryDetail = async () => {
     data.images = data.images.map(image => `${IMAGE_BASE_URL}${image}`);
     selectedDiary.value = data;
   } catch (error) {
-    console.error('일기 상세 조회 중 오류 발생:', error);
+    console.error('일기 상세 조회 중 오류 발생:',error.response?.data || error.message);
   }
 };
 
