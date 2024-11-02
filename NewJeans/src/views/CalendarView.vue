@@ -152,6 +152,21 @@ const hexToRgba = (hex, opacity) => {
   }
   return hex;
 };
+
+// 연도, 월 이동 선택항목
+const selectedYear = ref(now.value.year());
+const selectedMonth = ref(now.value.month() + 1);
+
+const yearsRange = Array.from({ length: 20 }, (_, i) => dayjs().year() - 10 + i); // 현재 연도를 기준으로 10년 전후
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const onYearChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
+
+const onMonthChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
 </script>
 
 <template>
@@ -183,6 +198,19 @@ const hexToRgba = (hex, opacity) => {
           <button @click="addMonth()" class="A-Month-button">
             <i>></i>
           </button>
+
+          <div class="YMselecter">
+            <!-- 연도 선택 드롭다운 -->
+            <select v-model="selectedYear" @change="onYearChange">
+              <option v-for="year in yearsRange" :key="year" :value="year">{{ year }}</option>
+            </select>
+
+            <!-- 월 선택 드롭다운 -->
+            <select v-model="selectedMonth" @change="onMonthChange">
+              <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
+            </select>
+          </div>
+
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>
@@ -283,7 +311,6 @@ const hexToRgba = (hex, opacity) => {
   display: flex;
   justify-content: center; /* 가운데 정렬 */
   align-items: center;
-  gap: 5rem; /* 버튼과 연도/월 사이 간격 */
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -319,6 +346,17 @@ const hexToRgba = (hex, opacity) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 5px;
+}
+
+.YMselecter{
+  right: 0%;
+}
+
+select {
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
 .year,
@@ -343,6 +381,7 @@ const hexToRgba = (hex, opacity) => {
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
+  padding:0 50px; 
 }
 
 /* 플립 애니메이션 */
