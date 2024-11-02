@@ -100,7 +100,8 @@ const submitDiary = async () => {
   };
 
   const formData = new FormData();
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+  formData.append('diaryRequest', 
+  new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   // 이미지 파일 추가 여부를 확인
   if (images.value.length > 0) {

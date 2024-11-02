@@ -142,6 +142,22 @@ watch(
   },
 );
 
+//문자열 색상을 hex 값으로 변환
+const colorList = [
+  { value: 'PINK', color: '#ff7f7f' },
+  { value: 'ORANGE', color: '#ff9933' },
+  { value: 'YELLOW', color: '#ffe066' },
+  { value: 'BLUE', color: '#4da6ff' },
+  { value: 'GREEN', color: '#5cd65c' },
+  { value: 'VIOLET', color: '#b366ff' },
+  { value: 'GRAY', color: '#a6a6a6' },
+];
+
+const getHexColor = (value) => {
+  const colorItem = colorList.find((item) => item.value === value);
+  return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
+};
+
 // 색깔 바꾸기
 const hexToRgba = (hex, opacity) => {
   if (hex.startsWith('#')) {
@@ -246,8 +262,8 @@ const onMonthChange = () => {
               v-for="schedule in getSchedulesForDate(column)"
               :key="schedule.id"
               :style="{
-                backgroundColor: hexToRgba(schedule.color, 0.3), // 투명한 배경색
-                border: `1px solid ${schedule.color}`, // 테두리 색상
+                backgroundColor: hexToRgba(getHexColor(schedule.color),0.3), // 투명한 배경색
+                border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
               }"
               class="schedule-title"
             >

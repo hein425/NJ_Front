@@ -188,35 +188,6 @@ const submitSchedule = async () => {
   }
 };
 
-// const submitSchedule = async () => {
-//   const formData = new FormData();
-//   formData.append('title', title.value);
-//   formData.append('color', color.value);
-//   formData.append('start', startdate.value);
-//   formData.append('end', enddate.value);
-//   formData.append('location', location.value);
-//   formData.append('content', description.value);
-//   formData.append('repeat', repeat.value);
-//   formData.append('calendarsIdx', 1);
-
-//   if (imageFiles.value) {
-//     formData.append('image', imageFiles.value);
-//   }
-
-//   try {
-//     const response = await axios.post('http://192.168.0.17:8080/schedule/create', formData, {
-//       headers: {
-//         'Content-Type': 'multipart/form-data',
-//       },
-//     });
-//     console.log('Schedule Submitted Successfully', response.data);
-//     emit('closeForm');
-//   } catch (error) {
-//     console.error('Failed to submit schedule:', error);
-//     emit('closeForm');
-//   }
-// };
-
 const cancelForm = () => {
   emit('closeForm');
 };
