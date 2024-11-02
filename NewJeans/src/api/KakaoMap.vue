@@ -1,6 +1,6 @@
 <template>
   <div class="map_wrap">
-    <div id="map" style="width:100%; height:400px;"></div>
+    <div id="map" style="width: 100%; height: 400px"></div>
 
     <div id="menu_wrap" class="bg_white">
       <div class="option">
@@ -74,7 +74,7 @@ const placesSearchCB = (data, status, pagination) => {
   }
 };
 
-const displayPlaces = (places) => {
+const displayPlaces = places => {
   const listEl = document.getElementById('placesList');
   const bounds = new kakao.maps.LatLngBounds();
   removeAllChildNods(listEl);
@@ -133,7 +133,7 @@ const addMarker = (position, idx) => {
   const imageSize = new kakao.maps.Size(36, 37); // 마커 이미지의 크기
   const imgOptions = {
     spriteSize: new kakao.maps.Size(36, 691), // 스프라이트 이미지의 크기
-    spriteOrigin: new kakao.maps.Point(0, (idx * 46) + 10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표
+    spriteOrigin: new kakao.maps.Point(0, idx * 46 + 10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표
     offset: new kakao.maps.Point(13, 37), // 마커 좌표에 일치시킬 이미지 내에서의 좌표
   };
   const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions);
@@ -148,7 +148,7 @@ const addMarker = (position, idx) => {
 };
 
 const removeMarker = () => {
-  markers.value.forEach((marker) => marker.setMap(null));
+  markers.value.forEach(marker => marker.setMap(null));
   markers.value = [];
 };
 
@@ -158,13 +158,13 @@ const displayInfowindow = (marker, title) => {
   infowindow.open(map.value, marker);
 };
 
-const removeAllChildNods = (el) => {
+const removeAllChildNods = el => {
   while (el.hasChildNodes()) {
     el.removeChild(el.lastChild);
   }
 };
 
-const displayPagination = (pagination) => {
+const displayPagination = pagination => {
   const paginationEl = document.getElementById('pagination');
   removeAllChildNods(paginationEl);
 

@@ -207,7 +207,7 @@ const hexToRgba = (hex, opacity) => {
             }"
           >
             <template v-for="holiday in holidays" :key="holiday">
-              <span v-if="holiday.date == column.format('YYYY-MM-DD')">
+              <span v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
                 {{ holiday.localName }}
               </span>
               <span class="date-number">{{ column.get('date') }}</span>
@@ -396,6 +396,7 @@ const hexToRgba = (hex, opacity) => {
 }
 
 .Datecell {
+  position: relative;
   background-color: #f7f7f7;
   border-radius: 3px;
   font-size: 1rem;
@@ -548,12 +549,26 @@ const hexToRgba = (hex, opacity) => {
   box-sizing: border-box; /* padding 포함하여 너비를 계산 */
   font-size: 0.8rem;
   color: white;
-  padding: 2px 5px; /* 내부 여백 */
+  padding: 0 5px; /* 내부 여백 */
   border-radius: 3px;
   margin-top: 4px;
   text-align: left;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  position: relative;
+  top: 10px;
+  height: 15px;
+  line-height: 12px;
+}
+
+.holiday-name {
+  font-size: 0.5rem; /* 원하는 폰트 크기 */
+  color: red; /* 원하는 글자 색상 */
+  font-weight: lighter; /* 글자를 굵게 설정 */
+  position: absolute;
+  display: block; /* 블록 형식으로 배치 (필요 시) */
+  top: 18px;
+  left: 45px;
 }
 </style>
