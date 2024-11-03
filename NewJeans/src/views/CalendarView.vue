@@ -7,6 +7,7 @@ import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import { BASE_URL } from '@/config';
 import YearlyCalendar from '@/components/YearlyCalendar.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -32,6 +33,8 @@ watch(
   fetchHolidays,
 );
 
+// @<@ 일정 띄우기 @>@
+
 const MonthlySchedules = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
@@ -41,18 +44,40 @@ const MonthlySchedules = async () => {
   }
 };
 
-// 컴포넌트가 로드될 때 일정 데이터를 가져옴
+// 컴포넌트가 로드될 때 일정 데이터를 가져옴+다이어리도
 onMounted(() => {
   fetchHolidays();
   MonthlySchedules();
+  fetchDiaryEntriesForMonth();
 });
 
 // 달이 바뀔 때마다 새 데이터를 불러오도록 watch 사용
-watch(now, MonthlySchedules);
+watch(now, () => {
+  MonthlySchedules();
+  fetchDiaryEntriesForMonth();
+});
 
 // 날짜에 해당하는 일정을 필터링하는 함수
 const getSchedulesForDate = date => {
   return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 3);
+};
+
+// @<@ 일기 띄우기 @>@
+// 매달 다이어리 데이터를 불러오는 함수
+const diaryEntries = ref([]);
+const fetchDiaryEntriesForMonth = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/diary/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const diaries = response.data;
+    diaryEntries.value = diaries.map(diary => dayjs(diary.date).format('YYYY-MM-DD'));
+  } catch (error) {
+    console.error('Failed to fetch diary entries:', error);
+  }
+};
+
+// 날짜에 해당하는 일기를 확인하는 함수
+const isDiaryEntry = date => {
+  return diaryEntries.value.includes(date.format('YYYY-MM-DD'));
 };
 
 const selectDate = ref(null);
@@ -67,6 +92,7 @@ const flipBack = () => {
   isScheduleFormVisible.value = false;
   isDiaryFormVisible.value = false;
   MonthlySchedules();
+  fetchDiaryEntriesForMonth();
 };
 
 const subMonth = () => {
@@ -154,8 +180,8 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
-const getHexColor = (value) => {
-  const colorItem = colorList.find((item) => item.value === value);
+const getHexColor = value => {
+  const colorItem = colorList.find(item => item.value === value);
   return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
 };
 
@@ -184,6 +210,8 @@ const onYearChange = () => {
 const onMonthChange = () => {
   now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
 };
+
+// 일기 북마크
 </script>
 
 <template>
@@ -227,7 +255,6 @@ const onMonthChange = () => {
               <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
             </select>
           </div>
-
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>
@@ -251,6 +278,9 @@ const onMonthChange = () => {
               today: column.isSame(dayjs(), 'day'),
             }"
           >
+          <!-- 일기북마크 -->
+            <font-awesome-icon v-if="isDiaryEntry(column)" icon="bookmark" class="bookmark-icon" />
+
             <template v-for="holiday in holidays" :key="holiday">
               <span v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
                 {{ holiday.localName }}
@@ -263,7 +293,7 @@ const onMonthChange = () => {
               v-for="schedule in getSchedulesForDate(column)"
               :key="schedule.id"
               :style="{
-                backgroundColor: hexToRgba(getHexColor(schedule.color),0.3), // 투명한 배경색
+                backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
               }"
               class="schedule-title"
@@ -366,7 +396,7 @@ const onMonthChange = () => {
   gap: 5px;
 }
 
-.YMselecter{
+.YMselecter {
   right: 0%;
 }
 
@@ -398,7 +428,7 @@ select {
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
-  padding:0 50px; 
+  padding: 0 50px;
 }
 
 /* 플립 애니메이션 */
@@ -626,5 +656,15 @@ select {
   display: block; /* 블록 형식으로 배치 (필요 시) */
   top: 18px;
   left: 45px;
+}
+
+/* 북마크 아이콘 스타일 추가 */
+.bookmark-icon {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-size: 0.8rem;
+  color: #ff6347;
+  /* z-index: 10; */
 }
 </style>

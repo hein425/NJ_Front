@@ -154,7 +154,6 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    repeat: repeat.value,
     calendarsIdx: 1,
   };
 
@@ -181,6 +180,23 @@ const submitSchedule = async () => {
       headers: {'Content-Type': 'multipart/form-data',},
     });
     console.log('Schedule Submitted Successfully', response.data);
+
+    // 기본일정 데이터 생성 후
+    const scheduleId = response.data.scheduleId;
+
+    if (repeat.value !== 'NONE') {
+      const repeatRequest = {
+        sr_type: repeat.value, // DAILY, WEEKLY, MONTHLY, YEARLY 중 하나
+        s_idx: scheduleId, // 생성된 일정의 ID
+        r_end_date: dayjs(enddate.value).format('YYYY-MM-DD'), // 반복 종료 날짜
+      };
+
+      // 반복 일정 데이터를 서버에 전송
+      await axios.post(`${BASE_URL}/scheduleRepeat/create`, repeatRequest);
+      
+      console.log('Repeat Schedule Submitted Successfully');
+    }
+
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit Schedule:', error);
