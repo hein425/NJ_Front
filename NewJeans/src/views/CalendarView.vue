@@ -66,6 +66,7 @@ const flipBack = () => {
   isFlipped.value = false;
   isScheduleFormVisible.value = false;
   isDiaryFormVisible.value = false;
+  MonthlySchedules();
 };
 
 const subMonth = () => {

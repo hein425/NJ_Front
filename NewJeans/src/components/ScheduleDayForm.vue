@@ -30,9 +30,13 @@
                   <img :src="schedule.mapUrl" alt="Map" class="map-image" />
                 </div>
 
+                <div v-if="schedule.images && schedule.images.length" class="schedule-images">
+                  <img v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                </div>
+
                 <div class="button-group">
                   <button v-if="editIndex !== index" @click.stop="startEdit('schedule', index)">Edit</button>
-                  <button v-else @click.stop="saveEdit('schedule', index)">Save</button>
+                  <button v-else @click.stop="saveScheduleEdit('schedule', index)">Save</button>
                   <button @click.stop="deleteSchedule(index)">Delete</button>
                 </div>
               </div>
@@ -69,7 +73,7 @@
 
                 <div class="button-group">
                   <button v-if="editIndex !== index" @click.stop="startEdit('diary', index)">Edit</button>
-                  <button v-else @click.stop="saveEdit('diary', index)">Save</button>
+                  <button v-else @click.stop="saveDiaryEdit('diary', index)">Save</button>
                   <button @click.stop="deleteDiary(index)">Delete</button>
                 </div>
               </div>
@@ -134,6 +138,7 @@ const fetchDayData = async selectedDate => {
       repeat: schedule.repeat || 'N/A',
       address: schedule.location || 'No address provided',
       content: schedule.content || 'No details provided',
+      images: schedule.images || [],
     }));
 
     // 스케줄 확장 상태 복원
@@ -148,6 +153,7 @@ const fetchDayData = async selectedDate => {
       date: `${year}-${month}-${day}`,
       content: diary.content || 'No content available',
       category: diary.category || 'Uncategorized',
+      images: diary.images || [],
     }));
 
     //다이어리 확장 상태 복원
@@ -216,7 +222,8 @@ const startEdit = (type, index) => {
   editData.value = type === 'schedule' ? { ...schedules.value[index] } : { ...diaries.value[index] };
 };
 
-const saveEdit = async (type, index) => {
+// 다이어리, 스케줄 수정~~~~~~~~~~
+const saveDiaryEdit = async (type, index) => {
   if (type !== 'diary') return;
 
   const diaryToUpdate = diaries.value[index];
@@ -254,10 +261,50 @@ const saveEdit = async (type, index) => {
   }
 };
 
+const saveScheduleEdit = async (type, index) => {
+  if (type !== 'schedule') return;
+
+  const scheduleToUpdate = schedules.value[index];
+
+  const scheduleRequest = {
+    idx: scheduleToUpdate.id,
+    title: editData.value.title,
+    date: scheduleToUpdate.date, // 수정된 날짜 그대로 사용
+    time: editData.value.time,
+    repeat: editData.value.repeat,
+    address: editData.value.address,
+    content: editData.value.content,
+  };
+
+  const formData = new FormData();
+  formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
+
+  if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
+    editData.value.imageFiles.forEach(image => {
+      formData.append('imageFiles', image.file);
+    });
+  }
+
+  try {
+    const response = await axios({
+      method: 'post',
+      url: `${BASE_URL}/schedule/update`,
+      data: formData,
+    });
+    console.log('Schedule updated successfully:', response.data);
+
+    Object.assign(scheduleToUpdate, editData.value);
+  } catch (error) {
+    console.error('Error during schedule update:', error.response ? error.response.data : error.message);
+  } finally {
+    editIndex.value = null;
+  }
+};
+
 const deleteSchedule = async index => {
   const scheduleId = schedules.value[index].id;
   try {
-    await axios.delete(`${BASE_URL}/schedule/${scheduleId}`);
+    await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`);
     schedules.value.splice(index, 1);
     console.log('Schedule deleted successfully');
   } catch (error) {

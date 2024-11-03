@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch} from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
@@ -191,6 +191,16 @@ const submitSchedule = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
+
+
+// 시작일 정하면 자동으로 종료일은 같은날 1시간후로. 
+watch(startdate, (newStartDate) => {
+  if (newStartDate) {
+    const newEndDate = dayjs(newStartDate).add(1, 'hour').format('YYYY-MM-DDTHH:mm');
+    enddate.value = newEndDate;
+  }
+});
+
 </script>
 
 <style scoped>
@@ -319,9 +329,22 @@ input[type='radio']:checked + .color-circle {
   color: white;
 }
 
+/* 이미지 미리보기 */
 .image-preview {
   display: flex;
   flex-wrap: wrap; /* 여러 줄로 표시 */
   margin-top: 10px;
+}
+
+.image-container {
+  position: relative;
+  margin: 5px;
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 </style>
