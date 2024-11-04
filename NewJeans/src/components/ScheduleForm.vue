@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch} from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
@@ -154,7 +154,6 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    repeat: repeat.value,
     calendarsIdx: 1,
   };
 
@@ -181,6 +180,23 @@ const submitSchedule = async () => {
       headers: {'Content-Type': 'multipart/form-data',},
     });
     console.log('Schedule Submitted Successfully', response.data);
+
+    // 기본일정 데이터 생성 후
+    const scheduleId = response.data.scheduleId;
+
+    if (repeat.value !== 'NONE') {
+      const repeatRequest = {
+        sr_type: repeat.value, // DAILY, WEEKLY, MONTHLY, YEARLY 중 하나
+        s_idx: scheduleId, // 생성된 일정의 ID
+        r_end_date: dayjs(enddate.value).format('YYYY-MM-DD'), // 반복 종료 날짜
+      };
+
+      // 반복 일정 데이터를 서버에 전송
+      await axios.post(`${BASE_URL}/scheduleRepeat/create`, repeatRequest);
+      
+      console.log('Repeat Schedule Submitted Successfully');
+    }
+
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit Schedule:', error);
@@ -191,6 +207,16 @@ const submitSchedule = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
+
+
+// 시작일 정하면 자동으로 종료일은 같은날 1시간후로. 
+watch(startdate, (newStartDate) => {
+  if (newStartDate) {
+    const newEndDate = dayjs(newStartDate).add(1, 'hour').format('YYYY-MM-DDTHH:mm');
+    enddate.value = newEndDate;
+  }
+});
+
 </script>
 
 <style scoped>
@@ -319,9 +345,22 @@ input[type='radio']:checked + .color-circle {
   color: white;
 }
 
+/* 이미지 미리보기 */
 .image-preview {
   display: flex;
   flex-wrap: wrap; /* 여러 줄로 표시 */
   margin-top: 10px;
+}
+
+.image-container {
+  position: relative;
+  margin: 5px;
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 </style>
