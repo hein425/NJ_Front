@@ -31,9 +31,11 @@
                 </div>
 
                 <div class="button-group">
-                  <button v-if="editIndex !== index" @click.stop="startEdit('schedule', index)">Edit</button>
-                  <button v-else @click.stop="saveEdit('schedule', index)">Save</button>
-                  <button @click.stop="deleteSchedule(index)">Delete</button>
+                  <button v-if="editIndex !== index" @click.stop="startEdit('diary', index)">Edit</button>
+                  <button v-else @click.stop="saveEdit('diary', index)">Save</button>
+                  <button v-if="editIndex === index" @click.stop="cancelEdit()">Cancel</button>
+                  <!-- Cancel 버튼 추가 -->
+                  <button @click.stop="deleteDiary(index)">Delete</button>
                 </div>
               </div>
             </transition>
@@ -70,6 +72,8 @@
                 <div class="button-group">
                   <button v-if="editIndex !== index" @click.stop="startEdit('diary', index)">Edit</button>
                   <button v-else @click.stop="saveEdit('diary', index)">Save</button>
+                  <button v-if="editIndex === index" @click.stop="cancelEdit()">Cancel</button>
+                  <!-- Cancel 버튼 추가 -->
                   <button @click.stop="deleteDiary(index)">Delete</button>
                 </div>
               </div>
@@ -278,6 +282,11 @@ const deleteDiary = async index => {
   } catch (error) {
     console.error('Failed to delete diary:', error);
   }
+};
+
+const cancelEdit = () => {
+  editIndex.value = null; // 수정 중인 인덱스를 초기화하여 수정 모드 종료
+  editData.value = { title: '', content: '', address: '', time: '', repeat: '' }; // 수정 데이터 초기화
 };
 
 onMounted(fetchDayData);

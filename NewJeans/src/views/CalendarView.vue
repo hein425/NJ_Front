@@ -153,8 +153,8 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
-const getHexColor = (value) => {
-  const colorItem = colorList.find((item) => item.value === value);
+const getHexColor = value => {
+  const colorItem = colorList.find(item => item.value === value);
   return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
 };
 
@@ -226,7 +226,6 @@ const onMonthChange = () => {
               <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
             </select>
           </div>
-
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>
@@ -262,7 +261,7 @@ const onMonthChange = () => {
               v-for="schedule in getSchedulesForDate(column)"
               :key="schedule.id"
               :style="{
-                backgroundColor: hexToRgba(getHexColor(schedule.color),0.3), // 투명한 배경색
+                backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
               }"
               class="schedule-title"
@@ -365,7 +364,7 @@ const onMonthChange = () => {
   gap: 5px;
 }
 
-.YMselecter{
+.YMselecter {
   right: 0%;
 }
 
@@ -397,7 +396,7 @@ select {
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
-  padding:0 50px; 
+  padding: 0 50px;
 }
 
 /* 플립 애니메이션 */
@@ -603,8 +602,8 @@ select {
   width: 100%; /* 셀의 너비를 꽉 차게 설정 */
   box-sizing: border-box; /* padding 포함하여 너비를 계산 */
   font-size: 0.8rem;
-  color: white;
-  padding: 0 5px; /* 내부 여백 */
+  color: #494949;
+  padding: 8px 5px; /* 내부 여백 */
   border-radius: 3px;
   margin-top: 4px;
   text-align: left;
@@ -614,7 +613,7 @@ select {
   position: relative;
   top: 10px;
   height: 15px;
-  line-height: 12px;
+  line-height: 0px;
 }
 
 .holiday-name {
