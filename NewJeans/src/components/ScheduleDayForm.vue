@@ -25,13 +25,10 @@
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
-                <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
-
-                <div v-if="schedule.mapUrl" class="map-container">
-                  <img :src="schedule.mapUrl" alt="Map" class="map-image" />
-                </div>
-
+                <p v-show="editIndex !== index"><strong>Address:</strong></p>
+                <div v-if="isScheduleExpanded[index]" class="map-container">
+                <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
+              </div>
                 <!-- 이미지 관리 섹션 -->
                 <div class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
@@ -120,7 +117,7 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from 'axios';
-import KakaoMap from '@/views/KakaoMap.vue';
+import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
 
 const props = defineProps({
@@ -158,8 +155,18 @@ const fetchDayData = async selectedDate => {
   const idx = 1;
 
   try {
-    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
-    schedules.value = scheduleResponse.data.map(schedule => ({
+  const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
+  schedules.value = scheduleResponse.data.map(schedule => {
+    let latitude = 37.566826; // 기본값 (서울 좌표)
+    let longitude = 126.9786567;
+
+    if (schedule.location) {
+      const [lat, lng] = schedule.location.split(',').map(coord => parseFloat(coord.trim()));
+      latitude = lat || latitude;
+      longitude = lng || longitude;
+    }
+
+    return {
       ...schedule,
       id: schedule.idx,
       date: `${year}-${month}-${day}`,
@@ -167,9 +174,12 @@ const fetchDayData = async selectedDate => {
       time: schedule.start ? `${schedule.start} - ${schedule.end}` : '',
       repeat: schedule.repeat || 'N/A',
       address: schedule.location || 'No address provided',
+      latitude, // 분리한 위도
+      longitude, // 분리한 경도
       content: schedule.content || 'No details provided',
       images: schedule.images || [],
-    }));
+    };
+});
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 

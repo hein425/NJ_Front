@@ -6,31 +6,38 @@
       <div class="option">
         <form @submit.prevent="searchPlaces">
           키워드 : <input type="text" v-model="keyword" id="keyword" size="15" />
-          <button type="submit" class="SeachBtn">검색하기</button>
+          <button type="submit" class="SearchBtn">검색하기</button>
         </form>
       </div>
       <hr />
       <ul id="placesList"></ul>
       <div id="pagination"></div>
     </div>
+    <div v-if="address" class="addressPreview">
+        {{ address }} 
+        <span class="remove" @click="removeAddress">❌</span>
+      </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineEmits } from 'vue';
 
+const emit = defineEmits(['updateLocation']); // 부모에게 좌표값을 전달할 이벤트 정의
 const keyword = ref(''); // 검색어
 const map = ref(null); // 지도 객체
 const markers = ref([]); // 마커 배열
 let infowindow = null; // 인포윈도우 객체
+const showAddressInput = ref(false); // 주소 입력 미리보기 표시 여부
+const address = ref(''); // 미리보기 주소
 
 const initMap = () => {
   if (!window.kakao || !window.kakao.maps) {
     const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=YOUR_APP_KEY&libraries=services`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=b0061f834b78c5f38c345878962fc250&libraries=services`;
     script.onload = () => {
-      // Kakao Maps API가 로드된 후에 지도 생성
       kakao.maps.load(() => {
+        console.log("카카오 지도 라이브러리 로드 완료"); // 라이브러리 로드 확인
         createMap();
       });
     };
@@ -46,6 +53,7 @@ const createMap = () => {
     center: new kakao.maps.LatLng(37.566826, 126.9786567),
     level: 3,
   };
+
 
   map.value = new kakao.maps.Map(mapContainer, mapOption);
   infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
@@ -74,7 +82,7 @@ const placesSearchCB = (data, status, pagination) => {
   }
 };
 
-const displayPlaces = places => {
+const displayPlaces = (places) => {
   const listEl = document.getElementById('placesList');
   const bounds = new kakao.maps.LatLngBounds();
   removeAllChildNods(listEl);
@@ -83,28 +91,17 @@ const displayPlaces = places => {
   places.forEach((place, i) => {
     const placePosition = new kakao.maps.LatLng(place.y, place.x);
     const marker = addMarker(placePosition, i);
-
     const itemEl = getListItem(i, place);
 
-    // 마커 및 리스트 항목에 마우스 이벤트 추가
-    kakao.maps.event.addListener(marker, 'mouseover', () => {
-      displayInfowindow(marker, place.place_name);
-    });
-    kakao.maps.event.addListener(marker, 'mouseout', () => {
-      infowindow.close();
-    });
-
-    itemEl.onmouseover = () => {
-      displayInfowindow(marker, place.place_name);
-    };
-    itemEl.onmouseout = () => {
-      infowindow.close();
-    };
-
+  
     // 리스트 항목 클릭 이벤트 추가
     itemEl.onclick = () => {
       map.value.setCenter(placePosition); // 해당 장소로 지도 중심 이동
       displayInfowindow(marker, place.place_name); // 해당 장소에 대한 인포윈도우 열기
+
+      // 부모 컴포넌트에 좌표 전달
+      emit('updateLocation', { lat: place.y, lng: place.x });
+      address.value = place.place_name; // 선택한 장소 이름을 주소로 설정
     };
 
     listEl.appendChild(itemEl);
@@ -112,6 +109,10 @@ const displayPlaces = places => {
   });
 
   map.value.setBounds(bounds);
+};
+// 주소 제거 함수
+const removeAddress = () => {
+  address.value = ''; // 주소 초기화
 };
 
 const getListItem = (index, place) => {
@@ -181,15 +182,33 @@ const displayPagination = pagination => {
   }
 };
 
+
 onMounted(() => {
+   console.log("KakaoMap 컴포넌트 로드 완료"); 
   initMap();
 });
 </script>
 
+
 <style>
+
+
+#placesList {
+  padding: 0; /* 전체 패딩 제거 */
+  margin: 0; /* 전체 마진 제거 */
+}
+
+#menu_wrap {
+  padding-top: 0; /* 상단 패딩을 제거 */
+  padding-bottom: 5px;
+}
+
+
 .map_wrap {
   position: relative;
   width: 100%;
+  padding-top: 0; /* 상단 패딩을 제거 */
+  padding-bottom: 5px;
 }
 
 #menu_wrap {
@@ -198,7 +217,7 @@ onMounted(() => {
   left: 0;
   bottom: 0;
   width: 300px;
-  margin: 10px 0 30px 10px;
+  margin: 5px 0 30px 5px;
   padding: 5px;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.7);
@@ -207,7 +226,35 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.SeachBtn {
+.addressPreview {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.remove {
+  display: inline-block;
+  margin-left: 5px;
+  cursor: pointer;
+  color: #ff4d4d; /* 부드러운 빨간색 */
+  font-size: 14px; /* 크기 조정 */
+  border: 1px solid #ff4d4d; /* 얇은 테두리 */
+  border-radius: 4px; /* 네모 모양 */
+  width: 20px;
+  height: 20px;
+  line-height: 18px; /* 텍스트 중앙 정렬 */
+  text-align: center;
+  transition: all 0.3s ease; /* 호버 효과를 위한 트랜지션 */
+}
+
+.remove:hover {
+  background-color: #ff4d4d; /* 호버 시 배경색 */
+  color: white; /* 호버 시 글자색 변경 */
+  transform: scale(1.1); /* 약간 확대 */
+}
+
+
+.SearchBtn {
   margin-left: 15px;
 }
 

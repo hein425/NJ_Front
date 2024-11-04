@@ -27,7 +27,7 @@ let infowindow = null; // 인포윈도우 객체
 const initMap = () => {
   if (!window.kakao || !window.kakao.maps) {
     const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=YOUR_APP_KEY&libraries=services`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=b0061f834b78c5f38c345878962fc250&libraries=services`;
     script.onload = () => {
       // Kakao Maps API가 로드된 후에 지도 생성
       kakao.maps.load(() => {
