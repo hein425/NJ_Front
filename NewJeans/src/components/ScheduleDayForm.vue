@@ -242,24 +242,44 @@ const saveDiaryEdit = async (type, index) => {
   if (type !== 'diary') return;
 
   const diaryToUpdate = diaries.value[index];
+
+  // diaryRequest 객체 생성 (JSON 형식)
   const diaryRequest = {
     idx: diaryToUpdate.id,
     title: editData.value.title,
     date: editData.value.date,
     content: editData.value.content,
     category: diaryToUpdate.category,
+    deletedImageList: editData.value.deletedImageList || [], // 삭제할 이미지 ID 목록
   };
 
-  const formData = new FormData();
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
-
   try {
-    const response = await axios.post(`${BASE_URL}/diary/update`, formData);
+    // FormData 객체 생성
+    const formData = new FormData();
+    // diaryRequest 객체를 JSON 문자열로 변환하여 추가
+    formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+
+    // 새로 등록할 이미지를 FormData에 추가
+    for (let image of editData.value.images) {
+      if (typeof image === 'object' && image instanceof File) {
+        // 파일인 경우만 추가
+        formData.append('imageFiles', image);
+      }
+    }
+
+    // API 호출
+    const response = await axios.post(`${BASE_URL}/diary/update`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     console.log('Diary updated successfully:', response.data);
+
+    // 성공 시 데이터 업데이트
     Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
+    // 오류 로그 출력
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
+    // 편집 모드 해제
     editIndex.value = null;
   }
 };
@@ -333,13 +353,23 @@ const onFileChange = event => {
   event.target.value = '';
 };
 
-const removeImage = async (index, imageUrl) => {
-  try {
-    await axios.post(`${BASE_URL}/api/deleteImage`, { imageUrl });
-    editData.value.images.splice(index, 1);
-  } catch (error) {
-    console.error('Failed to delete image:', error);
+const removeImage = index => {
+  // 이미지 URL을 사용하여 삭제할 수도 있습니다.
+  const imageUrl = editData.value.images[index];
+
+  if (!imageUrl) {
+    console.error('Image URL is not defined');
+    return;
   }
+
+  // deletedImageList에 URL을 추가 (필요시)
+  if (!editData.value.deletedImageList) {
+    editData.value.deletedImageList = [];
+  }
+  editData.value.deletedImageList.push(imageUrl);
+
+  // 이미지 리스트에서 삭제
+  editData.value.images.splice(index, 1);
 };
 </script>
 
