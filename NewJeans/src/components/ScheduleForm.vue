@@ -146,7 +146,7 @@ const handleImageUpload = event => {
 };
 
 const submitSchedule = async () => {
-  // diaryRequest JSON 객체 생성
+  // scheduleRequest JSON 객체 생성
   const scheduleRequest = {
     title: title.value,
     color: color.value,

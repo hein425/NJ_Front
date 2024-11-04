@@ -79,7 +79,7 @@ const handleLogin = async () => {
 
     if (response.status === 200) {
       // 로그인 성공 시 Pinia store에 상태 업데이트
-      authStore.login(response.data.accessToken, response.data.userName);
+      authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx);
 
       alert('로그인 성공!');
       closeModal(); // 모달 닫기
@@ -102,7 +102,7 @@ const route = useRoute();
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
-    redirectUri: 'http://localhost:5173/kakaologin', //카카오 리다이렉트 URI
+    redirectUri: 'http://192.168.0.87:5173/kakaologin', //카카오 리다이렉트 URI
   });
 };
 
@@ -110,7 +110,7 @@ const kakaoLogin = () => {
 watchEffect(() => {
   if (route.query.code) {
     axios
-      .get('http://localhost:10000/kakao/login?code=' + route.query.code)
+      .get('http://192.168.0.17:8080/auth/kakao/login?code=' + route.query.code)
       .then(response => {
         // 서버로부터 받은 토큰을 localStorage에 저장 (로그인 상태 관리)
         const token = response.data.token;

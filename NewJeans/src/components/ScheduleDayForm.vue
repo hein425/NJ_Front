@@ -19,25 +19,34 @@
                 <input v-else v-model="editData.time" class="input-field" placeholder="Enter Time" @click.stop />
                 <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
                 <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
-                <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
-                <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
+
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
+
+                <hr class="divider" />
+                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
+                <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
 
                 <div v-if="schedule.mapUrl" class="map-container">
                   <img :src="schedule.mapUrl" alt="Map" class="map-image" />
                 </div>
 
-                <div v-if="schedule.images && schedule.images.length" class="schedule-images">
-                  <img v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                <!-- 이미지 관리 섹션 -->
+                <div class="schedule-images">
+                  <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
+                    <img :src="`${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
+                  </div>
                 </div>
 
                 <div class="button-group">
-                  <button v-if="editIndex !== index" @click.stop="startEdit('schedule', index)">Edit</button>
-                  <button v-else @click.stop="saveScheduleEdit('schedule', index)">Save</button>
+                  <button @click.stop="startEdit('schedule', index)" v-if="editIndex !== index">Edit</button>
                   <button @click.stop="deleteSchedule(index)">Delete</button>
+
+                  <div v-if="editIndex === index">
+                    <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
+                    <button @click.stop="cancelEdit">Cancel</button>
+                  </div>
                 </div>
               </div>
             </transition>
@@ -67,14 +76,34 @@
                 <p v-if="editIndex !== index">{{ diary.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
-                <div v-if="diary.images && diary.images.length" class="diary-images">
-                  <img v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                <!-- <div class="diary-images">
+                  <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
+                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                  </div>
+                </div> -->
+
+                <!-- 이미지 관리 섹션 -->
+                <div v-if="editIndex === index" class="diary-images">
+                  <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
+                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <button class="delete-btn" @click.stop="removeImage(imgIndex, `${BASE_URL}${imageUrl}`)">X</button>
+                  </div>
+                  <input type="file" @change="onFileChange" multiple accept="image/*" />
+                </div>
+                <div v-else class="diary-images">
+                  <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
+                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                  </div>
                 </div>
 
                 <div class="button-group">
-                  <button v-if="editIndex !== index" @click.stop="startEdit('diary', index)">Edit</button>
-                  <button v-else @click.stop="saveDiaryEdit('diary', index)">Save</button>
+                  <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
                   <button @click.stop="deleteDiary(index)">Delete</button>
+
+                  <div v-if="editIndex === index">
+                    <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
+                    <button @click.stop="cancelEdit">Cancel</button>
+                  </div>
                 </div>
               </div>
             </transition>
@@ -113,13 +142,13 @@ const diaries = ref([]);
 const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
-const editData = ref({ title: '', content: '', address: '', time: '', repeat: '' });
+const editData = ref({ title: '', content: '', address: '', time: '', repeat: '', images: [] });
+
 const showDayView = ref(true);
 
-let pollingInterval = null; // 풀링으로 시간마다 돌리기 하게
+let pollingInterval = null;
 
 const fetchDayData = async selectedDate => {
-  // 현재 UI 상태 보존
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
     diaries: [...isDiaryExpanded.value],
@@ -132,6 +161,7 @@ const fetchDayData = async selectedDate => {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
     schedules.value = scheduleResponse.data.map(schedule => ({
       ...schedule,
+      id: schedule.idx,
       date: `${year}-${month}-${day}`,
       mapUrl: schedule.mapUrl || null,
       time: schedule.start ? `${schedule.start} - ${schedule.end}` : '',
@@ -141,10 +171,7 @@ const fetchDayData = async selectedDate => {
       images: schedule.images || [],
     }));
 
-    // 스케줄 확장 상태 복원
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
-
-    //isScheduleExpanded.value = schedules.value.map(() => false);
 
     const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
@@ -156,46 +183,35 @@ const fetchDayData = async selectedDate => {
       images: diary.images || [],
     }));
 
-    //다이어리 확장 상태 복원
     isDiaryExpanded.value = diaries.value.map((_, index) => previousExpandedStates.diaries[index] || false);
-
-    //isDiaryExpanded.value = diaries.value.map(() => false);
   } catch (error) {
     console.error('데이터 조회 실패:', error);
   }
 };
 
-// 폴링 시작 함수
 const startPolling = selectedDate => {
-  // 먼저 데이터를 가져옴
   fetchDayData(selectedDate);
-
-  // 5초마다 fetchDayData 호출
   pollingInterval = setInterval(() => {
     fetchDayData(selectedDate);
-  }, 1100); // 5000ms = 5초
+  }, 1100);
 };
 
-// 폴링 중지 함수
 const stopPolling = () => {
   if (pollingInterval) {
     clearInterval(pollingInterval);
   }
 };
 
-// 컴포넌트가 마운트될 때 폴링 시작
 onMounted(() => {
   if (props.selectedDate) {
     startPolling(props.selectedDate);
   }
 });
 
-// 컴포넌트가 파괴될 때 폴링 중지
 onUnmounted(() => {
   stopPolling();
 });
 
-// selectedDate가 변경될 때마다 폴링 재설정
 watch(
   () => props.selectedDate,
   newDate => {
@@ -219,44 +235,51 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value = type === 'schedule' ? { ...schedules.value[index] } : { ...diaries.value[index] };
+  editData.value = type === 'schedule' ? { ...schedules.value[index], images: [...schedules.value[index].images] } : { ...diaries.value[index], images: [...diaries.value[index].images] };
 };
 
-// 다이어리, 스케줄 수정~~~~~~~~~~
 const saveDiaryEdit = async (type, index) => {
   if (type !== 'diary') return;
 
   const diaryToUpdate = diaries.value[index];
 
+  // diaryRequest 객체 생성 (JSON 형식)
   const diaryRequest = {
     idx: diaryToUpdate.id,
     title: editData.value.title,
-    date: editData.value.date, // 수정된 날짜 그대로 사용
+    date: editData.value.date,
     content: editData.value.content,
     category: diaryToUpdate.category,
+    deletedImageList: editData.value.deletedImageList || [], // 삭제할 이미지 ID 목록
   };
 
-  const formData = new FormData();
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
-
-  if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
-    editData.value.imageFiles.forEach(image => {
-      formData.append('imageFiles', image.file);
-    });
-  }
-
   try {
-    const response = await axios({
-      method: 'post',
-      url: `${BASE_URL}/diary/update`,
-      data: formData,
+    // FormData 객체 생성
+    const formData = new FormData();
+    // diaryRequest 객체를 JSON 문자열로 변환하여 추가
+    formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+
+    // 새로 등록할 이미지를 FormData에 추가
+    for (let image of editData.value.images) {
+      if (typeof image === 'object' && image instanceof File) {
+        // 파일인 경우만 추가
+        formData.append('imageFiles', image);
+      }
+    }
+
+    // API 호출
+    const response = await axios.post(`${BASE_URL}/diary/update`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Diary updated successfully:', response.data);
 
+    // 성공 시 데이터 업데이트
     Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
+    // 오류 로그 출력
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
+    // 편집 모드 해제
     editIndex.value = null;
   }
 };
@@ -265,11 +288,10 @@ const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
 
   const scheduleToUpdate = schedules.value[index];
-
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
-    date: scheduleToUpdate.date, // 수정된 날짜 그대로 사용
+    date: scheduleToUpdate.date,
     time: editData.value.time,
     repeat: editData.value.repeat,
     address: editData.value.address,
@@ -279,26 +301,19 @@ const saveScheduleEdit = async (type, index) => {
   const formData = new FormData();
   formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
 
-  if (editData.value.imageFiles && editData.value.imageFiles.length > 0) {
-    editData.value.imageFiles.forEach(image => {
-      formData.append('imageFiles', image.file);
-    });
-  }
-
   try {
-    const response = await axios({
-      method: 'post',
-      url: `${BASE_URL}/schedule/update`,
-      data: formData,
-    });
+    const response = await axios.post(`${BASE_URL}/schedule/update`, formData);
     console.log('Schedule updated successfully:', response.data);
-
     Object.assign(scheduleToUpdate, editData.value);
   } catch (error) {
     console.error('Error during schedule update:', error.response ? error.response.data : error.message);
   } finally {
     editIndex.value = null;
   }
+};
+
+const cancelEdit = () => {
+  editIndex.value = null;
 };
 
 const deleteSchedule = async index => {
@@ -314,10 +329,6 @@ const deleteSchedule = async index => {
 
 const deleteDiary = async index => {
   const diaryId = diaries.value[index].id;
-  if (!diaryId) {
-    console.error('Failed to delete diary: diaryId is undefined');
-    return;
-  }
   try {
     await axios.delete(`${BASE_URL}/diary/delete/${diaryId}`);
     diaries.value.splice(index, 1);
@@ -327,7 +338,39 @@ const deleteDiary = async index => {
   }
 };
 
-onMounted(fetchDayData);
+const onFileChange = event => {
+  const files = event.target.files;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+
+    reader.onload = e => {
+      editData.value.images.push(e.target.result);
+    };
+
+    reader.readAsDataURL(file);
+  }
+  event.target.value = '';
+};
+
+const removeImage = index => {
+  // 이미지 URL을 사용하여 삭제할 수도 있습니다.
+  const imageUrl = editData.value.images[index];
+
+  if (!imageUrl) {
+    console.error('Image URL is not defined');
+    return;
+  }
+
+  // deletedImageList에 URL을 추가 (필요시)
+  if (!editData.value.deletedImageList) {
+    editData.value.deletedImageList = [];
+  }
+  editData.value.deletedImageList.push(imageUrl);
+
+  // 이미지 리스트에서 삭제
+  editData.value.images.splice(index, 1);
+};
 </script>
 
 <style scoped>
@@ -384,37 +427,37 @@ onMounted(fetchDayData);
 
 .button-group {
   display: flex;
-  justify-content: center; /* 버튼들을 가운데 정렬 */
+  justify-content: center;
   margin-top: 10px;
-  margin-right: 0; /* 오른쪽 여백 제거 */
+  margin-right: 0;
 }
 
 .button-group button {
-  background-color: #343434; /* 기본 파란색 배경 */
-  color: white; /* 흰색 글자 */
-  border: none; /* 테두리 제거 */
-  border-radius: 5px; /* 둥근 모서리 */
-  padding: 8px 18px; /* 버튼 안쪽 여백 */
-  font-size: 0.9rem; /* 폰트 크기 */
-  cursor: pointer; /* 커서가 버튼 위에 있을 때 포인터로 변경 */
+  background-color: #343434;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
   transition:
     background-color 0.3s,
-    transform 0.2s; /* 색상 및 크기 변환 효과 */
-  margin-right: 5px; /* 버튼 사이의 간격 */
+    transform 0.2s;
+  margin-right: 5px;
 }
 
 .button-group button:last-child {
-  margin-right: 0; /* 마지막 버튼의 오른쪽 여백 제거 */
+  margin-right: 0;
 }
 
 .button-group button:hover {
-  background-color: #808080; /* 호버 시 더 어두운 색상 */
-  transform: translateY(-2px); /* 호버 시 살짝 올라가는 효과 */
+  background-color: #808080;
+  transform: translateY(-2px);
 }
 
 .button-group button:active {
-  background-color: #004080; /* 클릭 시 더 어두운 색상 */
-  transform: translateY(0); /* 클릭 시 원래 위치로 돌아옴 */
+  background-color: #004080;
+  transform: translateY(0);
 }
 
 .map-container {

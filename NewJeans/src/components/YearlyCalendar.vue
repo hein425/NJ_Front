@@ -4,9 +4,13 @@
       <button class="this-year-button" @click="resetToCurrentYear">This year</button>
       <button @click="$emit('toMonthlyView')" class="monthly-button">Monthly</button>
       <div class="yearCha">
-        <button @click="changeYear(-1)">◀</button>
+        <button @click="changeYear(-1)">
+          <font-awesome-icon :icon="['fas', 'angle-left']" />
+        </button>
         <h1>{{ currentYear }}</h1>
-        <button @click="changeYear(1)">▶</button>
+        <button @click="changeYear(1)">
+          <font-awesome-icon :icon="['fas', 'angle-right']" />
+        </button>
       </div>
     </div>
     <div class="calendar-grid">
@@ -15,12 +19,7 @@
         <div class="grid">
           <div v-for="day in weekDays" :key="day" :class="['day', day === 'Sun' ? 'sunday' : day === 'Sat' ? 'saturday' : '']">{{ day }}</div>
           <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
-          <div
-            v-for="date in month.days"
-            :key="date"
-            class="date"
-            :class="{ 'has-schedule': getSchedulesForDate(dayjs(`${currentYear.value}-${String(month.month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`)).length > 0 }"
-          >
+          <div v-for="date in month.days" :key="date" class="date">
             <span class="date-type">{{ date }}</span>
           </div>
         </div>
@@ -32,25 +31,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
-import axios from 'axios';
-import { BASE_URL } from '@/config';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const calendar = ref([]);
 const currentYear = ref(dayjs().year());
-const schedules = ref([]); // 연도별 일정 데이터
-
-// 연간 일정 데이터를 불러오는 함수
-const loadYearlySchedules = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/schedule/1/${currentYear.value}`);
-    schedules.value = response.data;
-    console.log('Loaded schedules data:', schedules.value);
-    generateCalendar(); // 일정 데이터 로드 후 캘린더 생성
-  } catch (error) {
-    console.error('Failed to load yearly schedules:', error);
-  }
-};
 
 // 연간 캘린더 데이터를 생성하는 함수
 const generateCalendar = () => {
@@ -67,24 +52,19 @@ const generateCalendar = () => {
   }
 };
 
-// 특정 날짜에 해당하는 일정을 필터링하는 함수
-const getSchedulesForDate = date => {
-  return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day'));
-};
-
-// 연도 변경 시 새 일정 데이터 불러오기
+// 연도 변경 시 캘린더 데이터 재생성
 const changeYear = amount => {
   currentYear.value += amount;
-  loadYearlySchedules(); // 연도 변경 시 새 일정 데이터 불러오기
+  generateCalendar();
 };
 
 onMounted(() => {
-  loadYearlySchedules(); // 컴포넌트가 마운트되면 연간 일정 데이터 로드
+  generateCalendar(); // 컴포넌트가 마운트되면 캘린더 생성
 });
 
 const resetToCurrentYear = () => {
   currentYear.value = dayjs().year();
-  loadYearlySchedules();
+  generateCalendar();
 };
 </script>
 
@@ -215,18 +195,6 @@ const resetToCurrentYear = () => {
   background-color: #f1f3f5;
   color: #333;
   position: relative; /* 위치 설정 */
-}
-
-.has-schedule {
-  /* 일정이 있는 경우 동그라미 테두리 추가 */
-  border: 2px solid #333; /* 테두리 색상 설정 */
-  border-radius: 50%; /* 동그라미 형태 */
-  width: 40px; /* 원하는 크기로 설정 */
-  height: 40px; /* 원하는 크기로 설정 */
-  display: flex; /* flexbox 사용 */
-  align-items: center; /* 중앙 정렬 */
-  justify-content: center; /* 중앙 정렬 */
-  margin: 0 auto; /* 가운데 정렬 */
 }
 
 .blank {

@@ -42,7 +42,7 @@ const handleSignUp = async () => {
   if (password.value !== confirmPassword.value) {
     alert('비밀번호가 일치하지 않습니다.');
     return;
-  }
+  } 
 
   try {
     //회원가입 데이터 객체
