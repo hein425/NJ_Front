@@ -664,7 +664,7 @@ select {
   top: 2px;
   left: 5px;
   font-size: 0.8rem;
-  color: #ff6347;
+  color: #DFC38C;
   /* z-index: 10; */
 }
 </style>
