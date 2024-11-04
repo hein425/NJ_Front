@@ -222,7 +222,7 @@ const onMonthChange = () => {
     v-else
     class="calendar-wrapper"
     :style="{
-      height: weeksInMonth === 5 ? '780px' : Math.max(weeksInMonth * 150, 600) + 'px',
+      height: weeksInMonth === 5 ? '700px' : Math.max(weeksInMonth * 150, 500) + 'px',
     }"
   >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
@@ -234,14 +234,14 @@ const onMonthChange = () => {
           <!-- <button @click="$router.push('/yearlyCalendar')" class="Yealy-button">Yeary</button> -->
           <button @click="isYearlyView = true" class="Yealy-button">Yeary</button>
           <button @click="subMonth()" class="B-Month-button">
-            <i><</i>
+            <font-awesome-icon :icon="['fas', 'angle-left']" />
           </button>
           <div class="YMYM">
             <span class="year">{{ now.format('YYYY') }}</span>
             <span class="month">{{ now.format('MMMM') }}</span>
           </div>
           <button @click="addMonth()" class="A-Month-button">
-            <i>></i>
+            <font-awesome-icon :icon="['fas', 'angle-right']" />
           </button>
 
           <div class="YMselecter">
@@ -285,8 +285,8 @@ const onMonthChange = () => {
               <span v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
                 {{ holiday.localName }}
               </span>
-              <span class="date-number">{{ column.get('date') }}</span>
             </template>
+            <span class="date-number">{{ column.get('date') }}</span>
 
             <!-- 일정표시창 -->
             <div
@@ -339,7 +339,7 @@ const onMonthChange = () => {
   perspective: 1000px;
   display: flex;
   align-items: flex-start;
-  padding-bottom: 50px;
+  padding-bottom: 90px;
   padding-left: 50px;
   padding-right: 50px;
   min-height: 500px;
@@ -397,13 +397,16 @@ const onMonthChange = () => {
 }
 
 .YMselecter {
+  position: absolute;
   right: 0%;
+  gap: 5px;
 }
 
 select {
   padding: 5px;
   border-radius: 5px;
   font-size: 1rem;
+  margin-right: 5px;
 }
 
 .year,
@@ -634,8 +637,8 @@ select {
   width: 100%; /* 셀의 너비를 꽉 차게 설정 */
   box-sizing: border-box; /* padding 포함하여 너비를 계산 */
   font-size: 0.8rem;
-  color: #494949;
-  padding: 8px 5px; /* 내부 여백 */
+  color: #3a3a3a;
+  padding: 9px 5px; /* 내부 여백 */
   border-radius: 3px;
   margin-top: 4px;
   text-align: left;
@@ -649,12 +652,12 @@ select {
 }
 
 .holiday-name {
-  font-size: 0.5rem; /* 원하는 폰트 크기 */
+  font-size: 0.7rem; /* 원하는 폰트 크기 */
   color: red; /* 원하는 글자 색상 */
   font-weight: lighter; /* 글자를 굵게 설정 */
   position: absolute;
   display: block; /* 블록 형식으로 배치 (필요 시) */
-  top: 18px;
+  top: 14px;
   left: 45px;
 }
 

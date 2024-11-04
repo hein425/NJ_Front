@@ -18,6 +18,8 @@ export const useAuthStore = defineStore('auth', {
       this.idx = idx;
       this.isLoggedIn = true;
 
+      console.log('지금 나오나?', this.userName, this.idx, this.email);
+
       // localStorage에 모든 값을 저장
       localStorage.setItem('token', token);
       localStorage.setItem('userName', userName);

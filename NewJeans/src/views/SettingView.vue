@@ -21,7 +21,7 @@
         </div>
 
         <!-- 로그인한 사용자의 이메일 표시 -->
-        <p class="profile-email">{{ userEmail }}</p>
+        <p class="profile-email">{{ email }}</p>
 
         <!-- 계정 삭제 섹션 -->
         <div class="delete-section">
@@ -61,7 +61,7 @@ import { BASE_URL } from '@/config';
 // Pinia 스토어 사용
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
-const userEmail = computed(() => authStore.email);
+const email = computed(() => authStore.email);
 const profileImage = computed(() => authStore.profile);
 
 // 상태 관리
@@ -173,7 +173,7 @@ const uploadProfileImage = async file => {
   );
 
   try {
-    const response = await axios.post('http://192.168.0.17:8080/user/update', formData, {
+    const response = await axios.post(`BASE_URL}/user/update`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('프로필 이미지가 성공적으로 업로드되었습니다:', response.data);
@@ -193,8 +193,34 @@ const editProfile = () => {
   console.log('닉네임 변경 클릭');
 };
 
-const deleteAccount = () => {
-  console.log('계정 삭제 클릭');
+// 계정 삭제 함수
+const deleteAccount = async () => {
+  if (!checkAuthStoreLoaded()) {
+    console.error('authStore에 필요한 정보가 없습니다.');
+    return;
+  }
+
+  try {
+    // 계정 삭제 API 호출
+    const response = await axios.delete(`${BASE_URL}/user/delete`, {
+      data: {
+        idx: authStore.idx,
+        email: authStore.email,
+      },
+      headers: {
+        Authorization: `Bearer ${authStore.accessToken}`,
+      },
+    });
+
+    console.log('계정이 성공적으로 삭제되었습니다:', response.data);
+
+    // 계정 삭제 후 상태 초기화 및 로그아웃
+    authStore.logout();
+    alert('계정이 삭제되었습니다.');
+  } catch (error) {
+    console.error('계정 삭제 중 오류:', error);
+    alert('계정을 삭제하는 중 문제가 발생했습니다.');
+  }
 };
 </script>
 

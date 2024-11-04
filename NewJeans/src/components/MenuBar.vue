@@ -1,7 +1,8 @@
 <template>
   <header>
     <div class="nav_wrapper">
-      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="profile" />
+      <!-- 수정된 부분: authStore에서 profile 값을 직접 가져옴 -->
+      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
         <RouterLink to="/" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
@@ -16,7 +17,7 @@
           <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
           Teams
         </RouterLink>
-        
+
         <RouterLink to="/setting" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
@@ -42,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Profile from './ProfileSide.vue';
 import Modal from './MoDal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -62,6 +63,13 @@ const handleLogout = async () => {
   await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
   router.push('/'); // 로그아웃 후 로그인 페이지로 이동
 };
+
+// Pinia store의 상태가 복원되었는지 확인
+onMounted(() => {
+  if (!authStore.isLoggedIn) {
+    authStore.restoreLogin();
+  }
+});
 </script>
 
 <style scoped>
