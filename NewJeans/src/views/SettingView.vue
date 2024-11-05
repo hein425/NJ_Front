@@ -59,7 +59,9 @@ import { BASE_URL } from '@/config';
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
-const profileImage = computed(() => authStore.profile);
+const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
+
+
 
 const isEditingName = ref(false);
 const newUserName = ref(userName.value);
