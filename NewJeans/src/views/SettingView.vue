@@ -85,37 +85,51 @@ const checkAuthStoreLoaded = () => {
 
 const saveUserName = async () => {
   if (!checkAuthStoreLoaded()) {
-    console.error('authStore에 필요한 정보가 없습니다. restoreLogin이 제대로 실행되었는지 확인하십시오.');
+    console.error('authStore에 필요한 정보가 없습니다.');
     return;
   }
 
-  try {
-    const formData = new FormData();
-    formData.append(
-      'userUpdate',
-      new Blob(
-        [
-          JSON.stringify({
-            idx: authStore.idx,
-            email: authStore.email,
-            password: null,
-            userName: newUserName.value,
-          }),
-        ],
-        { type: 'application/json' },
-      ),
-    );
+  // 유효성 검사
+  if (!newUserName.value || newUserName.value.trim() === '') {
+    console.error('유효하지 않은 닉네임입니다.');
+    return;
+  }
 
-    await axios.post(`${BASE_URL}/user/update`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+  // idx 값이 제대로 설정되었는지 확인
+  console.log('현재 idx:', authStore.idx);
+
+  try {
+    console.log('idx:', authStore.idx); // 디버깅
+    console.log('userName:', newUserName.value); // 디버깅
+
+    // PUT 메서드로 닉네임 변경 요청
+    await axios.put(
+      `${BASE_URL}/user/updateUserName/${authStore.idx}`,
+      {
+        userName: newUserName.value,
       },
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
 
     authStore.userName = newUserName.value;
     isEditingName.value = false;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
+
+    // 에러 응답을 안전하게 출력
+    if (error.response && error.response.data) {
+      try {
+        // 에러 데이터를 문자열로 변환하고 크기를 제한
+        console.error('서버 응답:', JSON.stringify(error.response.data, null, 2).slice(0, 1000));
+        // 1000자는 출력 크기를 제한한 예시입니다.
+      } catch (stringifyError) {
+        console.error('에러 응답을 문자열로 변환하는 중 오류 발생:', stringifyError);
+      }
+    }
   }
 };
 
@@ -156,25 +170,13 @@ const uploadProfileImage = async file => {
   }
 
   const formData = new FormData();
-  formData.append('profileUpdate', file);
-  formData.append(
-    'userUpdate',
-    new Blob(
-      [
-        JSON.stringify({
-          idx: authStore.idx,
-          email: authStore.email,
-          password: null,
-          userName: authStore.userName,
-        }),
-      ],
-      { type: 'application/json' },
-    ),
-  );
+  formData.append('imageFiles', file); // 파일 필드 이름 수정
 
   try {
-    const response = await axios.post(`BASE_URL}/user/update`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     console.log('프로필 이미지가 성공적으로 업로드되었습니다:', response.data);
     authStore.profile = response.data.profileImageUrl;

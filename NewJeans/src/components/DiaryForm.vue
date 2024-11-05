@@ -95,7 +95,7 @@ const submitDiary = async () => {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: category.value,
+    category: category.value, 
     calendarsIdx: 1,
   };
 

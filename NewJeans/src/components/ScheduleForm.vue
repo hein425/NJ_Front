@@ -30,8 +30,8 @@
           <input id="enddate" v-model="enddate" type="datetime-local" />
         </div>
 
-        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
-        <div class="form-row" style="width: 450px">
+         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
+         <div class="form-row" style="width: 450px">
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
@@ -41,6 +41,10 @@
             <label for="monthly" class="radio-label">
               <input id="monthly" type="radio" v-model="repeat" value="MONTHLY" />
               매월
+            </label>
+            <label for="monthly" class="radio-label">
+              <input id="monthly" type="radio" v-model="repeat" value="DAILY" />
+              매일
             </label>
             <label for="none" class="radio-label">
               <input id="none" type="radio" v-model="repeat" value="NONE" />
@@ -52,7 +56,7 @@
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
           <label for="location">지도</label>
-          <KakaoMap />
+          <KakaoMap @updateLocation="updateLocation" /> <!-- 위치 업데이트 이벤트 -->
         </div>
 
         <!-- 내용 입력 -->
@@ -125,6 +129,12 @@ const colorList = [
   { value: 'VIOLET', color: '#b366ff' },
   { value: 'GRAY', color: '#a6a6a6' },
 ];
+
+const updateLocation = (coords) => {
+  console.log("부모 컴포넌트에서 받은 좌표:", coords);
+  location.value = `${coords.lat}, ${coords.lng}`; // 위치를 위도, 경도로 저장
+  console.log("위치 업데이트:", location.value); 
+};
 
 onMounted(() => {
   if (props.selectedDate) {
