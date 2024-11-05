@@ -10,6 +10,14 @@ export const useAuthStore = defineStore('auth', {
     idx: null, // 초기 값을 null로 설정
   }),
   actions: {
+    check() {
+      console.log(`this.accessToken = ${this.accessToken}`);
+      console.log(`this.isLoggedIn = ${this.isLoggedIn}`);
+      console.log(`this.userName = ${this.userName}`);
+      console.log(`this.profile = ${this.profile}`);
+      console.log(`this.email = ${this.email}`);
+      console.log(`this.idx = ${this.idx}`);
+    },
     login(token, userName, profile, email, idx) {
       this.accessToken = token;
       this.userName = userName;
@@ -17,8 +25,6 @@ export const useAuthStore = defineStore('auth', {
       this.email = email;
       this.idx = idx;
       this.isLoggedIn = true;
-
-      console.log('지금 나오나?', this.userName, this.idx, this.email);
 
       // localStorage에 모든 값을 저장
       localStorage.setItem('token', token);
