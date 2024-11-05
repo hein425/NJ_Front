@@ -92,7 +92,7 @@ onMounted(() => {
 /* 각 메뉴 항목의 스타일 */
 .menu-item {
   padding: 1.5rem 1rem; /* rem 단위로 패딩 설정 */
-  background-color: #f5f5f5;
+  background-color: var(--menu-item-background-color); /* 변수 사용 */
   color: #5c5c5c;
   border: 1px solid #ccc;
   text-align: center;
@@ -113,12 +113,12 @@ onMounted(() => {
 
 /* 활성화된 메뉴 (클릭 후 유지되는 상태) */
 .active {
-  background-color: white;
-  color: black;
-  transform: scale(1.1); /* 버튼을 살짝 키워서 다른 버튼들과 겹침 */
+  background-color: var(--menu-item-active-background-color); /* 변수 사용 */
+  color: var(--menu-item-active-text-color); /* 텍스트 색상 변수 */
+  transform: scale(1.1); /* 버튼을 살짝 키워서 강조 */
   z-index: 1; /* 다른 버튼들 위로 올라옴 */
-  border-color: transparent; /* 테두리 색을 투명하게 만들어 테두리 제거 */
-  border-radius: 0.8rem; /* rem 단위로 둥근 모서리 설정 */
+  border-color: var(--menu-item-active-border-color); /* 테두리 색상 변수 */
+  border-radius: 0.8rem; /* 둥근 모서리 */
 }
 
 /* Calendar 메뉴 */
