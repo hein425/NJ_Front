@@ -30,8 +30,8 @@
           <input id="enddate" v-model="enddate" type="datetime-local" />
         </div>
 
-        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
-        <div class="form-row" style="width: 450px">
+         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
+         <div class="form-row" style="width: 450px">
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
@@ -41,6 +41,10 @@
             <label for="monthly" class="radio-label">
               <input id="monthly" type="radio" v-model="repeat" value="MONTHLY" />
               매월
+            </label>
+            <label for="monthly" class="radio-label">
+              <input id="monthly" type="radio" v-model="repeat" value="DAILY" />
+              매일
             </label>
             <label for="none" class="radio-label">
               <input id="none" type="radio" v-model="repeat" value="NONE" />
