@@ -44,7 +44,7 @@ export default {
     async removeImage(index, imageUrl) {
       try {
         // 서버로 이미지 삭제 요청을 보냅니다.
-        await axios.post(`${BASE_URL}http://112.222.157.156:10004/api/deleteImage`, { imageUrl });
+        await axios.post(`${BASE_URL}/api/deleteImage`, { imageUrl });
 
         // 요청이 성공하면 이미지 리스트에서 제거합니다.
         this.images.splice(index, 1);
