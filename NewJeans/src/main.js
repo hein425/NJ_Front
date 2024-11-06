@@ -17,7 +17,6 @@ import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, 
 
 library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight);
 
-
 // Vue 앱 생성
 const app = createApp(App);
 

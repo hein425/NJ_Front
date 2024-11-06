@@ -30,8 +30,8 @@
           <input id="enddate" v-model="enddate" type="datetime-local" />
         </div>
 
-         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
-         <div class="form-row" style="width: 450px">
+        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
+        <div class="form-row" style="width: 450px">
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
@@ -56,7 +56,8 @@
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
           <label for="location">지도</label>
-          <KakaoMap @updateLocation="updateLocation" /> <!-- 위치 업데이트 이벤트 -->
+          <KakaoMap @updateLocation="updateLocation" />
+          <!-- 위치 업데이트 이벤트 -->
         </div>
 
         <!-- 내용 입력 -->
@@ -69,10 +70,9 @@
         </div>
 
         <!-- 이미지 업로드 -->
-
         <div class="form-row">
           <label for="image" style="width: 450px">이미지</label>
-          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+          <input id="image" type="file" @chnpmange="handleImageUpload" multiple class="input-field" />
         </div>
 
         <div class="image-preview">
@@ -130,10 +130,10 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
-const updateLocation = (coords) => {
-  console.log("부모 컴포넌트에서 받은 좌표:", coords);
+const updateLocation = coords => {
+  console.log('부모 컴포넌트에서 받은 좌표:', coords);
   location.value = `${coords.lat}, ${coords.lng}`; // 위치를 위도, 경도로 저장
-  console.log("위치 업데이트:", location.value); 
+  console.log('위치 업데이트:', location.value);
 };
 
 onMounted(() => {
@@ -156,6 +156,12 @@ const handleImageUpload = event => {
 };
 
 const submitSchedule = async () => {
+  //제목없으면 얼럿 띄우고 중단
+  if (!title.value.trim()) {
+    alert('제목을 입력해주세요.');
+    return;
+  }
+
   // scheduleRequest JSON 객체 생성
   const scheduleRequest = {
     title: title.value,

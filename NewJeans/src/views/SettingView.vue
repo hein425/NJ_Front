@@ -356,7 +356,7 @@ const showStatistics = () => {
 .theme-section {
   width: 100%;
   position: relative;
-  right: 24%;
+  right: 26.5%;
 }
 
 .theme-header {
