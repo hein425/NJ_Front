@@ -42,8 +42,9 @@ const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
 const userIdx = 1;
-const currentPage = ref(1); // 현재 페이지 번호
-const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
+
+const currentPage = ref(1);
+const itemsPerPage = 6;
 
 const categories = [
   { label: '전체보기', value: 'ALL' },
@@ -76,24 +77,27 @@ const sortedDiaries = computed(() => {
   });
 });
 
+// 전체 일기를 정렬한 후, 현재 페이지에 맞는 일기 목록을 반환
 const paginatedDiaries = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return sortedDiaries.value.slice(start, end);
 });
 
+// 전체 페이지 수 계산
 const totalPages = computed(() => {
   return Math.ceil(sortedDiaries.value.length / itemsPerPage);
 });
 
-const goToDiaryDetail = idx => {
-  router.push({ name: 'DiaryDetail', params: { idx } });
-};
-
+// 특정 페이지로 이동하는 함수
 const goToPage = page => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
   }
+};
+
+const goToDiaryDetail = idx => {
+  router.push({ name: 'DiaryDetail', params: { idx } });
 };
 
 const getCategoryLabel = categoryValue => {
