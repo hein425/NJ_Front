@@ -84,37 +84,17 @@
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
-                    <button class="delete-btn" @click.stop="removeImage(imgIndex, `${BASE_URL}${imageUrl}`)">X</button>
-                  </div>
-                  <input type="file" @change="onFileChange" multiple accept="image/*" />
-                </div>
-
-
-                <div v-if="editIndex === index" class="diary-images">
-                  <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="imageUrl" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
                 </div>
 
                 <div v-else class="diary-images">
-
                   <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
-                    <!-- 수정 전: BASE_URL을 사용하는 이미지 -->
-                    <img v-if="editIndex !== index" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
-
-                    <!-- 수정 후: base64 URL을 사용하는 이미지 -->
-                    <img v-else :src="imageUrl" alt="Diary Image" style="width: 150px; margin: 5px" />
-
-                    <!-- 이미지 삭제 버튼: 수정 모드에서만 표시 -->
-                    <button v-if="editIndex === index" class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
+                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                   </div>
-
-                  <!-- 이미지 업로드 입력 필드: 수정 모드에서만 표시 -->
-                  <input v-if="editIndex === index" type="file" @change="onFileChange" multiple accept="image/*" />
-
+                </div>
                 <div class="button-group">
                   <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
                   <button @click.stop="deleteDiary(index)">Delete</button>
@@ -123,7 +103,6 @@
                     <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
                     <button @click.stop="cancelEdit">Cancel</button>
                   </div>
-                </div>
                 </div>
               </div>
             </transition>
@@ -204,7 +183,6 @@ const fetchDayData = async selectedDate => {
         images: schedule.images || [],
       };
     });
-
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
@@ -294,18 +272,18 @@ const saveDiaryEdit = async (type, index) => {
     // diaryRequest 객체를 JSON 문자열로 변환하여 추가
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-// <<<<<<< HEAD
+    // <<<<<<< HEAD
     // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
-// =======
-//     // 새로 등록할 이미지를 FormData에 추가
-//     for (let image of editData.value.images) {
-//       if (typeof image === 'object' && image instanceof File) {
-//         // 파일인 경우만 추가
-//         formData.append('imageFiles', image);
-// >>>>>>> sunny
+        // =======
+        //     // 새로 등록할 이미지를 FormData에 추가
+        //     for (let image of editData.value.images) {
+        //       if (typeof image === 'object' && image instanceof File) {
+        //         // 파일인 경우만 추가
+        //         formData.append('imageFiles', image);
+        // >>>>>>> sunny
       }
     }
 
@@ -383,7 +361,6 @@ const deleteDiary = async index => {
 const onFileChange = event => {
   const files = event.target.files;
 
-
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
 
@@ -403,7 +380,6 @@ const onFileChange = event => {
   }
 
   event.target.value = ''; // 파일 입력 필드를 초기화
-
 };
 
 const removeImage = index => {
@@ -424,6 +400,13 @@ const removeImage = index => {
   // 이미지 리스트에서 삭제
   editData.value.images.splice(index, 1);
 };
+
+// 수정시 이미지 문제 해결하기 위해 추가
+const isNewImage = (imageUrl) => {
+  // 새로운 이미지인지 여부를 판단
+  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
+};
+
 </script>
 
 <style scoped>
