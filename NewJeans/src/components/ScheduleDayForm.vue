@@ -98,9 +98,20 @@
                 </div>
 
                 <div v-else class="diary-images">
+
                   <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <!-- 수정 전: BASE_URL을 사용하는 이미지 -->
+                    <img v-if="editIndex !== index" :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+
+                    <!-- 수정 후: base64 URL을 사용하는 이미지 -->
+                    <img v-else :src="imageUrl" alt="Diary Image" style="width: 150px; margin: 5px" />
+
+                    <!-- 이미지 삭제 버튼: 수정 모드에서만 표시 -->
+                    <button v-if="editIndex === index" class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
                   </div>
+
+                  <!-- 이미지 업로드 입력 필드: 수정 모드에서만 표시 -->
+                  <input v-if="editIndex === index" type="file" @change="onFileChange" multiple accept="image/*" />
                 </div>
 
                 <div class="button-group">
