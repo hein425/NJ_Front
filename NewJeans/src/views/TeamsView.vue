@@ -23,11 +23,11 @@
         </transition>
 
         <!-- 친구 목록 -->
-        <ul>
+        <ul class="friend-list">
           <li v-for="friend in friends" :key="friend.idx">
             <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon">
-            <span>{{ friend.userName }}</span>
-            <span class="friend-email">{{ friend.email }}</span>
+              <span>{{ friend.userName }}</span>
+              <span class="friend-email">{{ friend.email }}</span>
           </li>
         </ul>
       </div>
@@ -196,13 +196,17 @@ onMounted(() => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.friends-list {
+
+.friend-list {
+  list-style-type: none; /* 리스트 점 제거 */
+  padding: 0; /* 기본 패딩 제거 */
+  margin: 0; /* 기본 마진 제거 */
+}
+
+.friend-list li {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 15px;
+  align-items: center;
+  padding: 8px 0; /* 항목 간 간격 추가 */
 }
 
 .friend-requests {
