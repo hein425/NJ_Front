@@ -61,8 +61,6 @@ const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
 const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
 
-
-
 const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 
@@ -159,6 +157,12 @@ const applyTheme = () => {
   document.querySelectorAll('.menu-item').forEach(item => {
     item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
   });
+
+  // 로고 이미지도 테마에 따라 변경
+  const logoElement = document.querySelector('.logo img');
+  if (logoElement) {
+    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim();
+  }
 };
 
 const deleteAccount = async () => {
