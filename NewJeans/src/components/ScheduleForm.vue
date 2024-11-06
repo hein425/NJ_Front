@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch} from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
@@ -175,9 +175,13 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     calendarsIdx: 1,
+<<<<<<< HEAD
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
 
+=======
+    repeatType: repeat.value,
+>>>>>>> 09893cea0ee2e26b91095a62fc998bc450022771
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
@@ -200,10 +204,29 @@ const submitSchedule = async () => {
 
   try {
     const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
-      headers: {'Content-Type': 'multipart/form-data',},
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Schedule Submitted Successfully', response.data);
 
+<<<<<<< HEAD
+=======
+    // 기본일정 데이터 생성 후
+    const scheduleId = response.data.scheduleId;
+
+    if (repeat.value !== 'NONE') {
+      const repeatRequest = {
+        sr_type: repeat.value, // DAILY, WEEKLY, MONTHLY, YEARLY 중 하나
+        s_idx: scheduleId, // 생성된 일정의 ID
+        r_end_date: dayjs(enddate.value).format('YYYY-MM-DD'), // 반복 종료 날짜
+      };
+
+      // 반복 일정 데이터를 서버에 전송
+      await axios.post(`${BASE_URL}/scheduleRepeat/create`, repeatRequest);
+
+      console.log('Repeat Schedule Submitted Successfully');
+    }
+
+>>>>>>> 09893cea0ee2e26b91095a62fc998bc450022771
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit Schedule:', error);
@@ -215,15 +238,13 @@ const cancelForm = () => {
   emit('closeForm');
 };
 
-
-// 시작일 정하면 자동으로 종료일은 같은날 1시간후로. 
-watch(startdate, (newStartDate) => {
+// 시작일 정하면 자동으로 종료일은 같은날 1시간후로.
+watch(startdate, newStartDate => {
   if (newStartDate) {
     const newEndDate = dayjs(newStartDate).add(1, 'hour').format('YYYY-MM-DDTHH:mm');
     enddate.value = newEndDate;
   }
 });
-
 </script>
 
 <style scoped>
