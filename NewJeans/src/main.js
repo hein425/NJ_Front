@@ -11,10 +11,10 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 // 사용할 아이콘들 import
-import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'; // 일반 아이콘 import
+import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil } from '@fortawesome/free-solid-svg-icons'; // 일반 아이콘 import
 
 // 아이콘들을 라이브러리에 추가
-library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight );
+library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil );
 
 // Vue 앱 생성
 const app = createApp(App);

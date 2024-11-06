@@ -307,10 +307,15 @@ const onMonthChange = () => {
       <!-- 뒤집힌 화면에서 일정 및 다이어리 버튼, 폼 렌더링 -->
       <div class="flipped-content">
         <div class="button-group">
-          <button class="schedule-btn" @click="showScheduleForm">Schedule</button>
+          <button class="schedule-btn" @click="showScheduleForm">
+            <font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" />
+            &nbsp;Schedule
+          </button>
           <button class="flip-back-btn" @click="flipBack">&orarr;</button>
           <!-- ㄴ 달력 다시 뒤집기 버튼 -->
-          <button class="diary-btn" @click="showDiaryForm">Diary</button>
+          <button class="diary-btn" @click="showDiaryForm">
+            <font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" /> &nbsp; Diary
+          </button>
         </div>
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->

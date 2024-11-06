@@ -65,7 +65,7 @@
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
           <label for="location">지도</label>
-          <KakaoMap @updateLocation="updateLocation" /> <!-- 위치 업데이트 이벤트 -->
+          <KakaoMap @updateLocation="updateLocation"/> <!-- 위치 업데이트 이벤트 -->
         </div>
 
         <!-- 내용 입력 -->
