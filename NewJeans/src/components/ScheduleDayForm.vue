@@ -27,7 +27,7 @@
                 <hr class="divider" />
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
-                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
+                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
                 </div>
 
                 <!-- 이미지 관리 섹션 -->
@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -146,6 +146,8 @@ const editData = ref({ title: '', content: '', address: '', time: '', repeat: ''
 const showDayView = ref(true);
 
 let pollingInterval = null;
+
+
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
