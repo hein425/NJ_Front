@@ -25,20 +25,11 @@
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <hr class="divider" />
-<<<<<<< HEAD
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
                   <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
                 </div>
-=======
-                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
-                <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
 
-                <div v-if="schedule.mapUrl" class="map-container">
-                  <img :src="schedule.mapUrl" alt="Map" class="map-image" />
-                </div>
-
->>>>>>> sunny
                 <!-- 이미지 관리 섹션 -->
                 <div class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
@@ -98,7 +89,7 @@
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
                 </div>
-<<<<<<< HEAD
+
 
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
@@ -132,6 +123,7 @@
                     <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
                     <button @click.stop="cancelEdit">Cancel</button>
                   </div>
+                </div>
                 </div>
               </div>
             </transition>
