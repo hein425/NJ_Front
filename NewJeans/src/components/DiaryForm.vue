@@ -10,7 +10,7 @@
           </div>
 
           <div class="category-section">
-            <select v-model="category" id="category" class="input-field" style="width: 100px">
+            <select v-model="category" id="category" class="input-field" style="width: 114px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="EXERCISE">#운동</option>
