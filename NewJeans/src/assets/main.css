@@ -14,8 +14,11 @@ body {
   --menu-item-background-color: #f5f5f5;
   --menu-text-color: #5c5c5c;
   --menu-active-color: black;
+  --menu-item-active-background-color: #ffffff;
+  --menu-item-active-text-color: #000000;
+  --menu-item-active-border-color: transparent;
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --logo-image: url('src/assets/logo.png');
+  --logo-image: url('src/assets/logo2.png');
 }
 
 .Light-theme {

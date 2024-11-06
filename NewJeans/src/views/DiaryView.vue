@@ -42,8 +42,8 @@ const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
 const userIdx = 1;
-const currentPage = ref(1);
-const itemsPerPage = 6;
+const currentPage = ref(1); // 현재 페이지 번호
+const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
 
 const categories = [
   { label: '전체보기', value: 'ALL' },
