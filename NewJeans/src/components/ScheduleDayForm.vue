@@ -25,10 +25,20 @@
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <hr class="divider" />
+<<<<<<< HEAD
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
                   <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
                 </div>
+=======
+                <p v-if="editIndex !== index"><strong>Address:</strong><KakaoMap /></p>
+                <input v-else v-model="editData.address" class="input-field" placeholder="Enter Address" @click.stop />
+
+                <div v-if="schedule.mapUrl" class="map-container">
+                  <img :src="schedule.mapUrl" alt="Map" class="map-image" />
+                </div>
+
+>>>>>>> sunny
                 <!-- 이미지 관리 섹션 -->
                 <div class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
@@ -88,6 +98,7 @@
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
                 </div>
+<<<<<<< HEAD
 
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
@@ -112,7 +123,6 @@
 
                   <!-- 이미지 업로드 입력 필드: 수정 모드에서만 표시 -->
                   <input v-if="editIndex === index" type="file" @change="onFileChange" multiple accept="image/*" />
-                </div>
 
                 <div class="button-group">
                   <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
@@ -177,6 +187,7 @@ const fetchDayData = async selectedDate => {
 
   try {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
+
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
       let longitude = 126.9786567;
@@ -201,6 +212,7 @@ const fetchDayData = async selectedDate => {
         images: schedule.images || [],
       };
     });
+
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
@@ -290,10 +302,18 @@ const saveDiaryEdit = async (type, index) => {
     // diaryRequest 객체를 JSON 문자열로 변환하여 추가
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
+// <<<<<<< HEAD
     // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
+// =======
+//     // 새로 등록할 이미지를 FormData에 추가
+//     for (let image of editData.value.images) {
+//       if (typeof image === 'object' && image instanceof File) {
+//         // 파일인 경우만 추가
+//         formData.append('imageFiles', image);
+// >>>>>>> sunny
       }
     }
 
@@ -371,6 +391,7 @@ const deleteDiary = async index => {
 const onFileChange = event => {
   const files = event.target.files;
 
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
 
@@ -390,6 +411,7 @@ const onFileChange = event => {
   }
 
   event.target.value = ''; // 파일 입력 필드를 초기화
+
 };
 
 const removeImage = index => {

@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch} from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
@@ -165,6 +165,7 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     calendarsIdx: 1,
+    repeatType: repeat.value,
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
@@ -187,7 +188,7 @@ const submitSchedule = async () => {
 
   try {
     const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
-      headers: {'Content-Type': 'multipart/form-data',},
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Schedule Submitted Successfully', response.data);
 
@@ -203,7 +204,7 @@ const submitSchedule = async () => {
 
       // 반복 일정 데이터를 서버에 전송
       await axios.post(`${BASE_URL}/scheduleRepeat/create`, repeatRequest);
-      
+
       console.log('Repeat Schedule Submitted Successfully');
     }
 
@@ -218,15 +219,13 @@ const cancelForm = () => {
   emit('closeForm');
 };
 
-
-// 시작일 정하면 자동으로 종료일은 같은날 1시간후로. 
-watch(startdate, (newStartDate) => {
+// 시작일 정하면 자동으로 종료일은 같은날 1시간후로.
+watch(startdate, newStartDate => {
   if (newStartDate) {
     const newEndDate = dayjs(newStartDate).add(1, 'hour').format('YYYY-MM-DDTHH:mm');
     enddate.value = newEndDate;
   }
 });
-
 </script>
 
 <style scoped>
