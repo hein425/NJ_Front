@@ -42,7 +42,6 @@
       <div class="image-preview">
         <div v-for="(image, index) in images" :key="index" class="image-container">
           <img :src="image.url" alt="Preview" />
-          <button class="delete-btn" @click="removeImage(index)">X</button>
         </div>
       </div>
 
@@ -137,7 +136,7 @@ const cancelForm = () => {
   margin-top: 10vh;
   padding: 20px;
   border-radius: 10px;
-  height: 550px;
+  height: auto;
 }
 
 /* 전체 레이아웃 */
@@ -200,7 +199,6 @@ const cancelForm = () => {
 }
 
 .image-container {
-  position: relative;
   margin: 5px;
 }
 
@@ -209,20 +207,6 @@ const cancelForm = () => {
   height: 100px;
   border: 1px solid #ddd;
   border-radius: 8px;
-}
-
-.delete-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  font-size: 14px;
 }
 
 .button-row {

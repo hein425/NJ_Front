@@ -427,7 +427,7 @@ select {
 .A-Month-button {
   background-color: white;
   border: none;
-  width: 2rem;
+  
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
@@ -652,12 +652,12 @@ select {
 }
 
 .holiday-name {
-  font-size: 0.5rem; /* 원하는 폰트 크기 */
+  font-size: 0.7rem; /* 원하는 폰트 크기 */
   color: red; /* 원하는 글자 색상 */
   font-weight: lighter; /* 글자를 굵게 설정 */
   position: absolute;
   display: block; /* 블록 형식으로 배치 (필요 시) */
-  top: 18px;
+  top: 14px;
   left: 45px;
 }
 
