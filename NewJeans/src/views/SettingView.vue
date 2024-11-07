@@ -328,13 +328,15 @@ const showStatistics = () => {
 }
 
 .theme-section {
-  width: 100%;
-
+  width: 23vh;
   position: relative;
-  right: 26.5%;
+  right: 35.5%;
 }
 
 .theme-header {
+  position: relative;
+  left: 6.8vh;
+  width: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -353,8 +355,8 @@ const showStatistics = () => {
 
 .theme-options {
   position: absolute;
-  left: 34%;
-  width: 32%;
+  left: 33%;
+  width: 135%;
   display: flex;
   gap: 10px;
   justify-content: center;
