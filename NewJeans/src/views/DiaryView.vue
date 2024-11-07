@@ -181,7 +181,7 @@ onMounted(() => {
 }
 
 .diary-item {
-  padding: 15px 0;
+  padding: 15px 20px;
   border-bottom: 1px dashed #ccc;
   display: grid;
   grid-template-columns: 1fr 100px 120px; /* 타이틀, 카테고리, 날짜의 고정 크기 설정 */
