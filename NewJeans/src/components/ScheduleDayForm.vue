@@ -171,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted, } from 'vue';
+import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -331,10 +331,18 @@ const saveDiaryEdit = async (type, index) => {
     // diaryRequest 객체를 JSON 문자열로 변환하여 추가
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
+    // <<<<<<< HEAD
     // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
+        // =======
+        //     // 새로 등록할 이미지를 FormData에 추가
+        //     for (let image of editData.value.images) {
+        //       if (typeof image === 'object' && image instanceof File) {
+        //         // 파일인 경우만 추가
+        //         formData.append('imageFiles', image);
+        // >>>>>>> sunny
       }
     }
 
@@ -500,10 +508,11 @@ const removeImage = index => {
 };
 
 // 수정시 이미지 문제 해결하기 위해 추가
-const isNewImage = imageUrl => {
+const isNewImage = (imageUrl) => {
   // 새로운 이미지인지 여부를 판단
   return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
 };
+
 </script>
 
 <style scoped>

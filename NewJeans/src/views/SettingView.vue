@@ -52,66 +52,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
-import { onMounted } from 'vue';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
 
-const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
+const profileImage = ref(defaultProfileImage); // 초기값 기본 이미지로 설정
 
 const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 
-const startEditingName = () => {
-  isEditingName.value = true;
-  newUserName.value = userName.value;
-};
+// 테마 선택 변수
+const selectedTheme = ref('Light'); // 초기 테마 설정
 
-const checkAuthStoreLoaded = () => {
-  if (!authStore.idx || !authStore.email) {
-    console.warn('authStore에 idx 또는 email이 없습니다.');
-    return false;
-  }
-  return true;
-};
-
-const saveUserName = async () => {
-  if (!checkAuthStoreLoaded()) return;
-
-  // 닉네임에서 모든 공백 제거
-  const sanitizedUserName = newUserName.value.replace(/\s/g, '');
-
-  // 공백이 포함된 경우 저장 불가
-  if (!sanitizedUserName || sanitizedUserName === '') {
-    alert('닉네임에 공백을 포함할 수 없습니다.');
-    return;
-  }
-
-  try {
-    await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: sanitizedUserName });
-
-    authStore.userName = sanitizedUserName;
-
-    isEditingName.value = false;
-  } catch (error) {
-    console.error('닉네임 저장 중 오류:', error);
-
-    if (error.response && error.response.data) {
-      try {
-        console.error('서버 응답:', JSON.stringify(error.response.data, null, 2).slice(0, 1000));
-      } catch (stringifyError) {
-        console.error('에러 응답을 문자열로 변환하는 중 오류 발생:', stringifyError);
-      }
-    }
-  }
-};
-
+// 테마 목록
 const themes = [
   { value: 'Light', label: 'Light Theme', backgroundColor: '#f5f5f5', icon: 'src/assets/white_icon.jpg' },
   { value: 'Dark', label: 'Dark Theme', backgroundColor: '#242424', icon: 'src/assets/dark_icon.jpg' },
@@ -119,80 +78,44 @@ const themes = [
   { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/sky-5534319_1920.jpg")', icon: 'src/assets/sky_icon.jpg' },
 ];
 
-const selectedTheme = ref(themes[0].value);
-
-const fileInput = ref(null);
-
-const openFilePicker = () => fileInput.value.click();
-
-const handleFileChange = async event => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      authStore.profile = reader.result;
-      uploadProfileImage(file);
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const uploadProfileImage = async file => {
-  if (!checkAuthStoreLoaded()) return;
-
-  const formData = new FormData();
-
-  formData.append('imageFiles', file);
-
+// 프로필 이미지 로드 함수
+const loadProfileImage = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
-    if (response.data.profileImageUrl) {
-      authStore.profile = response.data.profileImageUrl;
-      localStorage.setItem('profile', response.data.profileImageUrl);
+    const response = await axios.get(`${BASE_URL}/user/profileImage/${authStore.idx}`);
+    if (response.status === 200 && response.data) {
+      profileImage.value = BASE_URL + response.data; // API에서 반환된 이미지 URL 사용
+    } else {
+      profileImage.value = defaultProfileImage; // 기본 이미지 사용
     }
   } catch (error) {
-    console.error('프로필 이미지 업로드 중 오류:', error);
+    console.error('프로필 이미지 로드 중 오류:', error);
+    profileImage.value = defaultProfileImage; // 에러 시 기본 이미지 설정
   }
 };
 
+
+// 테마를 적용하는 함수
 const applyTheme = () => {
-  // 모든 테마 클래스를 제거하고 새로운 테마 클래스를 추가
   document.documentElement.classList.remove('Light-theme', 'Dark-theme', 'Pink-theme', 'Sky-theme');
   document.documentElement.classList.add(`${selectedTheme.value}-theme`);
 
-  // 선택된 테마의 스타일을 가져옴
   const selected = themes.find(theme => theme.value === selectedTheme.value);
-
   if (selected) {
     if (selected.backgroundColor) {
-      // 배경색 설정 및 배경 이미지 제거
       document.documentElement.style.backgroundColor = selected.backgroundColor;
       document.documentElement.style.backgroundImage = 'none';
     } else if (selected.backgroundImage) {
-      // 배경 이미지를 설정하고 배경색을 제거
       document.documentElement.style.backgroundImage = selected.backgroundImage;
       document.documentElement.style.backgroundColor = 'transparent';
     }
   }
 
-  // MenuBar에도 테마 적용
-  document.querySelector('.nav_wrapper').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
-  document.querySelectorAll('.menu-item').forEach(item => {
-    item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
-  });
-
-  // 로고 이미지도 테마에 따라 변경
-  const logoElement = document.querySelector('.logo img');
-  if (logoElement) {
-    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim().replace(/["']/g, '');
-  }
-
-  // 테마를 localStorage에 저장
-  localStorage.setItem('selectedTheme', selectedTheme.value);
+  localStorage.setItem('selectedTheme', selectedTheme.value); // 선택된 테마 저장
 };
 
-// 페이지 로드 시 선택된 테마 초기화
-onMounted(() => {
+// 페이지가 로드될 때 프로필 이미지와 테마를 초기화
+onMounted(async () => {
+  await loadProfileImage();
   const savedTheme = localStorage.getItem('selectedTheme');
   if (savedTheme) {
     selectedTheme.value = savedTheme;
@@ -200,11 +123,61 @@ onMounted(() => {
   }
 });
 
-const deleteAccount = async () => {
-  if (!checkAuthStoreLoaded()) return;
+// 닉네임 편집 관련 함수들
+const startEditingName = () => {
+  isEditingName.value = true;
+  newUserName.value = userName.value;
+};
+
+const saveUserName = async () => {
+  if (!authStore.idx || !newUserName.value.trim()) return;
+
+  const sanitizedUserName = newUserName.value.replace(/\s/g, '');
+
+  if (!sanitizedUserName) {
+    alert('닉네임에 공백을 포함할 수 없습니다.');
+    return;
+  }
 
   try {
-    const response = await axios.delete(`${BASE_URL}/user/delete`, {
+  await axios.put(`${BASE_URL}/user/updateUserName`, { 
+    idx: authStore.idx, 
+    userName: sanitizedUserName 
+  });
+  authStore.userName = sanitizedUserName;
+  isEditingName.value = false;
+} catch (error) {
+  console.error('닉네임 저장 중 오류:', error);
+}
+}
+
+// 파일 업로드 관련 함수들
+const fileInput = ref(null);
+
+const openFilePicker = () => fileInput.value.click();
+
+const handleFileChange = async event => {
+  const file = event.target.files[0];
+  if (file) {
+    const formData = new FormData();
+    formData.append('imageFiles', file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
+      if (response.data.profileImageUrl) {
+        profileImage.value = BASE_URL + response.data.profileImageUrl;
+        localStorage.setItem('profileImageUrl', profileImage.value);
+      }
+    } catch (error) {
+      console.error('프로필 이미지 업로드 중 오류:', error);
+    }
+  }
+};
+
+// 계정 삭제 함수
+const deleteAccount = async () => {
+  try {
+    await axios.delete(`${BASE_URL}/user/delete`, {
       data: { idx: authStore.idx, email: authStore.email },
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
     });
@@ -212,10 +185,10 @@ const deleteAccount = async () => {
     alert('계정이 삭제되었습니다.');
   } catch (error) {
     console.error('계정 삭제 중 오류:', error);
-    alert('계정을 삭제하는 중 문제가 발생했습니다.');
   }
 };
 
+// 통계 보기 버튼 클릭 이벤트 핸들러
 const showStatistics = () => {
   console.log('통계 보기 버튼 클릭됨 - 여기에 백엔드 연동 코드를 추가하세요.');
 };
