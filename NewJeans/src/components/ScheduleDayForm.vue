@@ -402,11 +402,10 @@ const removeImage = index => {
 };
 
 // 수정시 이미지 문제 해결하기 위해 추가
-const isNewImage = (imageUrl) => {
+const isNewImage = imageUrl => {
   // 새로운 이미지인지 여부를 판단
   return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
 };
-
 </script>
 
 <style scoped>
