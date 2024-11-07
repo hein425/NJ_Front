@@ -322,7 +322,7 @@ function speakText(text) {
                 backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
               }"
-              class="schedule-title"
+              class="schedule-title" 
             >
               {{ schedule.title }}
             </div>
