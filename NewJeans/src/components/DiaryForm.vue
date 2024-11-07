@@ -64,6 +64,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
@@ -76,6 +77,8 @@ const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
 const images = ref([]); // 이미지 리스트
+
+const authStore = useAuthStore();
 
 const handleImageUpload = event => {
   const files = Array.from(event.target.files); // 선택한 모든 파일을 배열로 변환
@@ -102,7 +105,7 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value, 
-    calendarsIdx: 1,
+    calendarIdx: authStore.calendarIdx,
   };
 
   const formData = new FormData();

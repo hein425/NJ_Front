@@ -68,6 +68,7 @@ const openSignUp = () => {
   window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
 };
 
+
 // 로그인 처리 함수 (일반 로그인)
 const handleLogin = async () => {
   try {
@@ -80,7 +81,7 @@ const handleLogin = async () => {
     if (response.status === 200) {
       console.log(response.data);
       // 로그인 성공 시 Pinia store에 상태 업데이트
-      authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx);
+      authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx, response.data.calendarIdx);
 
       alert('로그인 성공!');
       authStore.check();
@@ -109,24 +110,30 @@ const kakaoLogin = () => {
 };
 
 // 카카오 리다이렉트 후 처리
-watchEffect(() => {
+watchEffect(async () => {
   if (route.query.code) {
-    axios
-      .get('http://192.168.0.17:8080/auth/kakao/login?code=' + route.query.code)
-      .then(response => {
-        // 서버로부터 받은 토큰을 localStorage에 저장 (로그인 상태 관리)
-        const token = response.data.token;
-        localStorage.setItem('token', token); // 토큰을 브라우저에 저장
-        authStore.login(token, response.data.userName); // Pinia에 로그인 상태 저장
+    try {
+      // 백엔드로 GET 요청을 보내서 액세스 토큰을 가져오는 부분
+      const response = await axios.get(`${BASE_URL}/auth/kakao/login?code=${route.query.code}`);
+
+      if (response.status === 200) {
+        // 서버로부터 받은 토큰과 사용자 정보를 저장
+        const { accessToken, userName, profileImageUrl } = response.data;
+
+        // 로컬 스토리지 및 Pinia 스토어 업데이트
+        localStorage.setItem('token', accessToken);
+        authStore.login(accessToken, userName, profileImageUrl);
+
         alert('카카오 로그인 성공!');
         router.push('/'); // 로그인 후 홈으로 리다이렉트
-      })
-      .catch(error => {
-        console.log('카카오 로그인 실패:', error);
-        alert('카카오 로그인에 실패했습니다.');
-      });
+      }
+    } catch (error) {
+      console.log('카카오 로그인 실패:', error);
+      alert('카카오 로그인에 실패했습니다.');
+    }
   }
 });
+
 </script>
 
 <style scoped>

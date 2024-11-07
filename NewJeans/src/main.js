@@ -14,13 +14,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil } from '@fortawesome/free-solid-svg-icons'; // 일반 아이콘 import
 
 // 아이콘들을 라이브러리에 추가
-<<<<<<< HEAD
+
 library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil );
-=======
 
-library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight);
+// library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight);
 
->>>>>>> hapche
 
 // Vue 앱 생성
 const app = createApp(App);

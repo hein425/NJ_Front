@@ -14,15 +14,17 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
+const authStore = useAuthStore();
 const year = ref(new Date().getFullYear());
 const month = ref(new Date().getMonth() + 1); // 0부터 시작하므로 +1
 const daysInMonth = ref([]);
 
 const fetchDiaries = async () => {
-  const idx = 1; // 사용자의 idx를 여기에 설정
+    const calendarIdx = authStore.calendarIdx;
   try {
-    const response = await axios.get(`${BASE_URL}/diary/${idx}/${year.value}/${month.value}`);
+    const response = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${year.value}/${month.value}`);
     const diaries = response.data;
 
     // 달력의 날짜와 일기 여부를 매칭

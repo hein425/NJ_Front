@@ -8,6 +8,10 @@ import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import { BASE_URL } from '@/config';
 import YearlyCalendar from '@/components/YearlyCalendar.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -15,6 +19,10 @@ const columns = ref([]);
 const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
+
+const authStore = useAuthStore();
+
+const calendarIdx = authStore.calendarIdx;
 
 // Nager.Date API에서 공휴일 데이터를 가져오는 함수
 const fetchHolidays = async () => {
@@ -37,7 +45,7 @@ watch(
 
 const MonthlySchedules = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);
@@ -67,7 +75,7 @@ const getSchedulesForDate = date => {
 const diaryEntries = ref([]);
 const fetchDiaryEntriesForMonth = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/diary/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/diary/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     const diaries = response.data;
     diaryEntries.value = diaries.map(diary => dayjs(diary.date).format('YYYY-MM-DD'));
   } catch (error) {
@@ -102,6 +110,14 @@ const addMonth = () => {
   now.value = dayjs(now.value).add(1, 'month');
 };
 const selectDateFn = date => {
+  // 로그인 여부 확인
+  if (!authStore.isLoggedIn) {
+    alert('로그인 후 이용해 주십시오.');
+    router.push('/');
+    return; // 로그인되지 않은 경우 더 이상 진행하지 않음
+  }
+
+  // 로그인된 경우만 날짜 선택하고 달력을 뒤집기
   selectDate.value = dayjs(date).format('YYYY-MM-DD');
   isFlipped.value = true;
 };

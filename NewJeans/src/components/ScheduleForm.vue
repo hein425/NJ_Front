@@ -65,12 +65,8 @@
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
           <label for="location">지도</label>
-<<<<<<< HEAD
-          <KakaoMap @updateLocation="updateLocation"/> <!-- 위치 업데이트 이벤트 -->
-=======
           <KakaoMap @updateLocation="updateLocation" />
           <!-- 위치 업데이트 이벤트 -->
->>>>>>> hapche
         </div>
 
         <!-- 내용 입력 -->
@@ -117,12 +113,15 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
 });
 
 const emit = defineEmits(['closeForm']);
+
+const authStore = useAuthStore();
 
 const title = ref('');
 const color = ref('ORANGE');
@@ -184,13 +183,9 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    calendarsIdx: 1,
+    calendarIdx: authStore.calendarIdx,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
-<<<<<<< HEAD
-
-=======
->>>>>>> hapche
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가

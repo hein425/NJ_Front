@@ -2,7 +2,8 @@
   <div class="diary-view-container">
     <div class="toolbar">
       <div class="category-buttons">
-        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
+        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)"
+          :class="{ selected: selectedCategory === category.value }">
           {{ category.label }}
         </button>
       </div>
@@ -13,7 +14,8 @@
     </div>
 
     <div v-if="paginatedDiaries.length > 0" class="diary-list">
-      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
+      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item"
+        @click="goToDiaryDetail(diary.idx)">
         <h3>{{ diary.title }}</h3>
         <p>{{ getCategoryLabel(diary.category) }}</p>
         <p>{{ diary.date }}</p>
@@ -36,12 +38,14 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const router = useRouter();
 const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
-const userIdx = 1;
+const authStore = useAuthStore();
+const calendarIdx = authStore.calendarIdx;
 const currentPage = ref(1); // 현재 페이지 번호
 const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
 
@@ -56,7 +60,7 @@ const categories = [
 
 const fetchDiaries = async category => {
   selectedCategory.value = category;
-  let url = category === 'ALL' ? `${BASE_URL}/diary/${userIdx}/ALL` : `${BASE_URL}/diary/${userIdx}/${category}`;
+  let url = category === 'ALL' ? `${BASE_URL}/diary/${calendarIdx}/ALL` : `${BASE_URL}/diary/${calendarIdx}/${category}`;
   try {
     const response = await axios.get(url);
     diaries.value = response.data;
@@ -184,7 +188,8 @@ onMounted(() => {
   padding: 15px 0;
   border-bottom: 1px dashed #ccc;
   display: grid;
-  grid-template-columns: 1fr 100px 120px; /* 타이틀, 카테고리, 날짜의 고정 크기 설정 */
+  grid-template-columns: 1fr 100px 120px;
+  /* 타이틀, 카테고리, 날짜의 고정 크기 설정 */
   align-items: center;
   gap: 20px;
 }

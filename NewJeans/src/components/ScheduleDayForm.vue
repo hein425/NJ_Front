@@ -16,10 +16,50 @@
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Time:</strong> {{ schedule.time }}</p>
-                <input v-else v-model="editData.time" class="input-field" placeholder="Enter Time" @click.stop />
-                <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
+                <div class="form-row" style="width: 450px">
+                  <label v-if="editIndex !== index" for="startdate"> {{ schedule.start }} </label>
+                  <input v-if="editIndex === index" id="startdate" v-model="startdate" type="datetime-local" />
+                </div>
+                <div class="form-row" style="width: 450px">
+                  <label v-if="editIndex !== index" for="enddate"> {{ schedule.end }} </label>
+                  <input v-if="editIndex === index" id="enddate" v-model="enddate" type="datetime-local" />
+                </div>
+
+                <p v-if="editIndex !== index"><strong>반복: </strong> {{ schedule.repeatType }}</p>
                 <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+
+                <div v-if="editIndex === index">
+                  <div class="form-row" style="width: 450px">
+                    <label>반복</label>
+                    <div class="repeat-options">
+                      <label for="yearly" class="radio-label">
+                        <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
+                        매년
+                      </label>
+                      <label for="monthly" class="radio-label">
+                        <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
+                        매월
+                      </label>
+                      <label for="weekly" class="radio-label">
+                        <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
+                        매주
+                      </label>
+                      <label for="daily" class="radio-label">
+                        <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
+                        매일
+                      </label>
+                      <label for="none" class="radio-label">
+                        <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
+                        안함
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-row" v-if="editData.repeatType !== 'NONE'" style="width: 450px">
+                    <label for="repeatEndDate">반복 종료 날짜</label>
+                    <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
+                  </div>
+                </div>
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -57,6 +97,32 @@
         </div>
       </div>
 
+      <!-- 반복 일정 삭제 옵션 모달 -->
+      <div v-if="showRepeatDeleteModal" class="modal-overlay" @click.self="closeRepeatDeleteModal">
+        <div class="modal-content">
+          <h3>삭제 옵션 선택</h3>
+          <p>삭제할 방식을 선택해주세요:</p>
+          <div class="delete-options">
+            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
+            <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
+            <button @click="confirmDelete('deleteAfter')">이후 반복 일정 삭제</button>
+          </div>
+          <button class="close-btn" @click="closeRepeatDeleteModal">취소</button>
+        </div>
+      </div>
+
+      <!-- 일반 일정 삭제 확인 모달 -->
+      <div v-if="showSingleDeleteModal" class="modal-overlay" @click.self="closeSingleDeleteModal">
+        <div class="modal-content">
+          <h3>일정 삭제</h3>
+          <p>이 일정을 삭제하시겠습니까?</p>
+          <div class="delete-options">
+            <button @click="confirmSingleDelete('deleteOnlyThis')">삭제</button>
+            <button @click="closeSingleDeleteModal">취소</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
         <div v-if="diaries.length > 0">
@@ -88,7 +154,8 @@
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image"
+                      style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
@@ -125,6 +192,7 @@ import { ref, onMounted, watch, onUnmounted, } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
@@ -146,15 +214,17 @@ const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
-
 const showDayView = ref(true);
-
 let pollingInterval = null;
 
+const authStore = useAuthStore();
+
 // 모달 관련 상태
-const showDeleteModal = ref(false);
+const showRepeatDeleteModal = ref(false);
+const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
-const deleteType = ref('');
+const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
+
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -163,10 +233,10 @@ const fetchDayData = async selectedDate => {
   };
 
   const [year, month, day] = selectedDate.split('-');
-  const idx = 1;
+  const calendarIdx = authStore.calendarIdx;
 
   try {
-    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
+    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${year}/${month}/${day}`);
 
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
@@ -196,7 +266,7 @@ const fetchDayData = async selectedDate => {
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
-    const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
@@ -258,7 +328,11 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value = type === 'schedule' ? { ...schedules.value[index], images: [...schedules.value[index].images] } : { ...diaries.value[index], images: [...diaries.value[index].images] };
+  editData.value = type === 'schedule' ? {
+    ...schedules.value[index], images: [...schedules.value[index].images],
+    repeatType: schedules.value[index].repeatType,
+    repeatEndDate: schedules.value[index].repeatEndDate
+  } : { ...diaries.value[index], images: [...diaries.value[index].images] };
 };
 
 const saveDiaryEdit = async (type, index) => {
@@ -341,14 +415,79 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
-const deleteSchedule = async index => {
-  const scheduleId = schedules.value[index].id;
-  try {
-    await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`);
-    schedules.value.splice(index, 1);
-    console.log('Schedule deleted successfully');
-  } catch (error) {
-    console.error('Failed to delete schedule:', error);
+// 모달을 열 때 호출되는 함수
+const openDeleteModal = index => {
+  deleteIndex.value = index;
+  console.log("index = " + index);
+
+  // 반복 일정 여부 확인
+  isRepeatSchedule.value = schedules.value[index].repeatType && schedules.value[index].repeatType.toUpperCase() !== 'NONE';
+
+  // 반복 일정이면 반복 삭제 모달을 열고, 아니면 일반 삭제 모달을 엽니다.
+  if (isRepeatSchedule.value) {
+    showRepeatDeleteModal.value = true;
+  } else {
+    showSingleDeleteModal.value = true;
+  }
+};
+
+// 반복 삭제 모달을 닫을 때 호출되는 함수
+const closeRepeatDeleteModal = () => {
+  showRepeatDeleteModal.value = false;
+  deleteIndex.value = null;
+};
+
+// 일반 삭제 모달을 닫을 때 호출되는 함수
+const closeSingleDeleteModal = () => {
+  showSingleDeleteModal.value = false;
+  deleteIndex.value = null;
+};
+
+// 반복 일정 삭제 확인 함수
+const confirmDelete = async deleteOption => {
+  if (deleteIndex.value !== null) {
+    const scheduleId = schedules.value[deleteIndex.value].id;
+
+    try {
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        params: {
+          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+          deleteAfter: deleteOption === 'deleteAfter',
+        },
+      });
+
+      schedules.value.splice(deleteIndex.value, 1);
+      console.log('Schedule deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    } finally {
+      closeRepeatDeleteModal();
+    }
+  }
+};
+
+// 일반 일정 삭제 확인 함수
+const confirmSingleDelete = async deleteOption => {
+  if (deleteIndex.value !== null) {
+    const scheduleId = schedules.value[deleteIndex.value].id;
+
+    try {
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`,
+        {
+          params: {
+            deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+            deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+            deleteAfter: deleteOption === 'deleteAfter',
+          }
+        });
+      schedules.value.splice(deleteIndex.value, 1);
+      console.log('Schedule deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    } finally {
+      closeSingleDeleteModal();
+    }
   }
 };
 
