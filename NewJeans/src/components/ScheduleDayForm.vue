@@ -39,7 +39,7 @@
 
                 <div class="button-group">
                   <button @click.stop="startEdit('schedule', index)" v-if="editIndex !== index">Edit</button>
-                  <button @click.stop="deleteSchedule(index)">Delete</button>
+                  <button @click.stop="deleteSchedule(index, 'deleteOnlyThis')" v-if="editIndex !== index">Delete</button>
 
                   <div v-if="editIndex === index">
                     <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
@@ -338,12 +338,18 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
-const deleteSchedule = async index => {
+const deleteSchedule = async (index, deleteType) => {
   const scheduleId = schedules.value[index].id;
   try {
-    await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`);
+    const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+      params: {
+        deleteOnlyThis: deleteType === 'deleteOnlyThis',
+        deleteAllRepeats: false,
+        deleteAfter: false,
+      },
+    });
     schedules.value.splice(index, 1);
-    console.log('Schedule deleted successfully');
+    console.log('Schedule deleted successfully', + response.data);
   } catch (error) {
     console.error('Failed to delete schedule:', error);
   }

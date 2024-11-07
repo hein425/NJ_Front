@@ -10,7 +10,7 @@
           </div>
 
           <div class="category-section">
-            <select v-model="category" id="category" class="input-field" style="width: 100px">
+            <select v-model="category" id="category" class="input-field" style="width: 114px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="EXERCISE">#운동</option>
@@ -90,6 +90,13 @@ const handleImageUpload = event => {
 };
 
 const submitDiary = async () => {
+  
+  //제목없으면 얼럿 띄우고 중단
+  if (!title.value.trim()) {
+    alert("제목을 입력해주세요."); 
+    return;
+  }
+
   const diaryRequest = {
     title: title.value,
     date: date.value,

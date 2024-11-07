@@ -57,11 +57,11 @@ import { useAuthStore } from '@/stores/authStore';
 import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { onMounted } from 'vue';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
-
 
 const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
 
@@ -82,24 +82,29 @@ const checkAuthStoreLoaded = () => {
 };
 
 const saveUserName = async () => {
-
   if (!checkAuthStoreLoaded()) return;
-  if (!newUserName.value || newUserName.value.trim() === '') return;
+
+  // 닉네임에서 모든 공백 제거
+  const sanitizedUserName = newUserName.value.replace(/\s/g, '');
+
+  // 공백이 포함된 경우 저장 불가
+  if (!sanitizedUserName || sanitizedUserName === '') {
+    alert('닉네임에 공백을 포함할 수 없습니다.');
+    return;
+  }
 
   try {
-    await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: newUserName.value });
+    await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: sanitizedUserName });
 
-    authStore.userName = newUserName.value;
+    authStore.userName = sanitizedUserName;
+
     isEditingName.value = false;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
 
-    // 에러 응답을 안전하게 출력
     if (error.response && error.response.data) {
       try {
-        // 에러 데이터를 문자열로 변환하고 크기를 제한
         console.error('서버 응답:', JSON.stringify(error.response.data, null, 2).slice(0, 1000));
-        // 1000자는 출력 크기를 제한한 예시입니다.
       } catch (stringifyError) {
         console.error('에러 응답을 문자열로 변환하는 중 오류 발생:', stringifyError);
       }
@@ -145,7 +150,6 @@ const uploadProfileImage = async file => {
       authStore.profile = response.data.profileImageUrl;
       localStorage.setItem('profile', response.data.profileImageUrl);
     }
-
   } catch (error) {
     console.error('프로필 이미지 업로드 중 오류:', error);
   }
@@ -180,9 +184,21 @@ const applyTheme = () => {
   // 로고 이미지도 테마에 따라 변경
   const logoElement = document.querySelector('.logo img');
   if (logoElement) {
-    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim();
+    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim().replace(/["']/g, '');
   }
+
+  // 테마를 localStorage에 저장
+  localStorage.setItem('selectedTheme', selectedTheme.value);
 };
+
+// 페이지 로드 시 선택된 테마 초기화
+onMounted(() => {
+  const savedTheme = localStorage.getItem('selectedTheme');
+  if (savedTheme) {
+    selectedTheme.value = savedTheme;
+    applyTheme();
+  }
+});
 
 const deleteAccount = async () => {
   if (!checkAuthStoreLoaded()) return;
@@ -200,11 +216,8 @@ const deleteAccount = async () => {
   }
 };
 
-
-
 const showStatistics = () => {
   console.log('통계 보기 버튼 클릭됨 - 여기에 백엔드 연동 코드를 추가하세요.');
-
 };
 </script>
 
@@ -343,7 +356,9 @@ const showStatistics = () => {
 
 .theme-section {
   width: 100%;
-  margin-right: 48%;
+
+  position: relative;
+  right: 26.5%;
 }
 
 .theme-header {
@@ -364,6 +379,9 @@ const showStatistics = () => {
 }
 
 .theme-options {
+  position: absolute;
+  left: 34%;
+  width: 32%;
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -405,7 +423,9 @@ const showStatistics = () => {
 .statistics-btn {
   position: relative;
   left: 4.5%;
-  bottom: 20%;
+
+  bottom: 8%;
+
   border: 1px solid var(--border-color);
   color: var(--button-text-color);
   border-radius: 20px;

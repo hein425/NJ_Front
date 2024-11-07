@@ -85,6 +85,7 @@ const searchResults = ref([]);
 const selectedDiary = ref(null);
 const showRequestList = ref(false);
 
+
 // 페이지 로드 시 친구 목록과 친구 요청 목록 가져오기
 const loadFriends = async () => {
   try {

@@ -69,10 +69,9 @@
         </div>
 
         <!-- 이미지 업로드 -->
-
         <div class="form-row">
           <label for="image" style="width: 450px">이미지</label>
-          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+          <input id="image" type="file" @chnpmange="handleImageUpload" multiple class="input-field" />
         </div>
 
         <div class="image-preview">
@@ -156,6 +155,13 @@ const handleImageUpload = event => {
 };
 
 const submitSchedule = async () => {
+
+  //제목없으면 얼럿 띄우고 중단
+  if (!title.value.trim()) {
+    alert("제목을 입력해주세요."); 
+    return; 
+  }
+
   // scheduleRequest JSON 객체 생성
   const scheduleRequest = {
     title: title.value,
