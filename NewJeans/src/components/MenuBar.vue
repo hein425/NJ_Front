@@ -93,10 +93,6 @@ onMounted(() => {
 .menu-item {
   padding: 1.5rem 1rem; /* rem 단위로 패딩 설정 */
   background-color: var(--menu-item-background-color); /* 변수 사용 */
-<<<<<<< HEAD
-  color: #5c5c5c;
-=======
->>>>>>> hapche
   border: 1px solid #ccc;
   text-align: center;
   cursor: pointer;

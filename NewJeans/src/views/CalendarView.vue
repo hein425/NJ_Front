@@ -449,10 +449,6 @@ select {
 .A-Month-button {
   background-color: white;
   border: none;
-<<<<<<< HEAD
-  
-=======
->>>>>>> hapche
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;

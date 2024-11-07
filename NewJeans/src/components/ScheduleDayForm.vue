@@ -189,15 +189,7 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
-=======
-import { ref, onMounted, watch, onUnmounted, } from 'vue';
->>>>>>> hapche
-=======
 import { ref, onMounted, watch, onUnmounted } from 'vue';
->>>>>>> origin/sunny
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -227,9 +219,6 @@ const showDayView = ref(true);
 
 let pollingInterval = null;
 
-<<<<<<< HEAD
-
-=======
 // 모달 관련 상태
 const showDeleteModal = ref(false);
 const showDiaryDeleteModal = ref(false);
@@ -240,12 +229,7 @@ const diaryToDeleteIndex = ref(null);
   const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
-<<<<<<< HEAD
-const deleteType = ref('');
->>>>>>> hapche
-=======
 const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
->>>>>>> origin/sunny
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -373,21 +357,9 @@ const saveDiaryEdit = async (type, index) => {
     const formData = new FormData();
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-<<<<<<< HEAD
-    // <<<<<<< HEAD
-    // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
-=======
->>>>>>> origin/sunny
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
-        // =======
-        //     // 새로 등록할 이미지를 FormData에 추가
-        //     for (let image of editData.value.images) {
-        //       if (typeof image === 'object' && image instanceof File) {
-        //         // 파일인 경우만 추가
-        //         formData.append('imageFiles', image);
-        // >>>>>>> sunny
       }
     }
 
@@ -586,17 +558,6 @@ const removeImage = index => {
   editData.value.images.splice(index, 1);
 };
 
-<<<<<<< HEAD
-// 수정시 이미지 문제 해결하기 위해 추가
-<<<<<<< HEAD
-const isNewImage = (imageUrl) => {
-  // 새로운 이미지인지 여부를 판단
-  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
-};
-
-=======
-=======
->>>>>>> origin/sunny
 const isNewImage = imageUrl => {
   return imageUrl.startsWith('data:image');
 };
@@ -625,7 +586,6 @@ const formatDateTime = dateTimeString => {
 
   return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
 };
->>>>>>> hapche
 </script>
 
 <style scoped>
