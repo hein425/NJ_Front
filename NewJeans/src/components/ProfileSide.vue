@@ -2,7 +2,7 @@
   <div class="profile">
     <div class="profile-container" v-if="isLoggedIn">
       <!-- 프로필 이미지와 사용자명을 함께 표시 -->
-      <img :src="profileImage || defaultProfileImage" alt="Profile Picture" class="profile-image" />
+      <img :src="profile || defaultProfileImage" alt="Profile Picture" class="profile-image" />
       <p>Welcome, {{ userName }}!</p>
     </div>
     <div class="profile-container" v-else>
@@ -16,70 +16,55 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
-import { BASE_URL } from '@/config';
-import defaultProfileImage from '@/assets/profile2.jpg';
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지 경로 지정
 
-const isLoggedIn = ref(false);
-const userName = ref('');
-const profileImage = ref(defaultProfileImage);
+const authStore = useAuthStore(); // Pinia 스토어 사용
 
-// 로그인 상태와 유저 정보를 확인하는 함수
-const loadProfileData = async () => {
-  try {
-    // 로컬스토리지나 필요에 따라 유저 ID 불러오기 (임시로 6번 사용자로 설정)
-    const userId = localStorage.getItem('userId') || 6;
+// 반응형으로 값을 가져오도록 computed 사용
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+const userName = computed(() => authStore.userName);
+const profile = computed(() => authStore.profile || defaultProfileImage); // 프로필 이미지 상태를 반응형으로 가져옴
 
-    // 프로필 이미지 로드
-    const response = await axios.get(`${BASE_URL}/user/profileImage/${userId}`);
-    if (response.status === 200 && response.data) {
-      profileImage.value = BASE_URL + response.data;
-    } else {
-      profileImage.value = defaultProfileImage;
-    }
+// localStorage 값 확인
+console.log('Token in localStorage:', localStorage.getItem('token'));
+console.log('UserName in localStorage:', localStorage.getItem('userName'));
+console.log('Profile in localStorage:', localStorage.getItem('profile'));
 
-    // 유저명 로드 (필요 시 추가 데이터 로드 로직 포함)
-    userName.value = localStorage.getItem('userName') || 'Guest';
-    isLoggedIn.value = true;
-  } catch (error) {
-    console.error('프로필 데이터를 로드하는 중 오류 발생:', error);
-  }
-};
-
-// 컴포넌트가 마운트되었을 때 프로필 데이터 로드
-onMounted(() => {
-  loadProfileData();
-});
+// Pinia 상태 확인
+console.log('Pinia Token:', authStore.token);
+console.log('Pinia UserName:', authStore.userName);
+console.log('Pinia Profile:', authStore.profile);
 </script>
 
 <style scoped>
 .profile {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  align-items: flex-start; /* 왼쪽 정렬 */
 }
 
 .profile-container {
   width: 230px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  align-items: center; /* 수평 정렬 */
+  margin-bottom: 10px; /* 각 프로필 블록 간의 간격 */
 }
 
 .profile-image {
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
-  border: 1px solid #ccc;
-  padding: 5px;
-  box-sizing: border-box;
+  border-radius: 50%; /* 프로필 이미지를 둥글게 */
+  width: 100px; /* 이미지 너비 */
+  height: 100px; /* 이미지 높이 */
+  border: 1px solid #ccc; /* 선으로 된 원의 색상 및 두께 */
+  padding: 5px; /* 이미지와 테두리 간의 간격 */
+  box-sizing: border-box; /* padding을 포함하여 크기를 계산 */
 }
 
 .welcome-text {
-  text-align: center;
+  text-align: center; /* 텍스트 중앙 정렬 */
 }
 .f1 {
   font-weight: 600;

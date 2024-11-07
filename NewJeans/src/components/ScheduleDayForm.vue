@@ -97,13 +97,13 @@
         </div>
       </div>
 
-      <!-- 반복 일정 삭제 옵션 모달 -->
-      <div v-if="showRepeatDeleteModal" class="modal-overlay" @click.self="closeRepeatDeleteModal">
+            <!-- 반복 일정 삭제 옵션 모달 -->
+            <div v-if="showRepeatDeleteModal" class="modal-overlay" @click.self="closeRepeatDeleteModal">
         <div class="modal-content">
           <h3>삭제 옵션 선택</h3>
           <p>삭제할 방식을 선택해주세요:</p>
           <div class="delete-options">
-            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
+            <button @click="confirmDelete('deleteOption')">현재 일정만 삭제</button>
             <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
             <button @click="confirmDelete('deleteAfter')">이후 반복 일정 삭제</button>
           </div>
@@ -222,13 +222,14 @@ let pollingInterval = null;
 // 모달 관련 상태
 const showDeleteModal = ref(false);
 const showDiaryDeleteModal = ref(false);
-const deleteIndex = ref(null);
+
 const diaryToDeleteIndex = ref(null);
 
-// 모달 관련 상태
-const showRepeatDeleteModal = ref(false);
+	// 모달 관련 상태
+  const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
-const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
+const deleteIndex = ref(null);
+const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -331,15 +332,11 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value =
-    type === 'schedule'
-      ? {
-          ...schedules.value[index],
-          images: [...schedules.value[index].images],
-          repeatType: schedules.value[index].repeatType,
-          repeatEndDate: schedules.value[index].repeatEndDate,
-        }
-      : { ...diaries.value[index], images: [...diaries.value[index].images] };
+  editData.value = type === 'schedule' ? {
+    ...schedules.value[index], images: [...schedules.value[index].images],
+    repeatType: schedules.value[index].repeatType,
+    repeatEndDate: schedules.value[index].repeatEndDate
+  } : { ...diaries.value[index], images: [...diaries.value[index].images] };
 };
 
 const saveDiaryEdit = async (type, index) => {
@@ -415,7 +412,7 @@ const cancelEdit = () => {
 
 const openDeleteModal = index => {
   deleteIndex.value = index;
-  console.log('index = ' + index);
+  console.log("index = " + index);
 
   // 반복 일정 여부 확인
   isRepeatSchedule.value = schedules.value[index].repeatType && schedules.value[index].repeatType.toUpperCase() !== 'NONE';
@@ -427,6 +424,12 @@ const openDeleteModal = index => {
     showSingleDeleteModal.value = true;
   }
 };
+
+// const closeDeleteModal = () => {
+//   showDeleteModal.value = false;
+//   deleteIndex.value = null;
+//   deleteType.value = '';
+// };
 
 // 반복 삭제 모달을 닫을 때 호출되는 함수
 const closeRepeatDeleteModal = () => {
@@ -470,13 +473,14 @@ const confirmSingleDelete = async deleteOption => {
     const scheduleId = schedules.value[deleteIndex.value].id;
 
     try {
-      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
-        params: {
-          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
-          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
-          deleteAfter: deleteOption === 'deleteAfter',
-        },
-      });
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`,
+        {
+          params: {
+            deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+            deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+            deleteAfter: deleteOption === 'deleteAfter',
+          }
+        });
       schedules.value.splice(deleteIndex.value, 1);
       console.log('Schedule deleted successfully:', response.data);
     } catch (error) {
@@ -487,6 +491,9 @@ const confirmSingleDelete = async deleteOption => {
   }
 };
 
+
+
+
 const openDeleteDiaryModal = index => {
   diaryToDeleteIndex.value = index;
   showDiaryDeleteModal.value = true;
@@ -496,6 +503,8 @@ const closeDeleteDiaryModal = () => {
   showDiaryDeleteModal.value = false;
   diaryToDeleteIndex.value = null;
 };
+
+
 
 const confirmDeleteDiary = async () => {
   if (diaryToDeleteIndex.value !== null) {
