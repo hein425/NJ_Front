@@ -173,11 +173,7 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
-import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
-=======
 import { ref, onMounted, watch, onUnmounted } from 'vue';
->>>>>>> origin/hapche
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -334,11 +330,6 @@ const saveDiaryEdit = async (type, index) => {
     const formData = new FormData();
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-<<<<<<< HEAD
-    // <<<<<<< HEAD
-    // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
-=======
->>>>>>> origin/hapche
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
@@ -497,12 +488,6 @@ const removeImage = index => {
   editData.value.images.splice(index, 1);
 };
 
-<<<<<<< HEAD
-// 수정시 이미지 문제 해결하기 위해 추가
-const isNewImage = (imageUrl) => {
-  // 새로운 이미지인지 여부를 판단
-  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
-=======
 const isNewImage = imageUrl => {
   return imageUrl.startsWith('data:image');
 };
@@ -530,7 +515,6 @@ const formatDateTime = dateTimeString => {
   }
 
   return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
->>>>>>> origin/hapche
 };
 
 </script>
