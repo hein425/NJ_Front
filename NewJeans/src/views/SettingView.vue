@@ -97,6 +97,7 @@ const saveUserName = async () => {
     await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: sanitizedUserName });
 
     authStore.userName = sanitizedUserName;
+
     isEditingName.value = false;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
@@ -354,12 +355,15 @@ const showStatistics = () => {
 }
 
 .theme-section {
-  width: 100%;
+  width: 23vh;
   position: relative;
-  right: 26.5%;
+  right: 35.5%;
 }
 
 .theme-header {
+  position: relative;
+  left: 6.8vh;
+  width: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -378,8 +382,8 @@ const showStatistics = () => {
 
 .theme-options {
   position: absolute;
-  left: 34%;
-  width: 32%;
+  left: 33%;
+  width: 135%;
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -421,7 +425,9 @@ const showStatistics = () => {
 .statistics-btn {
   position: relative;
   left: 4.5%;
+
   bottom: 8%;
+
   border: 1px solid var(--border-color);
   color: var(--button-text-color);
   border-radius: 20px;

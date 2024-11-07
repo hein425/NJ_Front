@@ -15,10 +15,48 @@
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Time:</strong> {{ schedule.time }}</p>
-                <input v-else v-model="editData.time" class="input-field" placeholder="Enter Time" @click.stop />
-                <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
-                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+
+                <!-- 일정 시작, 종료일자 -->
+                <div>
+                  <p v-if="editIndex !== index"><strong>Start Time:</strong> {{ formatDateTime(schedule.start) }}</p>
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
+                </div>
+
+                <div style="margin-top: 10px">
+                  <p v-if="editIndex !== index"><strong>End Time:</strong> {{ formatDateTime(schedule.end) }}</p>
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
+                </div>
+                <!-- 반복 설정 -->
+                <hr class="divider" />
+                <p v-if="editIndex !== index"><strong>반복 :</strong> {{ schedule.repeatType }}</p>
+                <div v-else class="repeat-options">
+                  <label for="yearly" class="radio-label">
+                    <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
+                    매년
+                  </label>
+                  <label for="monthly" class="radio-label">
+                    <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
+                    매월
+                  </label>
+                  <label for="weekly" class="radio-label">
+                    <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
+                    매주
+                  </label>
+                  <label for="daily" class="radio-label">
+                    <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
+                    매일
+                  </label>
+                  <label for="none" class="radio-label">
+                    <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
+                    안함
+                  </label>
+                </div>
+                <!-- 반복 종료일자 -->
+                <div v-if="editData.repeatType !== 'NONE'" style="margin-top: 10px">
+                  <label for="repeatEndDate">반복 종료 날짜</label>
+                  <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
+                </div>
+                <!--  -->
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -27,7 +65,7 @@
                 <hr class="divider" />
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
-                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
+                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
                 </div>
 
                 <!-- 이미지 관리 섹션 -->
@@ -39,7 +77,7 @@
 
                 <div class="button-group">
                   <button @click.stop="startEdit('schedule', index)" v-if="editIndex !== index">Edit</button>
-                  <button @click.stop="deleteSchedule(index, 'deleteOnlyThis')" v-if="editIndex !== index">Delete</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="editIndex !== index">Delete</button>
 
                   <div v-if="editIndex === index">
                     <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
@@ -55,6 +93,31 @@
         </div>
       </div>
 
+      <!-- 반복기능 삭제 옵션 모달 -->
+      <div v-if="showDeleteModal" class="modal-overlay" @click.self="closeDeleteModal">
+        <div class="modal-content">
+          <h3>삭제 옵션 선택</h3>
+          <p>삭제할 방식을 선택해주세요:</p>
+          <div class="delete-options">
+            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
+            <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
+            <button @click="confirmDelete('deleteAfter')">현재부터 반복 일정 삭제</button>
+          </div>
+          <button class="close-btn" @click="closeDeleteModal">취소</button>
+        </div>
+      </div>
+
+      <!-- 다이어리 삭제 확인 모달 -->
+      <div v-if="showDiaryDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>삭제하시겠습니까?</h3>
+          <div class="modal-buttons">
+            <button @click="confirmDeleteDiary">확인</button>
+            <button @click="closeDeleteDiaryModal">취소</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
         <div v-if="diaries.length > 0">
@@ -62,7 +125,6 @@
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
-
               <p class="category">{{ diary.category }}</p>
             </div>
 
@@ -74,12 +136,6 @@
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ diary.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
-
-                <!-- <div class="diary-images">
-                  <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
-                  </div>
-                </div> -->
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="editIndex === index" class="diary-images">
@@ -97,7 +153,7 @@
                 </div>
                 <div class="button-group">
                   <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
-                  <button @click.stop="deleteDiary(index)">Delete</button>
+                  <button @click.stop="openDeleteDiaryModal(index)">Delete</button>
 
                   <div v-if="editIndex === index">
                     <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
@@ -141,11 +197,17 @@ const diaries = ref([]);
 const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
-const editData = ref({ title: '', content: '', address: '', time: '', repeat: '', images: [] });
+const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
 
 const showDayView = ref(true);
 
 let pollingInterval = null;
+
+// 모달 관련 상태
+const showDeleteModal = ref(false);
+const showDiaryDeleteModal = ref(false);
+const deleteIndex = ref(null);
+const diaryToDeleteIndex = ref(null);
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -158,7 +220,6 @@ const fetchDayData = async selectedDate => {
 
   try {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
-
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
       let longitude = 126.9786567;
@@ -256,50 +317,34 @@ const saveDiaryEdit = async (type, index) => {
 
   const diaryToUpdate = diaries.value[index];
 
-  // diaryRequest 객체 생성 (JSON 형식)
   const diaryRequest = {
     idx: diaryToUpdate.id,
     title: editData.value.title,
     date: editData.value.date,
     content: editData.value.content,
     category: diaryToUpdate.category,
-    deletedImageList: editData.value.deletedImageList || [], // 삭제할 이미지 ID 목록
+    deletedImageList: editData.value.deletedImageList || [],
   };
 
   try {
-    // FormData 객체 생성
     const formData = new FormData();
-    // diaryRequest 객체를 JSON 문자열로 변환하여 추가
     formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-    // <<<<<<< HEAD
-    // `editData.value.imageFiles` 배열에 있는 파일 객체를 추가
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
-        // =======
-        //     // 새로 등록할 이미지를 FormData에 추가
-        //     for (let image of editData.value.images) {
-        //       if (typeof image === 'object' && image instanceof File) {
-        //         // 파일인 경우만 추가
-        //         formData.append('imageFiles', image);
-        // >>>>>>> sunny
       }
     }
 
-    // API 호출
     const response = await axios.post(`${BASE_URL}/diary/update`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Diary updated successfully:', response.data);
 
-    // 성공 시 데이터 업데이트
     Object.assign(diaryToUpdate, editData.value);
   } catch (error) {
-    // 오류 로그 출력
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
-    // 편집 모드 해제
     editIndex.value = null;
   }
 };
@@ -311,18 +356,20 @@ const saveScheduleEdit = async (type, index) => {
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
-    date: scheduleToUpdate.date,
-    time: editData.value.time,
-    repeat: editData.value.repeat,
+    start: editData.value.start,
+    end: editData.value.end,
+    repeatType: editData.value.repeatType,
+    repeatEndDate: editData.value.repeatEndDate,
     address: editData.value.address,
     content: editData.value.content,
+    color: editData.value.color || 'DEFAULT_COLOR',
   };
 
   const formData = new FormData();
   formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
 
   try {
-    const response = await axios.post(`${BASE_URL}/schedule/update`, formData);
+    const response = await axios.put(`${BASE_URL}/schedule/update`, formData);
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
   } catch (error) {
@@ -336,31 +383,64 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
-const deleteSchedule = async (index, deleteType) => {
-  const scheduleId = schedules.value[index].id;
-  try {
-    const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
-      params: {
-        deleteOnlyThis: deleteType === 'deleteOnlyThis',
-        deleteAllRepeats: false,
-        deleteAfter: false,
-      },
-    });
-    schedules.value.splice(index, 1);
-    console.log('Schedule deleted successfully', + response.data);
-  } catch (error) {
-    console.error('Failed to delete schedule:', error);
+const openDeleteModal = index => {
+  deleteIndex.value = index;
+  showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false;
+  deleteIndex.value = null;
+  deleteType.value = '';
+};
+
+const openDeleteDiaryModal = index => {
+  diaryToDeleteIndex.value = index;
+  showDiaryDeleteModal.value = true;
+};
+
+const closeDeleteDiaryModal = () => {
+  showDiaryDeleteModal.value = false;
+  diaryToDeleteIndex.value = null;
+};
+
+const confirmDelete = async deleteOption => {
+  deleteType.value = deleteOption;
+
+  if (deleteIndex.value !== null) {
+    const scheduleId = schedules.value[deleteIndex.value].id;
+
+    try {
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        params: {
+          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+          deleteAfter: deleteOption === 'deleteAfter',
+        },
+      });
+
+      schedules.value.splice(deleteIndex.value, 1);
+      console.log('Schedule deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    } finally {
+      closeDeleteModal();
+    }
   }
 };
 
-const deleteDiary = async index => {
-  const diaryId = diaries.value[index].id;
-  try {
-    await axios.delete(`${BASE_URL}/diary/delete/${diaryId}`);
-    diaries.value.splice(index, 1);
-    console.log('Diary deleted successfully');
-  } catch (error) {
-    console.error('Failed to delete diary:', error);
+const confirmDeleteDiary = async () => {
+  if (diaryToDeleteIndex.value !== null) {
+    const diaryId = diaries.value[diaryToDeleteIndex.value].id;
+    try {
+      await axios.delete(`${BASE_URL}/diary/delete/${diaryId}`);
+      diaries.value.splice(diaryToDeleteIndex.value, 1);
+      console.log('Diary deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete diary:', error);
+    } finally {
+      closeDeleteDiaryModal();
+    }
   }
 };
 
@@ -370,26 +450,22 @@ const onFileChange = event => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
 
-    // 파일을 미리 보기 이미지로 표시
     const reader = new FileReader();
     reader.onload = e => {
-      // 미리 보기 용도로 base64 URL을 추가
       editData.value.images.push(e.target.result);
     };
     reader.readAsDataURL(file);
 
-    // 서버로 보낼 때는 File 객체를 그대로 유지
     if (!editData.value.imageFiles) {
       editData.value.imageFiles = [];
     }
     editData.value.imageFiles.push(file);
   }
 
-  event.target.value = ''; // 파일 입력 필드를 초기화
+  event.target.value = '';
 };
 
 const removeImage = index => {
-  // 이미지 URL을 사용하여 삭제할 수도 있습니다.
   const imageUrl = editData.value.images[index];
 
   if (!imageUrl) {
@@ -397,22 +473,42 @@ const removeImage = index => {
     return;
   }
 
-  // deletedImageList에 URL을 추가 (필요시)
   if (!editData.value.deletedImageList) {
     editData.value.deletedImageList = [];
   }
   editData.value.deletedImageList.push(imageUrl);
 
-  // 이미지 리스트에서 삭제
   editData.value.images.splice(index, 1);
 };
 
-// 수정시 이미지 문제 해결하기 위해 추가
-const isNewImage = (imageUrl) => {
-  // 새로운 이미지인지 여부를 판단
-  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
+const isNewImage = imageUrl => {
+  return imageUrl.startsWith('data:image');
 };
 
+//시간 표현법 바꾸기
+const formatDateTime = dateTimeString => {
+  if (!dateTimeString) return '';
+
+  // 날짜와 시간 분리
+  const [date, time] = dateTimeString.split('T');
+  const [hour, minute] = time.split(':');
+
+  // 시간 포맷팅
+  let period = 'AM';
+  let hourInt = parseInt(hour, 10);
+
+  if (hourInt >= 12) {
+    period = 'PM';
+    if (hourInt > 12) {
+      hourInt -= 12;
+    }
+  }
+  if (hourInt === 0) {
+    hourInt = 12;
+  }
+
+  return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
+};
 </script>
 
 <style scoped>
@@ -523,5 +619,94 @@ const isNewImage = (imageUrl) => {
 .textarea-field {
   height: 100px;
   resize: none;
+}
+
+.delete-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.modal-button-group {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.modal-button-group button {
+  background-color: #343434;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
+}
+
+.modal-button-group button:hover {
+  background-color: #808080;
+  transform: translateY(-2px);
+}
+
+.modal-button-group button:active {
+  background-color: #004080;
+  transform: translateY(0);
+}
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.modal-buttons button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-buttons button:first-child {
+  background-color: #333;
+  color: white;
+}
+
+.modal-buttons button:last-child {
+  background-color: #ddd;
+  color: white;
 }
 </style>
