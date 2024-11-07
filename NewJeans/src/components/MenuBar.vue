@@ -93,7 +93,10 @@ onMounted(() => {
 .menu-item {
   padding: 1.5rem 1rem; /* rem 단위로 패딩 설정 */
   background-color: var(--menu-item-background-color); /* 변수 사용 */
+<<<<<<< HEAD
   color: #5c5c5c;
+=======
+>>>>>>> hapche
   border: 1px solid #ccc;
   text-align: center;
   cursor: pointer;
@@ -104,6 +107,7 @@ onMounted(() => {
   align-items: center;
   transition: all 0.3s ease;
   border-radius: 0;
+  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
 }
 
 /* 아이콘과 텍스트 간격 */
@@ -136,6 +140,8 @@ onMounted(() => {
   grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */
   border-bottom-right-radius: 1rem;
   border-bottom-left-radius: 1rem;
+  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
+  color: var(--menu-text-color); /* 테마 색상 유지 */
 }
 
 /* 반응형 디자인을 위한 미디어 쿼리 */

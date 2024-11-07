@@ -15,10 +15,48 @@
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Time:</strong> {{ schedule.time }}</p>
-                <input v-else v-model="editData.time" class="input-field" placeholder="Enter Time" @click.stop />
-                <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
-                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+
+                <!-- 일정 시작, 종료일자 -->
+                <div>
+                  <p v-if="editIndex !== index"><strong>Start Time:</strong> {{ schedule.start }}</p>
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
+                </div>
+
+                <div style="margin-top: 10px">
+                  <p v-if="editIndex !== index"><strong>End Time:</strong> {{ schedule.end }}</p>
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
+                </div>
+                <!-- 반복 설정 -->
+                <hr class="divider" />
+                <p v-if="editIndex !== index"><strong>반복 :</strong> {{ schedule.repeatType }}</p>
+                <div v-else class="repeat-options">
+                  <label for="yearly" class="radio-label">
+                    <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
+                    매년
+                  </label>
+                  <label for="monthly" class="radio-label">
+                    <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
+                    매월
+                  </label>
+                  <label for="weekly" class="radio-label">
+                    <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
+                    매주
+                  </label>
+                  <label for="daily" class="radio-label">
+                    <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
+                    매일
+                  </label>
+                  <label for="none" class="radio-label">
+                    <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
+                    안함
+                  </label>
+                </div>
+                <!-- 반복 종료일자 -->
+                <div v-if="editData.repeatType !== 'NONE'" style="margin-top: 10px">
+                  <label for="repeatEndDate">반복 종료 날짜</label>
+                  <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
+                </div>
+                <!--  -->
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -39,7 +77,7 @@
 
                 <div class="button-group">
                   <button @click.stop="startEdit('schedule', index)" v-if="editIndex !== index">Edit</button>
-                  <button @click.stop="deleteSchedule(index)">Delete</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="editIndex !== index">Delete</button>
 
                   <div v-if="editIndex === index">
                     <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
@@ -54,6 +92,22 @@
           <p>해당 날짜에 등록된 일정이 없습니다.</p>
         </div>
       </div>
+
+      <!-- 삭제 옵션 모달 -->
+      <div v-if="showDeleteModal" class="modal-overlay" @click.self="closeDeleteModal">
+        <div class="modal-content">
+          <h3>삭제 옵션 선택</h3>
+          <p>삭제할 방식을 선택해주세요:</p>
+          <div class="delete-options">
+            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
+            <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
+            <button @click="confirmDelete('deleteAfter')">현재부터 반복 일정 삭제</button>
+          </div>
+          <button class="close-btn" @click="closeDeleteModal">취소</button>
+        </div>
+      </div>
+
+
 
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
@@ -117,7 +171,11 @@
 </template>
 
 <script setup>
+<<<<<<< HEAD
 import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
+=======
+import { ref, onMounted, watch, onUnmounted, } from 'vue';
+>>>>>>> hapche
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -141,13 +199,20 @@ const diaries = ref([]);
 const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
-const editData = ref({ title: '', content: '', address: '', time: '', repeat: '', images: [] });
+const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
 
 const showDayView = ref(true);
 
 let pollingInterval = null;
 
+<<<<<<< HEAD
 
+=======
+// 모달 관련 상태
+const showDeleteModal = ref(false);
+const deleteIndex = ref(null);
+const deleteType = ref('');
+>>>>>>> hapche
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -308,23 +373,26 @@ const saveDiaryEdit = async (type, index) => {
 
 const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
-
+  // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
-    date: scheduleToUpdate.date,
-    time: editData.value.time,
-    repeat: editData.value.repeat,
+    start: editData.value.start, // 시작 시간 추출
+    end: editData.value.end,   // 종료 시간 추출
+    repeatType: editData.value.repeatType,
+    repeatEndDate: editData.value.repeatEndDate,
     address: editData.value.address,
     content: editData.value.content,
+    color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
+
   };
 
   const formData = new FormData();
   formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
 
   try {
-    const response = await axios.post(`${BASE_URL}/schedule/update`, formData);
+    const response = await axios.put(`${BASE_URL}/schedule/update`, formData);
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
   } catch (error) {
@@ -338,16 +406,60 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
-const deleteSchedule = async index => {
-  const scheduleId = schedules.value[index].id;
-  try {
-    await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`);
-    schedules.value.splice(index, 1);
-    console.log('Schedule deleted successfully');
-  } catch (error) {
-    console.error('Failed to delete schedule:', error);
+const openDeleteModal = index => {
+  deleteIndex.value = index;
+  showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false;
+  deleteIndex.value = null;
+  deleteType.value = '';
+};
+
+// 삭제 확인 함수
+const confirmDelete = async deleteOption => {
+  deleteType.value = deleteOption;
+
+  if (deleteIndex.value !== null) {
+    const scheduleId = schedules.value[deleteIndex.value].id;
+
+    try {
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        params: {
+          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+          deleteAfter: deleteOption === 'deleteAfter',
+        },
+      });
+
+      schedules.value.splice(deleteIndex.value, 1);
+      console.log('Schedule deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    } finally {
+      closeDeleteModal();
+    }
   }
 };
+
+
+// const deleteSchedule = async (index, deleteType) => {
+//   const scheduleId = schedules.value[index].id;
+//   try {
+//     const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+//       params: {
+//         deleteOnlyThis: deleteType === 'deleteOnlyThis',
+//         deleteAllRepeats: false,
+//         deleteAfter: false,
+//       },
+//     });
+//     schedules.value.splice(index, 1);
+//     console.log('Schedule deleted successfully', +response.data);
+//   } catch (error) {
+//     console.error('Failed to delete schedule:', error);
+//   }
+// };
 
 const deleteDiary = async index => {
   const diaryId = diaries.value[index].id;
@@ -404,11 +516,18 @@ const removeImage = index => {
 };
 
 // 수정시 이미지 문제 해결하기 위해 추가
+<<<<<<< HEAD
 const isNewImage = (imageUrl) => {
   // 새로운 이미지인지 여부를 판단
   return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
 };
 
+=======
+const isNewImage = imageUrl => {
+  // 새로운 이미지인지 여부를 판단
+  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
+};
+>>>>>>> hapche
 </script>
 
 <style scoped>
@@ -519,5 +638,56 @@ const isNewImage = (imageUrl) => {
 .textarea-field {
   height: 100px;
   resize: none;
+}
+
+/* 밑에서부터 삭제 모달창 */
+
+.delete-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.modal-button-group {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.modal-button-group button {
+  background-color: #343434;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.modal-button-group button:hover {
+  background-color: #808080;
+  transform: translateY(-2px);
+}
+
+.modal-button-group button:active {
+  background-color: #004080;
+  transform: translateY(0);
 }
 </style>

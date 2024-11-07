@@ -30,33 +30,43 @@
           <input id="enddate" v-model="enddate" type="datetime-local" />
         </div>
 
-         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
-         <div class="form-row" style="width: 450px">
+        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
+        <div class="form-row" style="width: 450px">
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
-              <input id="yearly" type="radio" v-model="repeat" value="YEARLY" />
+              <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
               매년
             </label>
             <label for="monthly" class="radio-label">
-              <input id="monthly" type="radio" v-model="repeat" value="MONTHLY" />
+              <input id="monthly" type="radio" v-model="repeatType" value="MONTHLY" />
               매월
             </label>
-            <label for="monthly" class="radio-label">
-              <input id="monthly" type="radio" v-model="repeat" value="DAILY" />
+            <label for="weekly" class="radio-label">
+              <input id="weekly" type="radio" v-model="repeatType" value="WEEKLY" />
+              매주
+            </label>
+            <label for="daily" class="radio-label">
+              <input id="daily" type="radio" v-model="repeatType" value="DAILY" />
               매일
             </label>
             <label for="none" class="radio-label">
-              <input id="none" type="radio" v-model="repeat" value="NONE" />
+              <input id="none" type="radio" v-model="repeatType" value="NONE" />
               안함
             </label>
           </div>
         </div>
 
+        <div class="form-row" v-if="repeat !== 'NONE'" style="width: 450px">
+          <label for="repeatEndDate">반복 종료 날짜</label>
+          <input id="repeatEndDate" v-model="repeatEndDate" type="date" />
+        </div>
+
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
         <div class="form-row">
           <label for="location">지도</label>
-          <KakaoMap @updateLocation="updateLocation" /> <!-- 위치 업데이트 이벤트 -->
+          <KakaoMap @updateLocation="updateLocation" />
+          <!-- 위치 업데이트 이벤트 -->
         </div>
 
         <!-- 내용 입력 -->
@@ -69,10 +79,9 @@
         </div>
 
         <!-- 이미지 업로드 -->
-
         <div class="form-row">
           <label for="image" style="width: 450px">이미지</label>
-          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+          <input id="image" type="file" @chnpmange="handleImageUpload" multiple class="input-field" />
         </div>
 
         <div class="image-preview">
@@ -117,7 +126,8 @@ const startdate = ref('');
 const enddate = ref('');
 const location = ref('');
 const description = ref('');
-const repeat = ref('NONE');
+const repeatType = ref('NONE');
+const repeatEndDate = ref(''); // 반복 종료 날짜를 추가
 const images = ref([]); // 이미지 파일을 저장
 
 const colorList = [
@@ -130,10 +140,10 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
-const updateLocation = (coords) => {
-  console.log("부모 컴포넌트에서 받은 좌표:", coords);
+const updateLocation = coords => {
+  console.log('부모 컴포넌트에서 받은 좌표:', coords);
   location.value = `${coords.lat}, ${coords.lng}`; // 위치를 위도, 경도로 저장
-  console.log("위치 업데이트:", location.value); 
+  console.log('위치 업데이트:', location.value);
 };
 
 onMounted(() => {
@@ -156,6 +166,12 @@ const handleImageUpload = event => {
 };
 
 const submitSchedule = async () => {
+  //제목없으면 얼럿 띄우고 중단
+  if (!title.value.trim()) {
+    alert('제목을 입력해주세요.');
+    return;
+  }
+
   // scheduleRequest JSON 객체 생성
   const scheduleRequest = {
     title: title.value,
@@ -165,7 +181,12 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     calendarsIdx: 1,
+<<<<<<< HEAD
     repeatType: repeat.value,
+=======
+    repeatType: repeatType.value,
+    repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
+>>>>>>> hapche
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
@@ -192,6 +213,7 @@ const submitSchedule = async () => {
     });
     console.log('Schedule Submitted Successfully', response.data);
 
+<<<<<<< HEAD
     // 기본일정 데이터 생성 후
     const scheduleId = response.data.scheduleId;
 
@@ -208,6 +230,8 @@ const submitSchedule = async () => {
       console.log('Repeat Schedule Submitted Successfully');
     }
 
+=======
+>>>>>>> hapche
     emit('closeForm');
   } catch (error) {
     console.error('Failed to submit Schedule:', error);

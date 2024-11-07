@@ -23,11 +23,19 @@
         </transition>
 
         <!-- 친구 목록 -->
+<<<<<<< HEAD
         <ul class="friend-list">
           <li v-for="friend in friends" :key="friend.idx">
             <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon">
               <span>{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
+=======
+        <ul>
+          <li v-for="friend in friends" :key="friend.idx">
+            <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon">
+            <span>{{ friend.userName }}</span>
+            <span class="friend-email">{{ friend.email }}</span>
+>>>>>>> hapche
           </li>
         </ul>
       </div>
@@ -85,6 +93,10 @@ const searchResults = ref([]);
 const selectedDiary = ref(null);
 const showRequestList = ref(false);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> hapche
 // 페이지 로드 시 친구 목록과 친구 요청 목록 가져오기
 const loadFriends = async () => {
   try {
@@ -196,6 +208,7 @@ onMounted(() => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
+<<<<<<< HEAD
 
 .friend-list {
   list-style-type: none; /* 리스트 점 제거 */
@@ -207,6 +220,15 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 8px 0; /* 항목 간 간격 추가 */
+=======
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px;
+>>>>>>> hapche
 }
 
 .friend-requests {

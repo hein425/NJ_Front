@@ -1,5 +1,8 @@
 body {
+<<<<<<< HEAD
   /* background-color: #f5f5f5;  */
+=======
+>>>>>>> hapche
   margin: 0;
   padding: 0; /* 기본 마진 제거 */
   font-family: 'Malgun Gothic', sans-serif; /* 원하는 폰트로 설정 */
@@ -8,15 +11,23 @@ body {
 :root {
   --background-color: white;
   --text-color: black;
-  --button-background: transparent;
+  --button-background: #444;
   --button-text-color: #838383;
   --border-color: #ccc;
   --menu-item-background-color: #f5f5f5;
   --menu-text-color: #5c5c5c;
+<<<<<<< HEAD
   --menu-active-color: black;
   --menu-item-active-background-color: #ffffff;
   --menu-item-active-text-color: #000000;
   --menu-item-active-border-color: transparent;
+=======
+  --menu-active-color: white;
+  --menu-item-active-background-color: #ffffff;
+  --menu-item-active-text-color: #000000;
+  --menu-item-active-border-color: transparent;
+  --menu-item-text-color: #5c5c5c; /* 기본 글자색 */
+>>>>>>> hapche
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --logo-image: url('src/assets/logo2.png');
 }
@@ -26,7 +37,11 @@ body {
   --text-color: black;
   --button-background: #444;
   --button-text-color: white;
+<<<<<<< HEAD
   --border-color: #555;
+=======
+  --border-color: #ccc;
+>>>>>>> hapche
   --menu-background-color: #f5f5f5;
   --menu-text-color: #5c5c5c;
   --menu-active-color: white;
@@ -50,6 +65,10 @@ body {
   --menu-item-active-background-color: #2d2d2d;
   --menu-item-active-text-color: #ffffff;
   --menu-item-active-border-color: #555555;
+<<<<<<< HEAD
+=======
+  --menu-item-text-color: #ffffff;
+>>>>>>> hapche
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --logo-image: url('src/assets/logo_white.png');
 }
@@ -69,6 +88,10 @@ body {
   --menu-item-active-background-color: #ffe4e9;
   --menu-item-active-text-color: #4a4a4a;
   --menu-item-active-border-color: #ffb6c1;
+<<<<<<< HEAD
+=======
+  --menu-item-text-color: #4a4a4a;
+>>>>>>> hapche
   --logo-image: url('src/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
 }
@@ -88,6 +111,10 @@ body {
   --menu-item-active-background-color: #e0f7fa;
   --menu-item-active-text-color: #007bb2;
   --menu-item-active-border-color: #00acc1;
+<<<<<<< HEAD
+=======
+  --menu-item-text-color: #007bb2;
+>>>>>>> hapche
   --logo-image: url('src/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
 }
