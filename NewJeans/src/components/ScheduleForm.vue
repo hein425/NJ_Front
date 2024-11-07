@@ -2,6 +2,7 @@
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
       <div class="form-grid">
+
         <!-- 제목 -->
         <div class="form-row" style="width: 450px">
           <label for="title">제목</label>
@@ -27,7 +28,7 @@
         </div>
         <div class="form-row" style="width: 450px">
           <label for="enddate">종료 날짜</label>
-          <input id="enddate" v-model="enddate" type="datetime-local" />
+          <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate"/>
         </div>
 
         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
@@ -35,22 +36,31 @@
           <label>반복</label>
           <div class="repeat-options">
             <label for="yearly" class="radio-label">
-              <input id="yearly" type="radio" v-model="repeat" value="YEARLY" />
+              <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
               매년
             </label>
             <label for="monthly" class="radio-label">
-              <input id="monthly" type="radio" v-model="repeat" value="MONTHLY" />
+              <input id="monthly" type="radio" v-model="repeatType" value="MONTHLY" />
               매월
             </label>
-            <label for="monthly" class="radio-label">
-              <input id="monthly" type="radio" v-model="repeat" value="DAILY" />
+            <label for="weekly" class="radio-label">
+              <input id="weekly" type="radio" v-model="repeatType" value="WEEKLY" />
+              매주
+            </label>
+            <label for="daily" class="radio-label">
+              <input id="daily" type="radio" v-model="repeatType" value="DAILY" />
               매일
             </label>
             <label for="none" class="radio-label">
-              <input id="none" type="radio" v-model="repeat" value="NONE" />
+              <input id="none" type="radio" v-model="repeatType" value="NONE" />
               안함
             </label>
           </div>
+        </div>
+
+        <div class="form-row" v-if="repeat !== 'NONE'" style="width: 450px">
+          <label for="repeatEndDate">반복 종료 날짜</label>
+          <input id="repeatEndDate" v-model="repeatEndDate" type="date" />
         </div>
 
         <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
@@ -108,7 +118,6 @@ import { BASE_URL } from '@/config';
 const props = defineProps({
   selectedDate: String,
 });
-
 const emit = defineEmits(['closeForm']);
 
 const title = ref('');
@@ -117,7 +126,8 @@ const startdate = ref('');
 const enddate = ref('');
 const location = ref('');
 const description = ref('');
-const repeat = ref('NONE');
+const repeatType = ref('NONE');
+const repeatEndDate = ref(''); // 반복 종료 날짜를 추가
 const images = ref([]); // 이미지 파일을 저장
 
 const colorList = [
@@ -171,7 +181,8 @@ const submitSchedule = async () => {
     location: location.value,
     content: description.value,
     calendarsIdx: 1,
-    repeatType: repeat.value,
+    repeatType: repeatType.value,
+    repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
@@ -197,22 +208,6 @@ const submitSchedule = async () => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Schedule Submitted Successfully', response.data);
-
-    // 기본일정 데이터 생성 후
-    const scheduleId = response.data.scheduleId;
-
-    if (repeat.value !== 'NONE') {
-      const repeatRequest = {
-        sr_type: repeat.value, // DAILY, WEEKLY, MONTHLY, YEARLY 중 하나
-        s_idx: scheduleId, // 생성된 일정의 ID
-        r_end_date: dayjs(enddate.value).format('YYYY-MM-DD'), // 반복 종료 날짜
-      };
-
-      // 반복 일정 데이터를 서버에 전송
-      await axios.post(`${BASE_URL}/scheduleRepeat/create`, repeatRequest);
-
-      console.log('Repeat Schedule Submitted Successfully');
-    }
 
     emit('closeForm');
   } catch (error) {

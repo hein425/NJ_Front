@@ -42,8 +42,7 @@ const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
 const userIdx = 1;
-
-const currentPage = ref(1); //사용자가 현재 보고 있는 페이지 번호
+const currentPage = ref(1); // 현재 페이지 번호
 const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
 
 const categories = [
@@ -77,27 +76,24 @@ const sortedDiaries = computed(() => {
   });
 });
 
-// 전체 일기를 정렬한 후, 현재 페이지에 맞는 일기 목록을 반환
 const paginatedDiaries = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage; //한 페이지에 보여줄 일기갯수
+  const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return sortedDiaries.value.slice(start, end); //이 배열에서 현재 페이지에 보여줄 일기만 슬라이싱
-}); //즉 두 페이지에 해당하는 일기 목록을 반환함
+  return sortedDiaries.value.slice(start, end);
+});
 
-// 전체 페이지 수 계산
 const totalPages = computed(() => {
   return Math.ceil(sortedDiaries.value.length / itemsPerPage);
-}); //전체 일기를 몇 페이지로 나눌 수 있는지를 계산합니다. 일12 한페6 토2
-
-// 특정 페이지로 이동하는 함수
-const goToPage = page => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-  } // 재계산되서 화면에 해당 페이지의 일기 목록이 표시
-};
+});
 
 const goToDiaryDetail = idx => {
   router.push({ name: 'DiaryDetail', params: { idx } });
+};
+
+const goToPage = page => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
 };
 
 const getCategoryLabel = categoryValue => {
@@ -185,7 +181,7 @@ onMounted(() => {
 }
 
 .diary-item {
-  padding: 15px 0;
+  padding: 15px 20px;
   border-bottom: 1px dashed #ccc;
   display: grid;
   grid-template-columns: 1fr 100px 120px; /* 타이틀, 카테고리, 날짜의 고정 크기 설정 */

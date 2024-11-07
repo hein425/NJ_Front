@@ -90,9 +90,10 @@ const handleImageUpload = event => {
 };
 
 const submitDiary = async () => {
+  
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
-    alert('제목을 입력해주세요.');
+    alert("제목을 입력해주세요."); 
     return;
   }
 
@@ -100,12 +101,13 @@ const submitDiary = async () => {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: category.value,
+    category: category.value, 
     calendarsIdx: 1,
   };
 
   const formData = new FormData();
-  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+  formData.append('diaryRequest', 
+  new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   // 이미지 파일 추가 여부를 확인
   if (images.value.length > 0) {
@@ -123,7 +125,7 @@ const submitDiary = async () => {
       },
     });
     console.log('Diary Submitted Successfully', response.data);
-    emit('closeForm');
+    emit('closeForm'); 
   } catch (error) {
     console.error('Failed to submit diary:', error);
     emit('closeForm');

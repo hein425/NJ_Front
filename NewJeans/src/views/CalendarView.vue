@@ -214,13 +214,13 @@ const onMonthChange = () => {
 function speakAllSchedules() {
   const parent = event.target.parentElement;
 
-  // 부모 요소 내에서 모든 형제 schedule-title 요소 가져오기
-  const scheduleElements = parent.querySelectorAll('.schedule-title');
-  const scheduleTexts = Array.from(scheduleElements).map(el => el.textContent.trim());
+// 부모 요소 내에서 모든 형제 schedule-title 요소 가져오기
+const scheduleElements = parent.querySelectorAll('.schedule-title');
+const scheduleTexts = Array.from(scheduleElements).map((el) => el.textContent.trim());
 
-  // 텍스트들을 하나의 문자열로 합치기
-  const combinedText = scheduleTexts.join(', ');
-  speakText(combinedText);
+// 텍스트들을 하나의 문자열로 합치기
+const combinedText = scheduleTexts.join(', ');
+speakText(combinedText);
 }
 
 function speakText(text) {
@@ -304,8 +304,12 @@ function speakText(text) {
               </div>
             </template>
             <div class="date-number">{{ column.get('date') }}</div>
-
-            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" class="icon" @click.stop="speakAllSchedules">🔊</div>
+            
+            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" 
+              class="icon" 
+              @click.stop="speakAllSchedules">
+              🔊
+            </div>
             <!-- 일정표시창 -->
             <div
               v-for="schedule in getSchedulesForDate(column)"
@@ -445,7 +449,6 @@ select {
 .A-Month-button {
   background-color: white;
   border: none;
-
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
