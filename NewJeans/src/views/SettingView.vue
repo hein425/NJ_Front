@@ -93,7 +93,6 @@ const loadProfileImage = async () => {
   }
 };
 
-
 // 테마를 적용하는 함수
 const applyTheme = () => {
   document.documentElement.classList.remove('Light-theme', 'Dark-theme', 'Pink-theme', 'Sky-theme');
@@ -140,16 +139,16 @@ const saveUserName = async () => {
   }
 
   try {
-  await axios.put(`${BASE_URL}/user/updateUserName`, { 
-    idx: authStore.idx, 
-    userName: sanitizedUserName 
-  });
-  authStore.userName = sanitizedUserName;
-  isEditingName.value = false;
-} catch (error) {
-  console.error('닉네임 저장 중 오류:', error);
-}
-}
+    await axios.put(`${BASE_URL}/user/updateUserName`, {
+      idx: authStore.idx,
+      userName: sanitizedUserName,
+    });
+    authStore.userName = sanitizedUserName;
+    isEditingName.value = false;
+  } catch (error) {
+    console.error('닉네임 저장 중 오류:', error);
+  }
+};
 
 // 파일 업로드 관련 함수들
 const fileInput = ref(null);

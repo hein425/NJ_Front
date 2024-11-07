@@ -26,6 +26,10 @@
                   <p v-if="editIndex !== index"><strong>End Time:</strong> {{ formatDateTime(schedule.end) }}</p>
                   <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
                 </div>
+
+                <p v-if="editIndex !== index"><strong>반복: </strong> {{ schedule.repeatType }}</p>
+                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+
                 <!-- 반복 설정 -->
                 <hr class="divider" />
                 <p v-if="editIndex !== index"><strong>반복 :</strong> {{ schedule.repeatType }}</p>
@@ -93,17 +97,29 @@
         </div>
       </div>
 
-      <!-- 반복기능 삭제 옵션 모달 -->
-      <div v-if="showDeleteModal" class="modal-overlay" @click.self="closeDeleteModal">
+      <!-- 반복 일정 삭제 옵션 모달 -->
+      <div v-if="showRepeatDeleteModal" class="modal-overlay" @click.self="closeRepeatDeleteModal">
         <div class="modal-content">
           <h3>삭제 옵션 선택</h3>
           <p>삭제할 방식을 선택해주세요:</p>
           <div class="delete-options">
             <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
             <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
-            <button @click="confirmDelete('deleteAfter')">현재부터 반복 일정 삭제</button>
+            <button @click="confirmDelete('deleteAfter')">이후 반복 일정 삭제</button>
           </div>
-          <button class="close-btn" @click="closeDeleteModal">취소</button>
+          <button class="close-btn" @click="closeRepeatDeleteModal">취소</button>
+        </div>
+      </div>
+
+      <!-- 일반 일정 삭제 확인 모달 -->
+      <div v-if="showSingleDeleteModal" class="modal-overlay" @click.self="closeSingleDeleteModal">
+        <div class="modal-content">
+          <h3>일정 삭제</h3>
+          <p>이 일정을 삭제하시겠습니까?</p>
+          <div class="delete-options">
+            <button @click="confirmSingleDelete('deleteOnlyThis')">삭제</button>
+            <button @click="closeSingleDeleteModal">취소</button>
+          </div>
         </div>
       </div>
 
@@ -209,6 +225,11 @@ const showDiaryDeleteModal = ref(false);
 const deleteIndex = ref(null);
 const diaryToDeleteIndex = ref(null);
 
+// 모달 관련 상태
+const showRepeatDeleteModal = ref(false);
+const showSingleDeleteModal = ref(false);
+const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
+
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
@@ -233,10 +254,11 @@ const fetchDayData = async selectedDate => {
       return {
         ...schedule,
         id: schedule.idx,
-        date: `${year}-${month}-${day}`,
         mapUrl: schedule.mapUrl || null,
-        time: schedule.start ? `${schedule.start} - ${schedule.end}` : '',
-        repeat: schedule.repeat || 'N/A',
+        start: schedule.start,
+        end: schedule.end,
+        repeatType: schedule.repeatType || '없음',
+        repeatEndDate: schedule.repeatEndDate || null,
         address: schedule.location || 'No address provided',
         latitude, // 분리한 위도
         longitude, // 분리한 경도
@@ -309,7 +331,15 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value = type === 'schedule' ? { ...schedules.value[index], images: [...schedules.value[index].images] } : { ...diaries.value[index], images: [...diaries.value[index].images] };
+  editData.value =
+    type === 'schedule'
+      ? {
+          ...schedules.value[index],
+          images: [...schedules.value[index].images],
+          repeatType: schedules.value[index].repeatType,
+          repeatEndDate: schedules.value[index].repeatEndDate,
+        }
+      : { ...diaries.value[index], images: [...diaries.value[index].images] };
 };
 
 const saveDiaryEdit = async (type, index) => {
@@ -333,13 +363,6 @@ const saveDiaryEdit = async (type, index) => {
     if (editData.value.imageFiles) {
       for (let file of editData.value.imageFiles) {
         formData.append('imageFiles', file);
-        // =======
-        //     // 새로 등록할 이미지를 FormData에 추가
-        //     for (let image of editData.value.images) {
-        //       if (typeof image === 'object' && image instanceof File) {
-        //         // 파일인 경우만 추가
-        //         formData.append('imageFiles', image);
-        // >>>>>>> sunny
       }
     }
 
@@ -392,28 +415,33 @@ const cancelEdit = () => {
 
 const openDeleteModal = index => {
   deleteIndex.value = index;
-  showDeleteModal.value = true;
+  console.log('index = ' + index);
+
+  // 반복 일정 여부 확인
+  isRepeatSchedule.value = schedules.value[index].repeatType && schedules.value[index].repeatType.toUpperCase() !== 'NONE';
+
+  // 반복 일정이면 반복 삭제 모달을 열고, 아니면 일반 삭제 모달을 엽니다.
+  if (isRepeatSchedule.value) {
+    showRepeatDeleteModal.value = true;
+  } else {
+    showSingleDeleteModal.value = true;
+  }
 };
 
-const closeDeleteModal = () => {
-  showDeleteModal.value = false;
+// 반복 삭제 모달을 닫을 때 호출되는 함수
+const closeRepeatDeleteModal = () => {
+  showRepeatDeleteModal.value = false;
   deleteIndex.value = null;
-  deleteType.value = '';
 };
 
-const openDeleteDiaryModal = index => {
-  diaryToDeleteIndex.value = index;
-  showDiaryDeleteModal.value = true;
+// 일반 삭제 모달을 닫을 때 호출되는 함수
+const closeSingleDeleteModal = () => {
+  showSingleDeleteModal.value = false;
+  deleteIndex.value = null;
 };
 
-const closeDeleteDiaryModal = () => {
-  showDiaryDeleteModal.value = false;
-  diaryToDeleteIndex.value = null;
-};
-
+// 반복 일정 삭제 확인 함수
 const confirmDelete = async deleteOption => {
-  deleteType.value = deleteOption;
-
   if (deleteIndex.value !== null) {
     const scheduleId = schedules.value[deleteIndex.value].id;
 
@@ -431,9 +459,42 @@ const confirmDelete = async deleteOption => {
     } catch (error) {
       console.error('Failed to delete schedule:', error);
     } finally {
-      closeDeleteModal();
+      closeRepeatDeleteModal();
     }
   }
+};
+
+// 일반 일정 삭제 확인 함수
+const confirmSingleDelete = async deleteOption => {
+  if (deleteIndex.value !== null) {
+    const scheduleId = schedules.value[deleteIndex.value].id;
+
+    try {
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        params: {
+          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+          deleteAfter: deleteOption === 'deleteAfter',
+        },
+      });
+      schedules.value.splice(deleteIndex.value, 1);
+      console.log('Schedule deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    } finally {
+      closeSingleDeleteModal();
+    }
+  }
+};
+
+const openDeleteDiaryModal = index => {
+  diaryToDeleteIndex.value = index;
+  showDiaryDeleteModal.value = true;
+};
+
+const closeDeleteDiaryModal = () => {
+  showDiaryDeleteModal.value = false;
+  diaryToDeleteIndex.value = null;
 };
 
 const confirmDeleteDiary = async () => {
@@ -516,7 +577,6 @@ const formatDateTime = dateTimeString => {
 
   return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
 };
-
 </script>
 
 <style scoped>
