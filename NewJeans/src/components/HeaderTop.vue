@@ -14,7 +14,7 @@
     </div>
     <div class="logo">
       <RouterLink to="/">
-        <img src="@/assets/logo.png" alt="Logo" />
+        <img :src="logoSrc" alt="Logo" />
       </RouterLink>
     </div>
   </header>
@@ -24,9 +24,12 @@
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 
+// 로고 이미지 URL을 변수로 가져오기
+const logoSrc = getComputedStyle(document.documentElement).getPropertyValue('--logo-image');
+
 const router = useRouter();
 const searchQuery = ref('');
-const selectedOption = ref('ALL'); // '전체'가 기본 선택되도록 설정
+const selectedOption = ref('ALL');
 
 const toggleOptions = [
   { label: '전체', value: 'ALL' },
@@ -34,7 +37,6 @@ const toggleOptions = [
   { label: '일기', value: 'DIARY' },
 ];
 
-// 버튼 클릭 시 선택된 옵션 업데이트
 const selectOption = value => {
   selectedOption.value = value;
 };
@@ -49,7 +51,6 @@ const goToSearchForm = () => {
   });
 };
 </script>
-
 <style scoped>
 .toggle-list {
   display: flex;
@@ -82,7 +83,9 @@ const goToSearchForm = () => {
 }
 
 .logo img {
-  height: 5vh; /* 로고 크기를 vh 단위로 설정하여 화면 크기에 맞춤 */
+  content: var(--logo-image); /* 로고 이미지에 변수 적용 */
+  height: var(--logo-height);
+  width: auto; /* 비율 유지 */
 }
 
 .search-container {

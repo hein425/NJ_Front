@@ -78,10 +78,12 @@ const handleLogin = async () => {
     });
 
     if (response.status === 200) {
+      console.log(response.data);
       // 로그인 성공 시 Pinia store에 상태 업데이트
       authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx);
 
       alert('로그인 성공!');
+      authStore.check();
       closeModal(); // 모달 닫기
       router.push('/'); // 로그인 후 홈으로 이동
     }

@@ -16,48 +16,10 @@
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-
-                <div>
-                  <p v-if="editIndex !== index"><strong>Start Time:</strong> {{ schedule.start }}</p>
-                  <input v-else v-model="editData.start" class="input-field" type="datetime-local"
-                    placeholder="Start Time" @click.stop />
-                </div>
-
-                <div style="margin-top: 10px">
-                  <p v-if="editIndex !== index"><strong>End Time:</strong> {{ schedule.end }}</p>
-                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time"
-                    @click.stop />
-                </div>
-
-                <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>반복 :</strong> {{ schedule.repeatType }}</p>
-                <div v-else class="repeat-options">
-                  <label for="yearly" class="radio-label">
-                    <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
-                    매년
-                  </label>
-                  <label for="monthly" class="radio-label">
-                    <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
-                    매월
-                  </label>
-                  <label for="weekly" class="radio-label">
-                    <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
-                    매주
-                  </label>
-                  <label for="daily" class="radio-label">
-                    <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
-                    매일
-                  </label>
-                  <label for="none" class="radio-label">
-                    <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
-                    안함
-                  </label>
-                </div>
-
-                <div v-if="editData.repeatType !== 'NONE'" style="margin-top: 10px">
-                  <label for="repeatEndDate">반복 종료 날짜</label>
-                  <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
-                </div>
+                <p v-if="editIndex !== index"><strong>Time:</strong> {{ schedule.time }}</p>
+                <input v-else v-model="editData.time" class="input-field" placeholder="Enter Time" @click.stop />
+                <p v-if="editIndex !== index"><strong>Repeat:</strong> {{ schedule.repeat }}</p>
+                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -67,8 +29,9 @@
                 <hr class="divider" />
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
-                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" />
+                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
                 </div>
+
                 <!-- 이미지 관리 섹션 -->
                 <div class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
@@ -91,20 +54,6 @@
         </div>
         <div v-else>
           <p>해당 날짜에 등록된 일정이 없습니다.</p>
-        </div>
-      </div>
-
-      <!-- 삭제 옵션 모달 -->
-      <div v-if="showDeleteModal" class="modal-overlay" @click.self="closeDeleteModal">
-        <div class="modal-content">
-          <h3>삭제 옵션 선택</h3>
-          <p>삭제할 방식을 선택해주세요:</p>
-          <div class="delete-options">
-            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
-            <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
-            <button @click="confirmDelete('deleteAfter')">현재부터 반복 일정 삭제</button>
-          </div>
-          <button class="close-btn" @click="closeDeleteModal">취소</button>
         </div>
       </div>
 
@@ -139,15 +88,7 @@
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
-                    <button class="delete-btn" @click.stop="removeImage(imgIndex, `${BASE_URL}${imageUrl}`)">X</button>
-                  </div>
-                  <input type="file" @change="onFileChange" multiple accept="image/*" />
-                </div>
-
-                <div v-if="editIndex === index" class="diary-images">
-                  <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="imageUrl" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
@@ -158,7 +99,6 @@
                     <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                   </div>
                 </div>
-
                 <div class="button-group">
                   <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
                   <button @click.stop="deleteDiary(index)">Delete</button>
@@ -181,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted, } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
@@ -227,6 +167,7 @@ const fetchDayData = async selectedDate => {
 
   try {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
+
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
       let longitude = 126.9786567;
@@ -367,7 +308,7 @@ const saveDiaryEdit = async (type, index) => {
 
 const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
-
+  // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
@@ -400,40 +341,14 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
-const openDeleteModal = index => {
-  deleteIndex.value = index;
-  showDeleteModal.value = true;
-};
-
-const closeDeleteModal = () => {
-  showDeleteModal.value = false;
-  deleteIndex.value = null;
-  deleteType.value = '';
-};
-
-// 삭제 확인 함수
-const confirmDelete = async deleteOption => {
-  deleteType.value = deleteOption;
-
-  if (deleteIndex.value !== null) {
-    const scheduleId = schedules.value[deleteIndex.value].id;
-
-    try {
-      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
-        params: {
-          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
-          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
-          deleteAfter: deleteOption === 'deleteAfter',
-        },
-      });
-
-      schedules.value.splice(deleteIndex.value, 1);
-      console.log('Schedule deleted successfully:', response.data);
-    } catch (error) {
-      console.error('Failed to delete schedule:', error);
-    } finally {
-      closeDeleteModal();
-    }
+const deleteSchedule = async index => {
+  const scheduleId = schedules.value[index].id;
+  try {
+    await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`);
+    schedules.value.splice(index, 1);
+    console.log('Schedule deleted successfully');
+  } catch (error) {
+    console.error('Failed to delete schedule:', error);
   }
 };
 
@@ -489,6 +404,12 @@ const removeImage = index => {
 
   // 이미지 리스트에서 삭제
   editData.value.images.splice(index, 1);
+};
+
+// 수정시 이미지 문제 해결하기 위해 추가
+const isNewImage = imageUrl => {
+  // 새로운 이미지인지 여부를 판단
+  return imageUrl.startsWith('data:image'); // base64 URL은 'data:image'로 시작
 };
 </script>
 

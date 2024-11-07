@@ -1,7 +1,8 @@
 <template>
   <header>
     <div class="nav_wrapper">
-      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="profile" />
+      <!-- 수정된 부분: authStore에서 profile 값을 직접 가져옴 -->
+      <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
         <RouterLink to="/" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
@@ -16,7 +17,7 @@
           <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
           Teams
         </RouterLink>
-        
+
         <RouterLink to="/setting" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
@@ -42,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Profile from './ProfileSide.vue';
 import Modal from './MoDal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -62,6 +63,13 @@ const handleLogout = async () => {
   await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
   router.push('/'); // 로그아웃 후 로그인 페이지로 이동
 };
+
+// Pinia store의 상태가 복원되었는지 확인
+onMounted(() => {
+  if (!authStore.isLoggedIn) {
+    authStore.restoreLogin();
+  }
+});
 </script>
 
 <style scoped>
@@ -84,8 +92,7 @@ const handleLogout = async () => {
 /* 각 메뉴 항목의 스타일 */
 .menu-item {
   padding: 1.5rem 1rem; /* rem 단위로 패딩 설정 */
-  background-color: #f5f5f5;
-  color: #5c5c5c;
+  background-color: var(--menu-item-background-color); /* 변수 사용 */
   border: 1px solid #ccc;
   text-align: center;
   cursor: pointer;
@@ -96,6 +103,7 @@ const handleLogout = async () => {
   align-items: center;
   transition: all 0.3s ease;
   border-radius: 0;
+  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
 }
 
 /* 아이콘과 텍스트 간격 */
@@ -105,12 +113,12 @@ const handleLogout = async () => {
 
 /* 활성화된 메뉴 (클릭 후 유지되는 상태) */
 .active {
-  background-color: white;
-  color: black;
-  transform: scale(1.1); /* 버튼을 살짝 키워서 다른 버튼들과 겹침 */
+  background-color: var(--menu-item-active-background-color); /* 변수 사용 */
+  color: var(--menu-item-active-text-color); /* 텍스트 색상 변수 */
+  transform: scale(1.1); /* 버튼을 살짝 키워서 강조 */
   z-index: 1; /* 다른 버튼들 위로 올라옴 */
-  border-color: transparent; /* 테두리 색을 투명하게 만들어 테두리 제거 */
-  border-radius: 0.8rem; /* rem 단위로 둥근 모서리 설정 */
+  border-color: var(--menu-item-active-border-color); /* 테두리 색상 변수 */
+  border-radius: 0.8rem; /* 둥근 모서리 */
 }
 
 /* Calendar 메뉴 */
@@ -128,6 +136,8 @@ const handleLogout = async () => {
   grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */
   border-bottom-right-radius: 1rem;
   border-bottom-left-radius: 1rem;
+  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
+  color: var(--menu-text-color); /* 테마 색상 유지 */
 }
 
 /* 반응형 디자인을 위한 미디어 쿼리 */

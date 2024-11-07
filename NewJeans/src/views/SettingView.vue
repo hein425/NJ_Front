@@ -3,27 +3,21 @@
     <!-- 프로필 섹션 -->
     <div class="profile-section">
       <div class="profile-image-container">
-        <!-- 로그인한 사용자의 프로필 이미지 표시 -->
-        <img :src="profileImage || defaultProfileImage" alt="Profile Image" class="profile-image" />
+        <img :src="profileImage && profileImage !== 'undefined' ? profileImage : defaultProfileImage" alt="Profile Image" class="profile-image" />
         <button @click="openFilePicker" class="change-img-btn">프로필 사진 변경</button>
-        <!-- 숨겨진 파일 입력 -->
         <input type="file" ref="fileInput" @change="handleFileChange" style="display: none" accept="image/*" />
       </div>
       <div class="profile-details">
         <div class="name-edit">
-          <!-- 로그인한 사용자의 닉네임 표시 및 수정 기능 -->
           <h1 v-if="!isEditingName" class="profile-name">{{ userName }}</h1>
           <input v-else v-model="newUserName" class="name-input" placeholder="새 닉네임 입력" />
-
           <button @click="isEditingName ? saveUserName() : startEditingName()" class="edit-btn">
             {{ isEditingName ? '저장' : '닉네임 변경' }}
           </button>
         </div>
 
-        <!-- 로그인한 사용자의 이메일 표시 -->
         <p class="profile-email">{{ email }}</p>
 
-        <!-- 계정 삭제 섹션 -->
         <div class="delete-section">
           <div class="delete-container">
             <div class="delete-text-container">
@@ -38,16 +32,22 @@
 
     <!-- 테마 선택 섹션 -->
     <div class="theme-section">
-      <h4>Theme</h4>
+      <div class="theme-header">
+        <h4>Theme</h4>
+        <p>{{ selectedTheme }}</p>
+      </div>
       <div class="theme-options">
-        <!-- 각 테마를 선택할 수 있는 radio 버튼과 연결 -->
         <label v-for="(theme, index) in themes" :key="index" class="theme-box">
           <input type="radio" name="theme" :value="theme.value" v-model="selectedTheme" class="radio-input" @change="applyTheme" />
-          <div class="theme-preview"></div>
+          <div class="theme-preview">
+            <img :src="theme.icon" alt="Theme Icon" class="theme-icon" />
+          </div>
         </label>
       </div>
-      <p>선택된 테마: {{ selectedTheme }}</p>
     </div>
+
+    <!-- 통계 보기 버튼 -->
+    <button class="statistics-btn" @click="showStatistics">통계 보기</button>
   </div>
 </template>
 
@@ -57,75 +57,54 @@ import { useAuthStore } from '@/stores/authStore';
 import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { onMounted } from 'vue';
 
-// Pinia 스토어 사용
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
-const profileImage = computed(() => authStore.profile);
 
-// 상태 관리
+const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
+
 const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 
-// 닉네임 변경 시작 함수
 const startEditingName = () => {
   isEditingName.value = true;
   newUserName.value = userName.value;
 };
 
-// authStore에 idx와 email이 있는지 확인하는 함수
 const checkAuthStoreLoaded = () => {
   if (!authStore.idx || !authStore.email) {
-    console.warn('authStore에 idx 또는 email이 없습니다. restoreLogin이 제대로 실행되었는지 확인하십시오.');
+    console.warn('authStore에 idx 또는 email이 없습니다.');
     return false;
   }
   return true;
 };
 
 const saveUserName = async () => {
-  if (!checkAuthStoreLoaded()) {
-    console.error('authStore에 필요한 정보가 없습니다.');
+  if (!checkAuthStoreLoaded()) return;
+
+  // 닉네임에서 모든 공백 제거
+  const sanitizedUserName = newUserName.value.replace(/\s/g, '');
+
+  // 공백이 포함된 경우 저장 불가
+  if (!sanitizedUserName || sanitizedUserName === '') {
+    alert('닉네임에 공백을 포함할 수 없습니다.');
     return;
   }
-
-  // 유효성 검사
-  if (!newUserName.value || newUserName.value.trim() === '') {
-    console.error('유효하지 않은 닉네임입니다.');
-    return;
-  }
-
-  // idx 값이 제대로 설정되었는지 확인
-  console.log('현재 idx:', authStore.idx);
 
   try {
-    console.log('idx:', authStore.idx); // 디버깅
-    console.log('userName:', newUserName.value); // 디버깅
+    await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: sanitizedUserName });
 
-    // PUT 메서드로 닉네임 변경 요청
-    await axios.put(
-      `${BASE_URL}/user/updateUserName/${authStore.idx}`,
-      {
-        userName: newUserName.value,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    authStore.userName = sanitizedUserName;
 
-    authStore.userName = newUserName.value;
     isEditingName.value = false;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
 
-    // 에러 응답을 안전하게 출력
     if (error.response && error.response.data) {
       try {
-        // 에러 데이터를 문자열로 변환하고 크기를 제한
         console.error('서버 응답:', JSON.stringify(error.response.data, null, 2).slice(0, 1000));
-        // 1000자는 출력 크기를 제한한 예시입니다.
       } catch (stringifyError) {
         console.error('에러 응답을 문자열로 변환하는 중 오류 발생:', stringifyError);
       }
@@ -133,24 +112,19 @@ const saveUserName = async () => {
   }
 };
 
-// 테마 데이터 및 선택된 테마 관리
 const themes = [
-  { value: 'light', label: 'Light Theme' },
-  { value: 'dark', label: 'Dark Theme' },
-  { value: 'pink', label: 'Pink Theme' },
-  { value: 'sky', label: 'Sky Theme' },
+  { value: 'Light', label: 'Light Theme', backgroundColor: '#f5f5f5', icon: 'src/assets/white_icon.jpg' },
+  { value: 'Dark', label: 'Dark Theme', backgroundColor: '#242424', icon: 'src/assets/dark_icon.jpg' },
+  { value: 'Pink', label: 'Pink Theme', backgroundImage: 'url("src/assets/flowers-3435886_1920.jpg")', icon: 'src/assets/flowers_icon.jpg' },
+  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/sky-5534319_1920.jpg")', icon: 'src/assets/sky_icon.jpg' },
 ];
 
 const selectedTheme = ref(themes[0].value);
 
-// 파일 입력 요소 참조
 const fileInput = ref(null);
 
-const openFilePicker = () => {
-  fileInput.value.click();
-};
+const openFilePicker = () => fileInput.value.click();
 
-// 파일 선택 후 변경 처리
 const handleFileChange = async event => {
   const file = event.target.files[0];
   if (file) {
@@ -164,65 +138,86 @@ const handleFileChange = async event => {
 };
 
 const uploadProfileImage = async file => {
-  if (!checkAuthStoreLoaded()) {
-    console.error('authStore에 필요한 정보가 없습니다.');
-    return;
-  }
+  if (!checkAuthStoreLoaded()) return;
 
   const formData = new FormData();
-  formData.append('imageFiles', file); // 파일 필드 이름 수정
+
+  formData.append('imageFiles', file);
 
   try {
-    const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    console.log('프로필 이미지가 성공적으로 업로드되었습니다:', response.data);
-    authStore.profile = response.data.profileImageUrl;
+    const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
+    if (response.data.profileImageUrl) {
+      authStore.profile = response.data.profileImageUrl;
+      localStorage.setItem('profile', response.data.profileImageUrl);
+    }
   } catch (error) {
     console.error('프로필 이미지 업로드 중 오류:', error);
   }
 };
 
-// 테마 적용 함수
 const applyTheme = () => {
-  document.documentElement.classList.remove('light-theme', 'dark-theme', 'pink-theme', 'sky-theme');
+  // 모든 테마 클래스를 제거하고 새로운 테마 클래스를 추가
+  document.documentElement.classList.remove('Light-theme', 'Dark-theme', 'Pink-theme', 'Sky-theme');
   document.documentElement.classList.add(`${selectedTheme.value}-theme`);
-};
 
-const editProfile = () => {
-  console.log('닉네임 변경 클릭');
-};
+  // 선택된 테마의 스타일을 가져옴
+  const selected = themes.find(theme => theme.value === selectedTheme.value);
 
-// 계정 삭제 함수
-const deleteAccount = async () => {
-  if (!checkAuthStoreLoaded()) {
-    console.error('authStore에 필요한 정보가 없습니다.');
-    return;
+  if (selected) {
+    if (selected.backgroundColor) {
+      // 배경색 설정 및 배경 이미지 제거
+      document.documentElement.style.backgroundColor = selected.backgroundColor;
+      document.documentElement.style.backgroundImage = 'none';
+    } else if (selected.backgroundImage) {
+      // 배경 이미지를 설정하고 배경색을 제거
+      document.documentElement.style.backgroundImage = selected.backgroundImage;
+      document.documentElement.style.backgroundColor = 'transparent';
+    }
   }
 
+  // MenuBar에도 테마 적용
+  document.querySelector('.nav_wrapper').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
+  });
+
+  // 로고 이미지도 테마에 따라 변경
+  const logoElement = document.querySelector('.logo img');
+  if (logoElement) {
+    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim().replace(/["']/g, '');
+  }
+
+  // 테마를 localStorage에 저장
+  localStorage.setItem('selectedTheme', selectedTheme.value);
+};
+
+// 페이지 로드 시 선택된 테마 초기화
+onMounted(() => {
+  const savedTheme = localStorage.getItem('selectedTheme');
+  if (savedTheme) {
+    selectedTheme.value = savedTheme;
+    applyTheme();
+  }
+});
+
+const deleteAccount = async () => {
+  if (!checkAuthStoreLoaded()) return;
+
   try {
-    // 계정 삭제 API 호출
     const response = await axios.delete(`${BASE_URL}/user/delete`, {
-      data: {
-        idx: authStore.idx,
-        email: authStore.email,
-      },
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`,
-      },
+      data: { idx: authStore.idx, email: authStore.email },
+      headers: { Authorization: `Bearer ${authStore.accessToken}` },
     });
-
-    console.log('계정이 성공적으로 삭제되었습니다:', response.data);
-
-    // 계정 삭제 후 상태 초기화 및 로그아웃
     authStore.logout();
     alert('계정이 삭제되었습니다.');
   } catch (error) {
     console.error('계정 삭제 중 오류:', error);
     alert('계정을 삭제하는 중 문제가 발생했습니다.');
   }
+};
+
+const showStatistics = () => {
+  console.log('통계 보기 버튼 클릭됨 - 여기에 백엔드 연동 코드를 추가하세요.');
 };
 </script>
 
@@ -233,12 +228,8 @@ const deleteAccount = async () => {
   align-items: center;
   justify-content: flex-start;
   background-color: var(--background-color);
-  background-image: var(--background-image);
-  background-repeat: var(--background-repeat);
-  background-size: var(--background-size);
-  background-position: var(--background-position);
   border-radius: 20px;
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 70%;
   height: 75vh;
@@ -322,7 +313,6 @@ const deleteAccount = async () => {
   margin-bottom: 20px;
 }
 
-/* 계정 삭제 섹션 스타일 */
 .delete-section {
   display: flex;
   flex-direction: column;
@@ -364,23 +354,38 @@ const deleteAccount = async () => {
   margin-top: 5px;
 }
 
-/* 테마 선택 섹션 */
 .theme-section {
   width: 100%;
-  margin-top: 50px;
+
+  position: relative;
+  right: 26.5%;
 }
 
-.theme-section h4 {
-  margin-bottom: 30px;
-  font-size: 1.4rem;
+.theme-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.theme-header h4 {
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-left: 100px;
+  margin-right: 10px;
+}
+
+.theme-header p {
+  font-size: 1rem;
+  color: var(--text-color);
 }
 
 .theme-options {
+  position: absolute;
+  left: 34%;
+  width: 32%;
   display: flex;
-  gap: 50px;
+  gap: 10px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .theme-box {
@@ -388,13 +393,23 @@ const deleteAccount = async () => {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  margin: 5px;
 }
 
 .theme-preview {
-  width: 150px;
-  height: 150px;
-  background-color: #e1e1e1;
-  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .radio-input {
@@ -402,6 +417,24 @@ const deleteAccount = async () => {
 }
 
 .radio-input:checked + .theme-preview {
-  border: 3px solid green;
+  border: 2px solid green;
+}
+
+.statistics-btn {
+  position: relative;
+  left: 4.5%;
+
+  bottom: 8%;
+
+  border: 1px solid var(--border-color);
+  color: var(--button-text-color);
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: var(--button-background);
+}
+
+.statistics-btn:hover {
+  background-color: var(--border-color);
 }
 </style>

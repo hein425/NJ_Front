@@ -211,6 +211,23 @@ const onMonthChange = () => {
   now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
 };
 
+function speakAllSchedules() {
+  const parent = event.target.parentElement;
+
+// 부모 요소 내에서 모든 형제 schedule-title 요소 가져오기
+const scheduleElements = parent.querySelectorAll('.schedule-title');
+const scheduleTexts = Array.from(scheduleElements).map((el) => el.textContent.trim());
+
+// 텍스트들을 하나의 문자열로 합치기
+const combinedText = scheduleTexts.join(', ');
+speakText(combinedText);
+}
+
+function speakText(text) {
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'ko-KR'; // 원하는 언어 설정
+  window.speechSynthesis.speak(speech);
+}
 // 일기 북마크
 </script>
 
@@ -282,12 +299,17 @@ const onMonthChange = () => {
             <font-awesome-icon v-if="isDiaryEntry(column)" icon="bookmark" class="bookmark-icon" />
 
             <template v-for="holiday in holidays" :key="holiday">
-              <span v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
+              <div v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
                 {{ holiday.localName }}
-              </span>
+              </div>
             </template>
-            <span class="date-number">{{ column.get('date') }}</span>
-
+            <div class="date-number">{{ column.get('date') }}</div>
+            
+            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" 
+              class="icon" 
+              @click.stop="speakAllSchedules">
+              🔊
+            </div>
             <!-- 일정표시창 -->
             <div
               v-for="schedule in getSchedulesForDate(column)"
@@ -432,7 +454,6 @@ select {
 .A-Month-button {
   background-color: white;
   border: none;
-  width: 2rem;
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
@@ -652,17 +673,17 @@ select {
   text-overflow: ellipsis;
   position: relative;
   top: 10px;
-  height: 15px;
+  /* height: 15px; */
   line-height: 0px;
 }
 
 .holiday-name {
-  font-size: 0.5rem; /* 원하는 폰트 크기 */
+  font-size: 0.7rem; /* 원하는 폰트 크기 */
   color: red; /* 원하는 글자 색상 */
   font-weight: lighter; /* 글자를 굵게 설정 */
   position: absolute;
   display: block; /* 블록 형식으로 배치 (필요 시) */
-  top: 18px;
+  top: 14px;
   left: 45px;
 }
 
@@ -674,5 +695,16 @@ select {
   font-size: 0.8rem;
   color: #dfc38c;
   /* z-index: 10; */
+}
+
+.icon {
+  position: absolute;
+  top: 0.5rem;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.icon:hover {
+  opacity: 1;
 }
 </style>
