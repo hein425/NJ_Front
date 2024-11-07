@@ -94,26 +94,73 @@ const selectedDiary = ref(null);
 const showRequestList = ref(false);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> hapche
 // 페이지 로드 시 친구 목록과 친구 요청 목록 가져오기
+=======
+// 프로필 이미지 불러오기 함수
+const loadProfileImage = async (userId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/${userId}/profileImage`);
+    let imageUrl = response.data;
+
+    // 이미지 URL이 상대 경로라면 BASE_URL 추가
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      imageUrl = `${BASE_URL}${imageUrl}`;
+    }
+
+    return imageUrl; // 최종 프로필 이미지 URL 반환
+  } catch (error) {
+    console.error(`Failed to load profile image for userId ${userId}:`, error);
+    return defaultProfileImage; // 오류 시 기본 이미지 반환
+  }
+};
+
+// 친구 목록 불러오기
+>>>>>>> origin/sunny
 const loadFriends = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/list`);
-    friends.value = response.data;
+    friends.value = await Promise.all(response.data.map(async (friend) => {
+      const profileImageUrl = await loadProfileImage(friend.idx);
+      return { ...friend, profileImageUrl }; // 프로필 이미지 URL 포함한 친구 객체 반환
+    }));
   } catch (error) {
     console.error('Failed to load friends:', error);
   }
 };
 
+// 친구 요청 목록 불러오기
 const loadFriendRequests = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/requests`);
-    friendRequests.value = response.data;
-    console.log("Friend Requests Loaded:", friendRequests.value); // 로그 추가
+    friendRequests.value = await Promise.all(response.data.map(async (request) => {
+      const profileImageUrl = await loadProfileImage(request.idx);
+      return { ...request, profileImageUrl }; // 프로필 이미지 URL 포함한 요청 객체 반환
+    }));
   } catch (error) {
     console.error('Failed to load friend requests:', error);
+  }
+};
+
+// 친구 검색
+const searchFriends = async () => {
+  try {
+    if (searchQuery.value.trim()) {
+      const response = await axios.get(`${BASE_URL}/friend/search`, {
+        params: { userName: searchQuery.value } // userName으로 전달
+      });
+      searchResults.value = await Promise.all(response.data.map(async (user) => {
+        const profileImageUrl = await loadProfileImage(user.idx);
+        return { ...user, profileImageUrl }; // 프로필 이미지 URL 포함한 검색 결과 객체 반환
+      }));
+    } else {
+      searchResults.value = [];
+    }
+  } catch (error) {
+    console.error('Failed to search friends:', error);
   }
 };
 
@@ -156,22 +203,6 @@ const acceptFriendRequest = async (requesterId) => {
   }
 };
 
-// 친구 검색
-const searchFriends = async () => {
-  try {
-    if (searchQuery.value.trim()) {
-      const response = await axios.get(`${BASE_URL}/friend/search`, {
-        params: { userName: searchQuery.value } // userName으로 전달
-      });
-      searchResults.value = response.data;
-    } else {
-      searchResults.value = [];
-    }
-  } catch (error) {
-    console.error('Failed to search friends:', error);
-  }
-};
-
 // 친구 요청 목록 토글
 const toggleRequestList = () => {
   showRequestList.value = !showRequestList.value;
@@ -189,6 +220,7 @@ onMounted(() => {
   loadFriendRequests();
 });
 </script>
+
 
 <style scoped>
 .team-view {

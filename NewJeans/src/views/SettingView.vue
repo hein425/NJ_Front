@@ -387,6 +387,7 @@ const showStatistics = () => {
 }
 
 .theme-section {
+<<<<<<< HEAD
   width: 100%;
 <<<<<<< HEAD
   margin-right: 48%;
@@ -395,9 +396,17 @@ const showStatistics = () => {
   position: relative;
   right: 26.5%;
 >>>>>>> hapche
+=======
+  width: 23vh;
+  position: relative;
+  right: 35.5%;
+>>>>>>> origin/sunny
 }
 
 .theme-header {
+  position: relative;
+  left: 6.8vh;
+  width: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -416,8 +425,8 @@ const showStatistics = () => {
 
 .theme-options {
   position: absolute;
-  left: 34%;
-  width: 32%;
+  left: 33%;
+  width: 135%;
   display: flex;
   gap: 10px;
   justify-content: center;

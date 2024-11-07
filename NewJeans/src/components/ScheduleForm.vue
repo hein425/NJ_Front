@@ -2,6 +2,7 @@
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
       <div class="form-grid">
+
         <!-- 제목 -->
         <div class="form-row" style="width: 450px">
           <label for="title">제목</label>
@@ -27,7 +28,7 @@
         </div>
         <div class="form-row" style="width: 450px">
           <label for="enddate">종료 날짜</label>
-          <input id="enddate" v-model="enddate" type="datetime-local" />
+          <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate"/>
         </div>
 
         <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
@@ -117,7 +118,6 @@ import { BASE_URL } from '@/config';
 const props = defineProps({
   selectedDate: String,
 });
-
 const emit = defineEmits(['closeForm']);
 
 const title = ref('');
