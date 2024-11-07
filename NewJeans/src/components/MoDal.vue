@@ -64,8 +64,10 @@ const password = ref('');
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
-  const signUpUrl = router.resolve({ path: '/signupp' }).href;
-  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
+  router.push({ path: '/signupp' });
+  //const signUpUrl = router.resolve({ path: '/signupp' }).href;
+//  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
+
 };
 
 // 로그인 처리 함수 (일반 로그인)

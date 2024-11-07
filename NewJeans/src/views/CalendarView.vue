@@ -2,12 +2,15 @@
 import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
+
+import { BASE_URL } from '@/config';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+import YearlyCalendar from '@/components/YearlyCalendar.vue';
 import ScheduleForm from '@/components/ScheduleForm.vue';
 import DiaryForm from '@/components/DiaryForm.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
-import { BASE_URL } from '@/config';
-import YearlyCalendar from '@/components/YearlyCalendar.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -15,7 +18,6 @@ const columns = ref([]);
 const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
-
 // Nager.Date API에서 공휴일 데이터를 가져오는 함수
 const fetchHolidays = async () => {
   const year = now.value.format('YYYY');
@@ -34,7 +36,6 @@ watch(
 );
 
 // @<@ 일정 띄우기 @>@
-
 const MonthlySchedules = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
@@ -233,7 +234,10 @@ function speakText(text) {
 
 <template>
   <div v-if="isYearlyView">
-    <YearlyCalendar @toMonthlyView="isYearlyView = false" />
+    <YearlyCalendar 
+      @toMonthlyView="isYearlyView = false" 
+      :schedules="schedules"
+    />
   </div>
   <div
     v-else

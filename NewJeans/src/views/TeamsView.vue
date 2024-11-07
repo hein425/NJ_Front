@@ -205,22 +205,34 @@ onMounted(() => {
 });
 </script>
 
-
 <style scoped>
 .team-view {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr 2fr;
-  gap: 20px;
+  display: flex;
+  /* align-items: center; */
+  justify-content: flex-start;
+  background-color: var(--background-color);
+  border-radius: 20px;
   padding: 20px;
-  background-color: #f3f4f6;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 70%;
+  /* height: 75vh; */
+  margin-left: 5vh;
 }
 
-.friends-list, .shared-diary-creation, .diary-content, .friend-search {
+.friends-list, .shared-diary-creation {
   background-color: #ffffff;
   border-radius: 8px;
   padding: 20px;
+  margin-right: 10px;
+  width: 16%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+.diary-content, .friend-search{
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-right: 10px;
+  width: 25%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 

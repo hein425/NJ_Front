@@ -21,6 +21,13 @@
           <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
           <div v-for="date in month.days" :key="date" class="date">
             <span class="date-type">{{ date }}</span>
+            <template v-for="schedule in schedules" :key="schedule.id">
+              {{ dayjs(schedule.start).format('YYYY/MM/DD') }}
+              <!-- {{ console.log(month) }} -->
+              <template v-if="dayjs(schedule.start).get('month')==month">
+                {{ '스케쥴 월이 같음'}}>
+              </template>
+            </template>
           </div>
         </div>
       </div>
@@ -66,6 +73,14 @@ const resetToCurrentYear = () => {
   currentYear.value = dayjs().year();
   generateCalendar();
 };
+
+const props = defineProps({
+  schedules: {
+    type: Array,
+    required: true,
+  }
+});
+
 </script>
 
 <style scoped>
