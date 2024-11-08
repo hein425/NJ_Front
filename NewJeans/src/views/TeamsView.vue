@@ -85,24 +85,66 @@ const searchResults = ref([]);
 const selectedDiary = ref(null);
 const showRequestList = ref(false);
 
+// 프로필 이미지 불러오기 함수
+const loadProfileImage = async (userId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/${userId}/profileImage`);
+    let imageUrl = response.data;
 
-// 페이지 로드 시 친구 목록과 친구 요청 목록 가져오기
+    // 이미지 URL이 상대 경로라면 BASE_URL 추가
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      imageUrl = `${BASE_URL}${imageUrl}`;
+    }
+
+    return imageUrl; // 최종 프로필 이미지 URL 반환
+  } catch (error) {
+    console.error(`Failed to load profile image for userId ${userId}:`, error);
+    return defaultProfileImage; // 오류 시 기본 이미지 반환
+  }
+};
+
+// 친구 목록 불러오기
 const loadFriends = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/list`);
-    friends.value = response.data;
+    friends.value = await Promise.all(response.data.map(async (friend) => {
+      const profileImageUrl = await loadProfileImage(friend.idx);
+      return { ...friend, profileImageUrl }; // 프로필 이미지 URL 포함한 친구 객체 반환
+    }));
   } catch (error) {
     console.error('Failed to load friends:', error);
   }
 };
 
+// 친구 요청 목록 불러오기
 const loadFriendRequests = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/requests`);
-    friendRequests.value = response.data;
-    console.log("Friend Requests Loaded:", friendRequests.value); // 로그 추가
+    friendRequests.value = await Promise.all(response.data.map(async (request) => {
+      const profileImageUrl = await loadProfileImage(request.idx);
+      return { ...request, profileImageUrl }; // 프로필 이미지 URL 포함한 요청 객체 반환
+    }));
   } catch (error) {
     console.error('Failed to load friend requests:', error);
+  }
+};
+
+// 친구 검색
+const searchFriends = async () => {
+  try {
+    if (searchQuery.value.trim()) {
+      const response = await axios.get(`${BASE_URL}/friend/search`, {
+        params: { userName: searchQuery.value } // userName으로 전달
+      });
+      searchResults.value = await Promise.all(response.data.map(async (user) => {
+        const profileImageUrl = await loadProfileImage(user.idx);
+        return { ...user, profileImageUrl }; // 프로필 이미지 URL 포함한 검색 결과 객체 반환
+      }));
+    } else {
+      searchResults.value = [];
+    }
+  } catch (error) {
+    console.error('Failed to search friends:', error);
   }
 };
 
@@ -110,7 +152,7 @@ const loadFriendRequests = async () => {
 const sendFriendRequest = async (receiverId) => {
   console.log("Requester ID:", userId);  // userId 확인
   console.log("Receiver ID:", receiverId);  // receiverId 확인
-  
+
   try {
     await axios.post(`${BASE_URL}/friend/request`, null, {
       params: {
@@ -125,7 +167,7 @@ const sendFriendRequest = async (receiverId) => {
   }
 };
 
-// 친구 요청 수락 
+// 친구 요청 수락
 const acceptFriendRequest = async (requesterId) => {
   const receiverId = authStore.idx; // 현재 로그인한 사용자의 ID를 receiverId로 설정
 
@@ -142,22 +184,6 @@ const acceptFriendRequest = async (requesterId) => {
   } catch (error) {
     console.error('Failed to accept friend request:', error);
     alert('친구 요청 수락에 실패했습니다.');
-  }
-};
-
-// 친구 검색
-const searchFriends = async () => {
-  try {
-    if (searchQuery.value.trim()) {
-      const response = await axios.get(`${BASE_URL}/friend/search`, {
-        params: { userName: searchQuery.value } // userName으로 전달
-      });
-      searchResults.value = response.data;
-    } else {
-      searchResults.value = [];
-    }
-  } catch (error) {
-    console.error('Failed to search friends:', error);
   }
 };
 
@@ -181,19 +207,32 @@ onMounted(() => {
 
 <style scoped>
 .team-view {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr 2fr;
-  gap: 20px;
+  display: flex;
+  /* align-items: center; */
+  justify-content: flex-start;
+  background-color: var(--background-color);
+  border-radius: 20px;
   padding: 20px;
-  background-color: #f3f4f6;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 70%;
+  /* height: 75vh; */
+  margin-left: 5vh;
 }
 
-.friends-list, .shared-diary-creation, .diary-content, .friend-search {
+.friends-list, .shared-diary-creation {
   background-color: #ffffff;
   border-radius: 8px;
   padding: 20px;
+  margin-right: 10px;
+  width: 16%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+.diary-content, .friend-search{
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-right: 10px;
+  width: 25%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 

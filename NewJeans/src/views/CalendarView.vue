@@ -249,7 +249,10 @@ function speakText(text) {
 
 <template>
   <div v-if="isYearlyView">
-    <YearlyCalendar @toMonthlyView="isYearlyView = false" />
+    <YearlyCalendar
+      @toMonthlyView="isYearlyView = false"
+      :schedules="schedules"
+    />
   </div>
   <div
     v-else
@@ -320,9 +323,9 @@ function speakText(text) {
               </div>
             </template>
             <div class="date-number">{{ column.get('date') }}</div>
-            
-            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" 
-              class="icon" 
+
+            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0"
+              class="icon"
               @click.stop="speakAllSchedules">
               🔊
             </div>
@@ -470,6 +473,7 @@ select {
 .A-Month-button {
   background-color: white;
   border: none;
+
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;

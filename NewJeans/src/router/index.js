@@ -8,6 +8,8 @@ import SignUpp from '../views/SignUpp.vue';
 import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import SearchForm from '@/components/searchForm.vue';
 import DiaryDetail from '@/views/DiaryDetail.vue';
+import NotFoundPage from '@/components/NotFoundPage.vue';
+import GraphView from '@/views/GraphView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +63,16 @@ const router = createRouter({
       component: SearchForm, // SearchResults 컴포넌트를 SearchForm 경로에 연결
       props: true,
     },
+    {
+      path: '/:catchAll(.*)', // catch-all 경로를 정규 표현식으로 설정
+      component: NotFoundPage,
+    },
+    {
+      path: '/graphView',
+      name: 'GraphView',
+      component: GraphView,
+    },
+
   ],
 });
 
