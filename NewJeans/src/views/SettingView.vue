@@ -58,6 +58,7 @@ import defaultProfileImage from '@/assets/profile2.jpg';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
@@ -216,9 +217,14 @@ const deleteAccount = async () => {
   }
 };
 
+
+const router = useRouter();
 const showStatistics = () => {
   console.log('통계 보기 버튼 클릭됨 - 여기에 백엔드 연동 코드를 추가하세요.');
+  router.push('/graphView');
 };
+
+
 </script>
 
 <style scoped>

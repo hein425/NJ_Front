@@ -9,6 +9,7 @@ import ScheduleDayForm from '@/components/ScheduleDayForm.vue';
 import SearchForm from '@/components/searchForm.vue';
 import DiaryDetail from '@/views/DiaryDetail.vue';
 import NotFoundPage from '@/components/NotFoundPage.vue';
+import GraphView from '@/views/GraphView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -66,6 +67,12 @@ const router = createRouter({
       path: '/:catchAll(.*)', // catch-all 경로를 정규 표현식으로 설정
       component: NotFoundPage,
     },
+    {
+      path: '/graphView',
+      name: 'GraphView',
+      component: GraphView,
+    },
+
   ],
 });
 
