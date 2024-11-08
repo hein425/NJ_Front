@@ -4,7 +4,7 @@
       <!-- 수정된 부분: authStore에서 profile 값을 직접 가져옴 -->
       <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
-        <RouterLink to="/" class="menu-item" active-class="active">
+        <!-- <RouterLink to="/" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
           Calendar
         </RouterLink>
@@ -21,7 +21,24 @@
         <RouterLink to="/setting" class="menu-item" active-class="active">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           Setting
-        </RouterLink>
+        </RouterLink> -->
+
+        <button class="menu-item" @click="navigateToCalendar">
+          <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
+          Calendar
+        </button>
+        <button class="menu-item" @click="navigateToDiary">
+          <FontAwesomeIcon class="fa-icon" :icon="faBook" />
+          Diary
+        </button>
+        <button class="menu-item" @click="navigateToTeams">
+          <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
+          Teams
+        </button>
+        <button class="menu-item" @click="navigateToSetting">
+          <FontAwesomeIcon class="fa-icon" :icon="faCog" />
+          Setting
+        </button>
 
         <!-- 로그인 상태에 따라 Sign In / Sign Out 버튼 표시 -->
         <button v-if="!authStore.isLoggedIn" class="menu-item sign-in" @click="showModal = true">
@@ -62,6 +79,38 @@ const showModal = ref(false); // 기본값 false로 시작
 const handleLogout = async () => {
   await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
   router.push('/'); // 로그아웃 후 로그인 페이지로 이동
+};
+
+// 특정 페이지로 이동하는 함수들
+const navigateToCalendar = () => {
+  router.push('/');
+};
+
+const navigateToDiary = () => {
+  if (!authStore.isLoggedIn) {
+    alert('로그인 후 이용해 주십시오.');
+    showModal.value = true; // 로그인 모달을 표시
+  } else {
+    router.push('/diary'); // 로그인이 되어 있다면 Diary 페이지로 이동
+  }
+};
+
+const navigateToTeams = () => {
+  if (!authStore.isLoggedIn) {
+    alert('로그인 후 이용해 주십시오.');
+    showModal.value = true; // 로그인 모달을 표시
+  } else {
+    router.push('/teams'); // 로그인이 되어 있다면 Teams 페이지로 이동
+  }
+};
+
+const navigateToSetting = () => {
+  if (!authStore.isLoggedIn) {
+    alert('로그인 후 이용해 주십시오.');
+    showModal.value = true; // 로그인 모달을 표시
+  } else {
+    router.push('/setting'); // 로그인이 되어 있다면 Setting 페이지로 이동
+  }
 };
 
 // Pinia store의 상태가 복원되었는지 확인

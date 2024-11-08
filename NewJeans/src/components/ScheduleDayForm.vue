@@ -25,8 +25,7 @@
                   <input v-if="editIndex === index" id="enddate" v-model="enddate" type="datetime-local" />
                 </div>
 
-                <p v-if="editIndex !== index"><strong>반복: </strong> {{ schedule.repeatType }}</p>
-                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+                <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
 
                 <div v-if="editIndex === index">
                   <div class="form-row" style="width: 450px">
@@ -225,12 +224,26 @@ const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
 const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
 
+  // 반복 타입에 대한 한글 매핑 정의
+  const repeatTypeKoreanMap = {
+    YEARLY: '매년',
+    MONTHLY: '매월',
+    WEEKLY: '매주',
+    DAILY: '매일',
+    NONE: '없음'
+  };
+
+  // 매핑된 한글 반복 타입을 반환하는 함수
+  const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
+
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
     diaries: [...isDiaryExpanded.value],
   };
+
+
 
   const [year, month, day] = selectedDate.split('-');
   const calendarIdx = authStore.calendarIdx;

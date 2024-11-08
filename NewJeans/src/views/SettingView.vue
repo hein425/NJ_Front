@@ -94,7 +94,7 @@ const saveUserName = async () => {
   }
 
   try {
-    await axios.put(`${BASE_URL}/user/updateUserName/${authStore.idx}`, { userName: sanitizedUserName });
+    await axios.put(`${BASE_URL}/user/updateUserName`, { idx: authStore.idx,userName: sanitizedUserName });
 
     authStore.userName = sanitizedUserName;
 
