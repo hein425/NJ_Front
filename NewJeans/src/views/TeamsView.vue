@@ -95,51 +95,133 @@ import { useAuthStore } from '@/stores/authStore';
 const authStore = useAuthStore();
 const userId = authStore.idx;
 
-const friends = ref([]);               // 친구 목록
-const friendRequests = ref([]);         // 친구 요청 목록
-const searchQuery = ref('');            // 검색 쿼리
-const searchResults = ref([]);          // 검색 결과
-const selectedDiary = ref(null);        // 선택된 일기
-const showRequestList = ref(false);     // 친구 요청 목록 표시 여부
-const isModalOpen = ref(false);         // 모달 창 열림 상태
-const sharedDiaryTitle = ref('');       // 공유 일기 제목
-const modalFriends = ref([]);           // 모달에 표시될 친구 목록
+const friends = ref([]);
+const friendRequests = ref([]);
+const searchQuery = ref('');
+const searchResults = ref([]);
+const selectedDiary = ref(null);
+const showRequestList = ref(false);
+const isModalOpen = ref(false); // 모달 창 열림 상태
+const sharedDiaryTitle = ref(''); // 공유 일기 제목
 
-// 프로필 이미지 로드 함수
+// 모달 관련 함수들
+const openModal = () => {
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+};
+
+const createSharedDiary = () => {
+  alert(`공유일기 생성: ${sharedDiaryTitle.value}`);
+  closeModal();
+};
+
+const inviteFriend = (friendId) => {
+  alert(`친구 ${friendId}를 초대했습니다.`);
+};
+
+// 프로필 이미지 불러오기 함수
 const loadProfileImage = async (userId) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/${userId}/profileImage`);
     let imageUrl = response.data;
 
+    // 이미지 URL이 상대 경로라면 BASE_URL 추가
     if (imageUrl && !imageUrl.startsWith('http')) {
       imageUrl = `${BASE_URL}${imageUrl}`;
     }
-    return imageUrl;
+
+    return imageUrl; // 최종 프로필 이미지 URL 반환
   } catch (error) {
     console.error(`Failed to load profile image for userId ${userId}:`, error);
-    return defaultProfileImage;
+    return defaultProfileImage; // 오류 시 기본 이미지 반환
   }
 };
 
-// 친구 목록 로드 함수
+// 친구 목록 불러오기
 const loadFriends = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/list`);
     friends.value = await Promise.all(response.data.map(async (friend) => {
       const profileImageUrl = await loadProfileImage(friend.idx);
-      return { ...friend, profileImageUrl };
+      return { ...friend, profileImageUrl }; // 프로필 이미지 URL 포함한 친구 객체 반환
     }));
   } catch (error) {
     console.error('Failed to load friends:', error);
   }
 };
 
-// 모달용 친구 목록 로드 함수
-const loadModalFriends = async () => {
-  modalFriends.value = await Promise.all(friends.value.map(async (friend) => {
-    const profileImageUrl = await loadProfileImage(friend.idx);
-    return { ...friend, profileImageUrl };
-  }));
+// 친구 요청 목록 불러오기
+const loadFriendRequests = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/friend/${userId}/requests`);
+    friendRequests.value = await Promise.all(response.data.map(async (request) => {
+      const profileImageUrl = await loadProfileImage(request.idx);
+      return { ...request, profileImageUrl }; // 프로필 이미지 URL 포함한 요청 객체 반환
+    }));
+  } catch (error) {
+    console.error('Failed to load friend requests:', error);
+  }
+};
+
+// 친구 검색
+const searchFriends = async () => {
+  try {
+    if (searchQuery.value.trim()) {
+      const response = await axios.get(`${BASE_URL}/friend/search`, {
+        params: { userName: searchQuery.value } // userName으로 전달
+      });
+      searchResults.value = await Promise.all(response.data.map(async (user) => {
+        const profileImageUrl = await loadProfileImage(user.idx);
+        return { ...user, profileImageUrl }; // 프로필 이미지 URL 포함한 검색 결과 객체 반환
+      }));
+    } else {
+      searchResults.value = [];
+    }
+  } catch (error) {
+    console.error('Failed to search friends:', error);
+  }
+};
+
+// 친구 추가 요청 보내기
+const sendFriendRequest = async (receiverId) => {
+  console.log("Requester ID:", userId);  // userId 확인
+  console.log("Receiver ID:", receiverId);  // receiverId 확인
+  
+  try {
+    await axios.post(`${BASE_URL}/friend/request`, null, {
+      params: {
+        requesterId: userId,
+        receiverId,
+      }
+    });
+    alert('친구 요청이 성공적으로 전송되었습니다.');
+  } catch (error) {
+    console.error('Failed to send friend request:', error);
+    alert('친구 요청 전송에 실패했습니다.');
+  }
+};
+
+// 친구 요청 수락 
+const acceptFriendRequest = async (requesterId) => {
+  const receiverId = authStore.idx; // 현재 로그인한 사용자의 ID를 receiverId로 설정
+
+  try {
+    await axios.post(`${BASE_URL}/friend/accept`, null, {
+      params: {
+        requesterId,
+        receiverId,
+      }
+    });
+    friendRequests.value = friendRequests.value.filter(request => request.idx !== requesterId);
+    await loadFriends();
+    alert('친구 요청을 수락했습니다.');
+  } catch (error) {
+    console.error('Failed to accept friend request:', error);
+    alert('친구 요청 수락에 실패했습니다.');
+  }
 };
 
 // 친구 요청 목록 토글
@@ -147,34 +229,12 @@ const toggleRequestList = () => {
   showRequestList.value = !showRequestList.value;
 };
 
-// 모달 열기 함수
-const openModal = async () => {
-  await loadModalFriends();  // 모달 친구 목록 불러오기
-  isModalOpen.value = true;
-};
-
-// 모달 닫기 함수
-const closeModal = () => {
-  isModalOpen.value = false;
-};
-
-// 공유 일기 생성 함수
-const createSharedDiary = () => {
-  alert(`공유일기 생성: ${sharedDiaryTitle.value}`);
-  closeModal();
-};
-
-// 친구 초대 함수
-const inviteFriend = (friendId) => {
-  alert(`친구 ${friendId}를 초대했습니다.`);
-};
-
-// 컴포넌트가 로드될 때 친구 목록 및 친구 요청 목록 불러오기
+// 컴포넌트가 로드될 때 친구 목록 및 요청 목록 가져오기
 onMounted(() => {
   loadFriends();
+  loadFriendRequests();
 });
 </script>
-
 
 
 
@@ -351,47 +411,28 @@ button:hover {
   color: #6b7280;
   text-align: center;
 }
+
+/* 모달 배경 스타일 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-}
-
-.modal-content h3 {
-  margin-bottom: 10px;
-}
-
-.modal-content .friend-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 10px 0;
-}
-
-.modal-content .friend-list li {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 5px 0;
+  z-index: 1000; /* 모달을 최상단에 배치 */
 }
 
-.modal-content button {
-  margin-top: 10px;
+/* 모달 창 스타일 */
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px; /* 원하는 모달 너비 */
+  width: 100%;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
 }
-
 </style>
