@@ -23,7 +23,7 @@
             <span class="date-type">{{ date }}</span>
 
             <div class="schedule-dot-wrapper">
-              <!-- 이거 어떻게 만들긴 했는데 왜 되는지 모르겠음 -->
+              <!-- 이거 어떻게 만들긴 했는데 -->
               <div
                 v-for="schedule in getSchedulesForDate(dayjs().year(currentYear).month(month.month).date(date))"
                 :key="schedule.id"
@@ -271,12 +271,11 @@ const resetToCurrentYear = () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-top: 5px;
 }
 
 .date-type {
   font-size: 0.8rem;
-  margin-bottom: 2px; /* 숫자와 점 사이의 간격 */
+  margin-bottom: 1px; /* 숫자와 점 사이의 간격 */
 }
 
 .blank {
