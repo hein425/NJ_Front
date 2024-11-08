@@ -65,19 +65,39 @@
     </div>
 
     <!-- 모달 창 -->
-    <transition name="modal">
+ <!-- 모달 창 -->
+ <transition name="modal">
       <div class="modal-overlay" v-if="isModalOpen" @click.self="closeModal">
         <div class="modal-content">
           <h3>공유일기 생성</h3>
           <input v-model="sharedDiaryTitle" placeholder="공유일기 이름을 입력하세요" />
-          <ul class="friend-list">
-            <li v-for="friend in friends" :key="friend.idx">
-              <span>{{ friend.userName }}</span>
-              <button @click="inviteFriend(friend.idx)">+ 초대</button>
-            </li>
-          </ul>
-          <button @click="createSharedDiary">공유일기 만들기</button>
-          <button @click="closeModal">닫기</button>
+
+          <!-- 친구 목록 드롭다운 -->
+          <div class="friend-dropdown">
+            <button @click="toggleFriendDropdown">친구 목록</button>
+            <ul v-if="showFriendDropdown" class="friend-list-dropdown">
+              <li v-for="friend in friends" :key="friend.idx">
+                <span>{{ friend.userName }}</span>
+                <button @click="inviteFriend(friend)">+ 초대</button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 초대된 친구 목록 -->
+          <div class="invited-list">
+            <h4>초대된 친구 목록</h4>
+            <ul>
+              <li v-for="invited in invitedFriends" :key="invited.idx">
+                <span>{{ invited.userName }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 모달 하단 버튼들 -->
+          <div class="modal-buttons">
+            <button @click="createSharedDiary">공유일기 만들기</button>
+            <button @click="closeModal">닫기</button>
+          </div>
         </div>
       </div>
     </transition>
@@ -103,24 +123,57 @@ const selectedDiary = ref(null);
 const showRequestList = ref(false);
 const isModalOpen = ref(false); // 모달 창 열림 상태
 const sharedDiaryTitle = ref(''); // 공유 일기 제목
+const invitedFriends = ref([]); // 초대된 친구 목록
+const showFriendDropdown = ref(false); // 친구 목록 드롭다운 표시 여부
 
 // 모달 관련 함수들
 const openModal = () => {
   isModalOpen.value = true;
 };
-
 const closeModal = () => {
   isModalOpen.value = false;
+  sharedDiaryTitle.value = '';
+  invitedFriends.value = [];
+  showFriendDropdown.value = false;
 };
 
-const createSharedDiary = () => {
-  alert(`공유일기 생성: ${sharedDiaryTitle.value}`);
-  closeModal();
+// 친구 목록 드롭다운 토글
+const toggleFriendDropdown = () => {
+  showFriendDropdown.value = !showFriendDropdown.value;
 };
 
-const inviteFriend = (friendId) => {
-  alert(`친구 ${friendId}를 초대했습니다.`);
+const createSharedDiary = async () => {
+  if (!sharedDiaryTitle.value.trim()) {
+    alert('공유 일기 이름을 입력하세요.');
+    return;
+  }
+
+  // 예시: 실제 공유일기 생성 API 요청
+  try {
+    const response = await axios.post(`${BASE_URL}/shared-diary/create`, {
+      title: sharedDiaryTitle.value,
+      invitedFriends: invitedFriends.value.map(friend => friend.idx)
+    });
+    alert(`공유일기 생성 완료: ${sharedDiaryTitle.value}`);
+    console.log(response.data); // 생성된 공유일기 정보 확인
+    closeModal();
+  } catch (error) {
+    console.error('공유일기 생성 실패:', error);
+    alert('공유일기 생성에 실패했습니다.');
+  }
 };
+const inviteFriend = (friend) => {
+  // 이미 초대된 친구가 아닐 때만 추가
+  if (!invitedFriends.value.some(f => f.idx === friend.idx)) {
+    invitedFriends.value.push(friend);
+    alert(`${friend.userName}님을 초대했습니다.`);
+  } else {
+    alert('이미 초대한 친구입니다.');
+  }
+};
+
+
+
 
 // 프로필 이미지 불러오기 함수
 const loadProfileImage = async (userId) => {
@@ -247,6 +300,83 @@ onMounted(() => {
   background-color: #f3f4f6;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.friend-dropdown button {
+  background-color: #f3f4f6;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.friend-list-dropdown {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.friend-list-dropdown li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invited-list {
+  margin-top: 15px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.modal-buttons button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.modal-buttons button:first-child {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.modal-buttons button:last-child {
+  background-color: #f3f4f6;
+  color: #333;
 }
 
 .friends-list, .shared-diary-creation, .diary-content, .friend-search {
