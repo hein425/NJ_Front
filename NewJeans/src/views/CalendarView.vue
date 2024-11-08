@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, watchEffect } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
@@ -11,7 +11,21 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
+//문자열 색상을 hex 값으로 변환
+const colorList = [
+  { value: 'PINK', color: '#ff7f7f' },
+  { value: 'ORANGE', color: '#ff9933' },
+  { value: 'YELLOW', color: '#ffe066' },
+  { value: 'BLUE', color: '#4da6ff' },
+  { value: 'GREEN', color: '#5cd65c' },
+  { value: 'VIOLET', color: '#b366ff' },
+  { value: 'GRAY', color: '#a6a6a6' },
+];
+
 const router = useRouter();
+
+const authStore = useAuthStore();
+const calendarIdx = ref(authStore.calendarIdx);
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -20,9 +34,40 @@ const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
 
-const authStore = useAuthStore();
+const selectDate = ref(null);
+const isFlipped = ref(false);
 
-const calendarIdx = authStore.calendarIdx;
+const isScheduleFormVisible = ref(false);
+const isDiaryFormVisible = ref(false);
+const isYearlyView = ref(false); // 기본값: 일반 달력
+
+// 연도, 월 이동 선택항목
+const selectedYear = ref(now.value.year());
+const selectedMonth = ref(now.value.month() + 1);
+
+const yearsRange = Array.from({ length: 20 }, (_, i) => dayjs().year() - 10 + i); // 현재 연도를 기준으로 10년 전후
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+// @<@ 일기 띄우기 @>@
+// 매달 다이어리 데이터를 불러오는 함수
+const diaryEntries = ref([]);
+
+const fetchDiaryEntriesForMonth = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const diaries = response.data;
+    console.log(`diaries =  ${diaries}`);
+    diaryEntries.value = diaries.map(diary => dayjs(diary.date).format('YYYY-MM-DD'));
+    console.log(`diaryEntries =  ${diaryEntries.value}`);
+  } catch (error) {
+    console.error('Failed to fetch diary entries:', error);
+  }
+};
+
+// 날짜에 해당하는 일기를 확인하는 함수
+const isDiaryEntry = date => {
+  return diaryEntries.value.includes(date.format('YYYY-MM-DD'));
+};
 
 // Nager.Date API에서 공휴일 데이터를 가져오는 함수
 const fetchHolidays = async () => {
@@ -36,64 +81,20 @@ const fetchHolidays = async () => {
   }
 };
 
-watch(
-  () => now.value.format('YYYY'), // now의 연도 부분만 추적
-  fetchHolidays,
-);
-
 // @<@ 일정 띄우기 @>@
-
 const MonthlySchedules = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);
   }
 };
 
-// 컴포넌트가 로드될 때 일정 데이터를 가져옴+다이어리도
-onMounted(() => {
-  fetchHolidays();
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-});
-
-// 달이 바뀔 때마다 새 데이터를 불러오도록 watch 사용
-watch(now, () => {
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-});
-
 // 날짜에 해당하는 일정을 필터링하는 함수
 const getSchedulesForDate = date => {
   return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 3);
 };
-
-// @<@ 일기 띄우기 @>@
-// 매달 다이어리 데이터를 불러오는 함수
-const diaryEntries = ref([]);
-const fetchDiaryEntriesForMonth = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/diary/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
-    const diaries = response.data;
-    diaryEntries.value = diaries.map(diary => dayjs(diary.date).format('YYYY-MM-DD'));
-  } catch (error) {
-    console.error('Failed to fetch diary entries:', error);
-  }
-};
-
-// 날짜에 해당하는 일기를 확인하는 함수
-const isDiaryEntry = date => {
-  return diaryEntries.value.includes(date.format('YYYY-MM-DD'));
-};
-
-const selectDate = ref(null);
-const isFlipped = ref(false);
-
-const isScheduleFormVisible = ref(false);
-const isDiaryFormVisible = ref(false);
-const isYearlyView = ref(false); // 기본값: 일반 달력
 
 const flipBack = () => {
   isFlipped.value = false;
@@ -121,6 +122,7 @@ const selectDateFn = date => {
   selectDate.value = dayjs(date).format('YYYY-MM-DD');
   isFlipped.value = true;
 };
+
 const goToday = () => {
   now.value = dayjs();
 };
@@ -142,6 +144,49 @@ const closeScheduleForm = () => {
 };
 
 const weeksInMonth = ref(6); // 기본 6주로 설정 (최대 6주)
+
+const getHexColor = value => {
+  const colorItem = colorList.find(item => item.value === value);
+  return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
+};
+
+// 색깔 바꾸기
+const hexToRgba = (hex, opacity) => {
+  if (hex.startsWith('#')) {
+    const r = parseInt(hex.slice(1, 3), 16); // 빨강
+    const g = parseInt(hex.slice(3, 5), 16); // 초록
+    const b = parseInt(hex.slice(5, 7), 16); // 파랑
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return hex;
+};
+
+const onYearChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
+
+const onMonthChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
+
+function speakAllSchedules() {
+  const parent = event.target.parentElement;
+
+  // 부모 요소 내에서 모든 형제 schedule-title 요소 가져오기
+  const scheduleElements = parent.querySelectorAll('.schedule-title');
+  const scheduleTexts = Array.from(scheduleElements).map(el => el.textContent.trim());
+
+  // 텍스트들을 하나의 문자열로 합치기
+  const combinedText = scheduleTexts.join(', ');
+  speakText(combinedText);
+}
+
+function speakText(text) {
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'ko-KR'; // 원하는 언어 설정
+  window.speechSynthesis.speak(speech);
+}
+// 일기 북마크
 
 watch(
   now,
@@ -178,81 +223,27 @@ watch(
     for (let i = 0; i < columns.value.length; i += 7) {
       groupColumns.value.push(columns.value.slice(i, i + 7));
     }
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+    fetchHolidays();
   },
   {
     immediate: true,
     deep: true,
   },
 );
-
-//문자열 색상을 hex 값으로 변환
-const colorList = [
-  { value: 'PINK', color: '#ff7f7f' },
-  { value: 'ORANGE', color: '#ff9933' },
-  { value: 'YELLOW', color: '#ffe066' },
-  { value: 'BLUE', color: '#4da6ff' },
-  { value: 'GREEN', color: '#5cd65c' },
-  { value: 'VIOLET', color: '#b366ff' },
-  { value: 'GRAY', color: '#a6a6a6' },
-];
-
-const getHexColor = value => {
-  const colorItem = colorList.find(item => item.value === value);
-  return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
-};
-
-// 색깔 바꾸기
-const hexToRgba = (hex, opacity) => {
-  if (hex.startsWith('#')) {
-    const r = parseInt(hex.slice(1, 3), 16); // 빨강
-    const g = parseInt(hex.slice(3, 5), 16); // 초록
-    const b = parseInt(hex.slice(5, 7), 16); // 파랑
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+watchEffect(
+  () => {
+    calendarIdx.value = authStore.calendarIdx;
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
   }
-  return hex;
-};
-
-// 연도, 월 이동 선택항목
-const selectedYear = ref(now.value.year());
-const selectedMonth = ref(now.value.month() + 1);
-
-const yearsRange = Array.from({ length: 20 }, (_, i) => dayjs().year() - 10 + i); // 현재 연도를 기준으로 10년 전후
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-const onYearChange = () => {
-  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-};
-
-const onMonthChange = () => {
-  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-};
-
-function speakAllSchedules() {
-  const parent = event.target.parentElement;
-
-// 부모 요소 내에서 모든 형제 schedule-title 요소 가져오기
-const scheduleElements = parent.querySelectorAll('.schedule-title');
-const scheduleTexts = Array.from(scheduleElements).map((el) => el.textContent.trim());
-
-// 텍스트들을 하나의 문자열로 합치기
-const combinedText = scheduleTexts.join(', ');
-speakText(combinedText);
-}
-
-function speakText(text) {
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = 'ko-KR'; // 원하는 언어 설정
-  window.speechSynthesis.speak(speech);
-}
-// 일기 북마크
+);
 </script>
 
 <template>
   <div v-if="isYearlyView">
-    <YearlyCalendar
-      @toMonthlyView="isYearlyView = false"
-      :schedules="schedules"
-    />
+    <YearlyCalendar @toMonthlyView="isYearlyView = false" :schedules="schedules" />
   </div>
   <div
     v-else
@@ -324,11 +315,7 @@ function speakText(text) {
             </template>
             <div class="date-number">{{ column.get('date') }}</div>
 
-            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0"
-              class="icon"
-              @click.stop="speakAllSchedules">
-              🔊
-            </div>
+            <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" class="icon" @click.stop="speakAllSchedules">🔊</div>
             <!-- 일정표시창 -->
             <div
               v-for="schedule in getSchedulesForDate(column)"
@@ -354,9 +341,7 @@ function speakText(text) {
           </button>
           <button class="flip-back-btn" @click="flipBack">&orarr;</button>
           <!-- ㄴ 달력 다시 뒤집기 버튼 -->
-          <button class="diary-btn" @click="showDiaryForm">
-            <font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" /> &nbsp; Diary
-          </button>
+          <button class="diary-btn" @click="showDiaryForm"><font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" /> &nbsp; Diary</button>
         </div>
 
         <!-- ScheduleForm 컴포넌트 렌더링 -->
