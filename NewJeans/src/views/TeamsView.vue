@@ -80,32 +80,61 @@
     </div>
 
 
-    <div class="notification-container">
-      <div class="notification-section">
-      <div class="friend-search"><h3>내 교환 일기 목록</h3></div>
-          <!-- 내 교환일기 섹션 -->
-    <div class="exchange-diary-section">
-      <button class="request-exchange-button" @click="openModal">교환일기 신청하기</button>
-      
-      <div v-for="diary in exchangeDiaries" :key="diary.id" class="exchange-diary">
-        <h4 @click="toggleDiaryEntries(diary.id)">{{ diary.title }}</h4>
-        <ul v-if="openDiaryId === diary.id">
-          <li v-for="entry in diary.entries" :key="entry.id">
-            <p>{{ entry.content }}</p>
-            <small>작성자: {{ entry.authorName }}</small>
-          </li>
-        </ul>
-      </div>
+  <div class="notification-container">
+    
+      <!-- 내 교환일기 섹션 -->
+<div class="notification-section">
+  <div class="exchange-diary-section">
+    <button class="request-exchange-button" @click="openModal">교환일기 신청하기</button>
+    
+    <div v-for="diary in exchangeDiaries" :key="diary.id" class="exchange-diary">
+      <!-- 팀 이름 클릭 시 엔트리 목록 로드 -->
+      <h4 @click="toggleDiaryEntries(diary.diaryId)">
+        팀이름 : {{ diary.groupName }}
+      </h4>
+      <div class="participants">
+          참가자:
+          <span v-for="participant in diary.participants" :key="participant" class="participant">
+            {{ participant }}
+          </span>
+        </div>
     </div>
-    </div>
-    </div>
+  </div>
+</div>
+
+<!-- 내 교환일기 목록 -->
+<div class="notification-section">
+  <div class="friend-search">
+    <h3>내 교환 일기 목록</h3>
+  </div>
+  <ul class="exchange-diary-list">
+    <li v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary-item">
+      <!-- 엔트리 목록 표시 (팀 이름 및 참가자 제외) -->
+      <ul v-if="openDiaryId === diary.diaryId">
+        <li v-for="entry in diary.entries" :key="entry.id" class="entry-item">
+          <p>{{ entry.content }}</p>
+          <small>작성자: {{ entry.authorName }}</small>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
 
 <!-- 교환일기 생성 모달 -->
 <transition name="modal">
   <div class="modal-overlay" v-if="isModalOpen" @click.self="closeModal">
     <div class="modal-content">
       <h3>교환일기 신청</h3>
-      
+          <!-- 그룹명 입력 필드 -->
+          <div class="group-name-input">
+        <label for="group-name">그룹명:</label>
+        <input
+          id="group-name"
+          type="text"
+          v-model="groupName"
+          placeholder="그룹명을 입력하세요"
+        />
+      </div>
       <!-- 친구 목록 드롭다운 -->
       <div class="friend-dropdown">
         <h4>나의 친구 목록</h4>
@@ -128,14 +157,17 @@
           </li>
         </ul>
       </div>
-      
-      <!-- 모달 하단 버튼들 -->
-      <div class="modal-buttons">
-        <button @click="sendExchangeDiaryRequest">교환일기 신청하기</button>
-      </div>
+
+<!-- 모달 하단 버튼들 -->
+          <div class="modal-buttons">
+            <button @click="sendExchangeDiaryRequest">교환일기 신청하기</button>
+          </div>
+
+
     </div>
   </div>
 </transition>
+</div>
   </div>
 </template>
 
@@ -161,6 +193,14 @@ const selectedFriend = ref(null); // 선택된 친구
 const showRequestList = ref(false); // 친구 요청 목록 표시 여부
 const showExchangeDiaryRequestList = ref(false); // 교환일기 요청 목록 표시 여부
 const isModalOpen = ref(false); // 모달 창 열림 상태
+const exchangeDiaries = ref([]); // 교환 일기 목록
+const openDiaryId = ref(null); // 열려 있는 일기의 ID
+const groupName = ref(''); // 그룹명 상태 추가
+
+
+
+
+
 
 // 모달 관련 함수들
 const openModal = () => {
@@ -169,6 +209,41 @@ const openModal = () => {
 const closeModal = () => {
   isModalOpen.value = false;
   selectedFriend.value = null; // 모달을 닫을 때 선택된 친구 초기화
+  groupName.value = ''; // 그룹명 초기화
+};
+
+// 엔트리 목록을 가져오는 함수
+const fetchDiaryEntries = async (diaryId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/exchange-diary-entry/exchangeDiaryList/${diaryId}`, {
+      params: { userId: userId }  // 추가된 userId 전달
+    });
+    const diary = exchangeDiaries.value.find(d => d.diaryId === diaryId);
+    diary.entries = response.data;
+  } catch (error) {
+    console.error('Failed to load diary entries:', error);
+  }
+};
+
+
+// 페이지 로드 시 교환일기 목록을 불러오는 함수
+const loadExchangeDiaries = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/exchange-diary-entry/summary/${userId}`); // 현재 userId로 교환일기 목록 불러오기
+    exchangeDiaries.value = response.data;
+  } catch (error) {
+    console.error('Failed to load exchange diaries:', error);
+  }
+};
+
+// 엔트리 목록을 토글하는 함수 (팀 이름 클릭 시 호출)
+const toggleDiaryEntries = (diaryId) => {
+  if (openDiaryId.value === diaryId) {
+    openDiaryId.value = null; // 현재 열려있는 항목을 닫음
+  } else {
+    openDiaryId.value = diaryId; // 새 항목을 열고 엔트리 로드
+    fetchDiaryEntries(diaryId);
+  }
 };
 
 // 친구 목록 불러오기
@@ -320,8 +395,13 @@ const selectFriend = friend => {
   selectedFriend.value = friend; // 선택한 친구로 업데이트
 };
 
-// 교환일기 요청 보내기
+/// 교환일기 요청 보내기
 const sendExchangeDiaryRequest = async () => {
+  if (!groupName.value) {
+    alert("그룹명을 입력하세요.");
+    return;
+  }
+  
   if (!selectedFriend.value) {
     alert("교환일기에 초대할 친구를 선택하세요.");
     return;
@@ -332,6 +412,7 @@ const sendExchangeDiaryRequest = async () => {
       params: {
         requesterId: userId,
         receiverId: selectedFriend.value.idx,
+        groupName: groupName.value // 그룹명 전달
       },
     });
     alert("교환일기 신청이 성공적으로 전송되었습니다.");
@@ -341,12 +422,14 @@ const sendExchangeDiaryRequest = async () => {
     alert('교환일기 신청에 실패했습니다.');
   }
 };
-
 // 컴포넌트가 로드될 때 친구 목록 및 요청 목록 가져오기
-onMounted(() => {
-  loadFriends();
-  loadFriendRequests();
-  loadExchangeDiaryRequests();
+onMounted(async () => {
+  
+  await loadFriends();
+  await loadFriendRequests();
+  await loadExchangeDiaries();
+  await loadExchangeDiaryRequests();
+  console.log(exchangeDiaries.value); // 데이터 로드 확인용 로그
 });
 </script>
 
@@ -705,7 +788,24 @@ h3 {
 .modal-buttons button:hover {
   background-color: #2563eb;
 }
+/* 스타일은 필요에 따라 추가 */
+.exchange-diary-list {
+  list-style: none;
+  padding: 0;
+}
 
+.exchange-diary-item {
+  padding: 10px;
+}
+
+.participants {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.entry-item {
+  padding: 5px 0;
+}
 
 
 
