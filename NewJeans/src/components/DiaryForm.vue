@@ -42,6 +42,7 @@
       <div class="image-preview">
         <div v-for="(image, index) in images" :key="index" class="image-container">
           <img :src="image.url" alt="Preview" />
+          <button class="delete-btn" @click="removeImage(index)">X</button>
         </div>
       </div>
 
@@ -138,6 +139,11 @@ const submitDiary = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
+
+const removeImage = (index) => {
+  images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
+};
+
 </script>
 
 <style scoped>
@@ -210,6 +216,7 @@ const cancelForm = () => {
 
 .image-container {
   margin: 5px;
+  position: relative;
 }
 
 .image-container img {
@@ -248,5 +255,22 @@ const cancelForm = () => {
 .cancel-button {
   background-color: #808080;
   color: white;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
