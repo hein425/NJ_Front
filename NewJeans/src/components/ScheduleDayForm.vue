@@ -5,8 +5,7 @@
       <!-- 스케줄 섹션 -->
       <div class="schedule-section">
         <div v-if="schedules.length > 0">
-          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item"
-            :style="{ borderColor: schedule.color }" @click="toggleScheduleExpand(index)">
+          <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleScheduleExpand(index)">
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ schedule.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
@@ -63,8 +62,7 @@
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
-                <textarea v-else v-model="editData.content" class="input-field textarea-field"
-                  placeholder="Enter Content" @click.stop></textarea>
+                <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <hr class="divider" />
                 <p v-show="editIndex !== index"><strong>Address:</strong></p>
@@ -73,7 +71,15 @@
                 </div>
 
                 <!-- 이미지 관리 섹션 -->
-                <div class="schedule-images">
+                <div v-if="editIndex === index" class="schedule-images">
+                  <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
+                    <button class="delete-btn" @click.stop="removeScheduleImage(imgIndex, imageUrl)">X</button>
+                  </div>
+                  <input type="file" @change="onScheduleFileChange" multiple accept="image/*" />
+                </div>
+
+                <div v-else class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
                     <img :src="`${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
                   </div>
@@ -149,18 +155,15 @@
               <div v-show="isDiaryExpanded[index]" class="expanded-content">
                 <hr class="divider" />
                 <p v-if="editIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
-                <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date"
-                  @click.stop />
+                <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date" @click.stop />
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ diary.content }}</p>
-                <textarea v-else v-model="editData.content" class="input-field textarea-field"
-                  placeholder="Enter Content" @click.stop></textarea>
+                <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="editIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
-                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image"
-                      style="width: 150px; margin: 5px" />
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
                   </div>
                   <input type="file" @change="onFileChange" multiple accept="image/*" />
@@ -229,23 +232,22 @@ const authStore = useAuthStore();
 const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
-const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
+const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
 
 const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
 const showDiaryDeleteModal = ref(false);
 
-  // 반복 타입에 대한 한글 매핑 정의
-  const repeatTypeKoreanMap = {
-    YEARLY: '매년',
-    MONTHLY: '매월',
-    WEEKLY: '매주',
-    DAILY: '매일',
-    NONE: '없음'
-  };
+// 반복 타입에 대한 한글 매핑 정의
+const repeatTypeKoreanMap = {
+  YEARLY: '매년',
+  MONTHLY: '매월',
+  WEEKLY: '매주',
+  DAILY: '매일',
+  NONE: '없음',
+};
 
-  // 매핑된 한글 반복 타입을 반환하는 함수
-  const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
-
+// 매핑된 한글 반복 타입을 반환하는 함수
+const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -349,11 +351,15 @@ const toggleDiaryExpand = index => {
 
 const startEdit = (type, index) => {
   editIndex.value = index;
-  editData.value = type === 'schedule' ? {
-    ...schedules.value[index], images: [...schedules.value[index].images],
-    repeatType: schedules.value[index].repeatType,
-    repeatEndDate: schedules.value[index].repeatEndDate
-  } : { ...diaries.value[index], images: [...diaries.value[index].images] };
+  editData.value =
+    type === 'schedule'
+      ? {
+          ...schedules.value[index],
+          images: [...schedules.value[index].images],
+          repeatType: schedules.value[index].repeatType,
+          repeatEndDate: schedules.value[index].repeatEndDate,
+        }
+      : { ...diaries.value[index], images: [...diaries.value[index].images] };
 };
 
 const saveDiaryEdit = async (type, index) => {
@@ -401,13 +407,12 @@ const saveScheduleEdit = async (type, index) => {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
     start: editData.value.start, // 시작 시간 추출
-    end: editData.value.end,   // 종료 시간 추출
+    end: editData.value.end, // 종료 시간 추출
     repeatType: editData.value.repeatType,
     repeatEndDate: editData.value.repeatEndDate,
     address: editData.value.address,
     content: editData.value.content,
     color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
-
   };
 
   const formData = new FormData();
@@ -431,7 +436,7 @@ const cancelEdit = () => {
 // 모달을 열 때 호출되는 함수
 const openDeleteModal = index => {
   deleteIndex.value = index;
-  console.log("index = " + index);
+  console.log('index = ' + index);
 
   // 반복 일정 여부 확인
   isRepeatSchedule.value = schedules.value[index].repeatType && schedules.value[index].repeatType.toUpperCase() !== 'NONE';
@@ -486,14 +491,13 @@ const confirmSingleDelete = async deleteOption => {
     const scheduleId = schedules.value[deleteIndex.value].id;
 
     try {
-      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`,
-        {
-          params: {
-            deleteOnlyThis: deleteOption === 'deleteOnlyThis',
-            deleteAllRepeats: deleteOption === 'deleteAllRepeats',
-            deleteAfter: deleteOption === 'deleteAfter',
-          }
-        });
+      const response = await axios.delete(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        params: {
+          deleteOnlyThis: deleteOption === 'deleteOnlyThis',
+          deleteAllRepeats: deleteOption === 'deleteAllRepeats',
+          deleteAfter: deleteOption === 'deleteAfter',
+        },
+      });
       schedules.value.splice(deleteIndex.value, 1);
       console.log('Schedule deleted successfully:', response.data);
     } catch (error) {
@@ -593,6 +597,44 @@ const formatDateTime = dateTimeString => {
   }
 
   return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
+};
+
+// 스케줄 수정시 이미지 삭제,추가
+const onScheduleFileChange = event => {
+  const files = event.target.files;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      editData.value.images.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+
+    if (!editData.value.imageFiles) {
+      editData.value.imageFiles = [];
+    }
+    editData.value.imageFiles.push(file);
+  }
+
+  event.target.value = '';
+};
+
+const removeScheduleImage = index => {
+  const imageUrl = editData.value.images[index];
+
+  if (!imageUrl) {
+    console.error('Image URL is not defined');
+    return;
+  }
+
+  if (!editData.value.deletedImageList) {
+    editData.value.deletedImageList = [];
+  }
+  editData.value.deletedImageList.push(imageUrl);
+
+  editData.value.images.splice(index, 1);
 };
 </script>
 
@@ -793,5 +835,28 @@ const formatDateTime = dateTimeString => {
 .modal-buttons button:last-child {
   background-color: #ddd;
   color: white;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-container{
+  position: relative;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

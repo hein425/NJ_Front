@@ -126,6 +126,7 @@ const description = ref('');
 const repeatType = ref('NONE');
 const repeatEndDate = ref(''); // 반복 종료 날짜를 추가
 const images = ref([]); // 이미지 파일을 저장
+const calendarIdx = ref(authStore.calendarIdx);
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -177,7 +178,7 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    calendarIdx: authStore.calendarIdx,
+    calendarIdx: calendarIdx.value,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
   };
