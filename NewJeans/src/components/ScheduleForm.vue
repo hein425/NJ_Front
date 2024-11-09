@@ -81,13 +81,13 @@
         <!-- 이미지 업로드 -->
         <div class="form-row">
           <label for="image" style="width: 450px">이미지</label>
-          <input id="image" type="file" @chnpmange="handleImageUpload" multiple class="input-field" />
+          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
         </div>
 
         <div class="image-preview">
           <div v-for="(image, index) in images" :key="index" class="image-container">
             <img :src="image.url" alt="Preview" />
-            <button class="delete-btn" @click="removeImage(index)">X</button>
+            <!-- <button class="delete-btn" @click="removeImage(index)">X</button> -->
           </div>
         </div>
 
