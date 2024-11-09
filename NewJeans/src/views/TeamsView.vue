@@ -152,7 +152,7 @@ const searchFriends = async () => {
 const sendFriendRequest = async (receiverId) => {
   console.log("Requester ID:", userId);  // userId 확인
   console.log("Receiver ID:", receiverId);  // receiverId 확인
-  
+
   try {
     await axios.post(`${BASE_URL}/friend/request`, null, {
       params: {
@@ -167,7 +167,7 @@ const sendFriendRequest = async (receiverId) => {
   }
 };
 
-// 친구 요청 수락 
+// 친구 요청 수락
 const acceptFriendRequest = async (requesterId) => {
   const receiverId = authStore.idx; // 현재 로그인한 사용자의 ID를 receiverId로 설정
 

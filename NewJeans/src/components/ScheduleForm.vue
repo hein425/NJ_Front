@@ -2,7 +2,6 @@
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
       <div class="form-grid">
-
         <!-- 제목 -->
         <div class="form-row" style="width: 450px">
           <label for="title">제목</label>
@@ -58,7 +57,7 @@
           </div>
         </div>
 
-        <div class="form-row" v-if="repeat !== 'NONE'" style="width: 450px">
+        <div class="form-row" v-if="repeatType !== 'NONE'" style="width: 450px">
           <label for="repeatEndDate">반복 종료 날짜</label>
           <input id="repeatEndDate" v-model="repeatEndDate" type="date" />
         </div>
@@ -114,11 +113,14 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
 });
 const emit = defineEmits(['closeForm']);
+
+const authStore = useAuthStore();
 
 const title = ref('');
 const color = ref('ORANGE');
@@ -180,7 +182,7 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    calendarsIdx: 1,
+    calendarIdx: authStore.calendarIdx,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
   };
