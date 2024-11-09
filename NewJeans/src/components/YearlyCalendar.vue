@@ -54,6 +54,7 @@ import dayjs from 'dayjs';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useAuthStore } from '@/stores/authStore';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const calendar = ref([]);
@@ -61,10 +62,14 @@ const currentYear = ref(dayjs().year());
 
 const schedules = ref([]);
 const now = ref(dayjs());
+const authStore = useAuthStore();
 
 const MonthlySchedules = async () => {
+
+  const calendarIdx = authStore.calendarIdx;
+
   try {
-    const response = await axios.get(`${BASE_URL}/schedule/1/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);
