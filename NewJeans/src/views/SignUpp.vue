@@ -58,7 +58,7 @@ const handleSignUp = async () => {
     // 성공적으로 회원가입이 완료된 경우
     if (response.status === 200) {
       alert('회원가입이 완료되었습니다!');
-      router.push('/'); // 회원가입 후 로그인 페이지로 이동
+      router.push({ path: '/', query: { showLogin: 'true' }}); // 회원가입 후 로그인 페이지로 이동
     }
   } catch (error) {
     // 오류가 발생한 경우

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, watchEffect } from 'vue';
+import { ref, watch, watchEffect, onMounted } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import ScheduleForm from '@/components/ScheduleForm.vue';
@@ -9,7 +9,8 @@ import { BASE_URL } from '@/config';
 import YearlyCalendar from '@/components/YearlyCalendar.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import Modal from '@/components/MoDal.vue';
 
 //문자열 색상을 hex 값으로 변환
 const colorList = [
@@ -239,6 +240,25 @@ watchEffect(
     fetchDiaryEntriesForMonth();
   }
 );
+
+
+// 회원가입 후 여기로 바로 오면서 로그인 모달 열어줌
+const showModal = ref(false); // 모달 표시 상태
+const route = useRoute();
+
+// `route.query`를 감지해 로그인 모달을 표시
+onMounted(() => {
+  if (route.query.showLogin === 'true') {
+    showModal.value = true; // 로그인 모달 표시
+  }
+});
+
+// 모달 닫기 함수
+const closeModal = () => {
+  showModal.value = false;
+};
+
+
 </script>
 
 <template>
@@ -359,6 +379,7 @@ watchEffect(
         </div>
       </div>
     </div>
+    <Modal :show="showModal" @close="closeModal" />
   </div>
 </template>
 
