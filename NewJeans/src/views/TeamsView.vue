@@ -12,11 +12,12 @@
         </div>
         <!-- 친구 요청 목록 (토글) -->
         <transition name="fade">
-          <ul v-if="showRequestList" class="request-list">
-            <li v-for="request in friendRequests" :key="request.idx" class="search-result-item">
-              <img :src="request.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
+          <ul v-if="friendRequests.length" class="request-list">
+            <li v-for="request in friendRequests" :key="request.userId" class="search-result-item">
+              <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ request.userName }}</span>
-              <button @click="acceptFriendRequest(request.idx)">수락하기</button>
+              <span class="friend-email">{{ request.email }}</span>
+              <button @click="acceptFriendRequest(request.userId)">수락</button>
             </li>
           </ul>
         </transition>
@@ -32,11 +33,13 @@
         </div>
         <!-- 교환일기 요청 목록 (토글) -->
         <transition name="fade">
-          <ul v-if="showExchangeDiaryRequestList" class="request-list">
-            <li v-for="request in exchangeDiaryRequests" :key="request.idx" class="search-result-item">
-              <img :src="request.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
+          <ul v-if="exchangeDiaryRequests.length" class="request-list">
+            <li v-for="request in exchangeDiaryRequests" :key="request.diaryId" class="search-result-item">
+              <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ request.userName }}</span>
-              <button @click="acceptExchangeDiaryRequest(request.idx)">수락하기</button>
+              <span class="friend-email">{{ request.email }}</span>
+              <!-- 버튼 클릭 시 diaryId, requesterId, receiverId를 전달 -->
+              <button @click="acceptExchangeDiaryRequest(request.diaryId, request.userId, userId)">수락</button>
             </li>
           </ul>
         </transition>
@@ -44,14 +47,14 @@
     </div>
 
     <!-- 친구 목록과 친구 검색 섹션 -->
-      <!-- 친구 목록 섹션 -->
-      <div class="notification-container">
-        <div class="notification-section">
+    <!-- 친구 목록 섹션 -->
+    <div class="notification-container">
+      <div class="notification-section">
         <div class="friends-list">
           <h3>나의 친구 목록</h3>
           <ul class="f-list">
             <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
-              <img :src="friend.profileImageUrl || defaultProfileImagerequest-item" alt="프로필 이미지" class="profile-icon" />
+              <img :src="friend.profileImageUrl || defaultProfileImagerequest - item" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
               <button>콕 찌르기</button>
@@ -63,114 +66,129 @@
       <!-- 친구 검색 섹션 -->
       <div class="notification-container">
         <div class="notification-section">
-        <div class="friend-search">
-          <h3>친구 검색</h3>
-          <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
-          <div v-if="searchResults.length > 0" class="search-results">
-            <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
-              <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
-              <span class="user-click">{{ user.userName }}</span>
-              <span class="friend-email">{{ user.email }}</span>
-              <button @click="sendFriendRequest(user.idx)">친구 추가 요청</button>
+          <div class="friend-search">
+            <h3>친구 검색</h3>
+            <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
+            <div v-if="searchResults.length > 0" class="search-results">
+              <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
+                <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
+                <span class="user-click">{{ user.userName }}</span>
+                <span class="friend-email">{{ user.email }}</span>
+                <button @click="sendFriendRequest(user.idx)">친구 추가 요청</button>
+              </div>
             </div>
           </div>
-          </div>
         </div>
       </div>
     </div>
 
-
-  <div class="notification-container">
-    
+    <div class="notification-container">
       <!-- 내 교환일기 섹션 -->
-<div class="notification-section">
-  <div class="exchange-diary-section">
-    <button class="request-exchange-button" @click="openModal">교환일기 신청하기</button>
-    
-    <div v-for="diary in exchangeDiaries" :key="diary.id" class="exchange-diary">
-      <!-- 팀 이름 클릭 시 엔트리 목록 로드 -->
-      <h4 @click="toggleDiaryEntries(diary.diaryId)">
-        팀이름 : {{ diary.groupName }}
-      </h4>
-      <div class="participants">
-          참가자:
-          <span v-for="participant in diary.participants" :key="participant" class="participant">
-            {{ participant }}
-          </span>
-        </div>
-    </div>
-  </div>
-</div>
-
-<!-- 내 교환일기 목록 -->
-<div class="notification-section">
-  <div class="friend-search">
-    <h3>내 교환 일기 목록</h3>
-  </div>
-  <ul class="exchange-diary-list">
-    <li v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary-item">
-      <!-- 엔트리 목록 표시 (팀 이름 및 참가자 제외) -->
-      <ul v-if="openDiaryId === diary.diaryId">
-        <li v-for="entry in diary.entries" :key="entry.id" class="entry-item">
-          <p>{{ entry.content }}</p>
-          <small>작성자: {{ entry.authorName }}</small>
-        </li>
-      </ul>
-    </li>
-  </ul>
-</div>
-
-<!-- 교환일기 생성 모달 -->
-<transition name="modal">
-  <div class="modal-overlay" v-if="isModalOpen" @click.self="closeModal">
-    <div class="modal-content">
-      <h3>교환일기 신청</h3>
-          <!-- 그룹명 입력 필드 -->
-          <div class="group-name-input">
-        <label for="group-name">그룹명:</label>
-        <input
-          id="group-name"
-          type="text"
-          v-model="groupName"
-          placeholder="그룹명을 입력하세요"
-        />
-      </div>
-      <!-- 친구 목록 드롭다운 -->
-      <div class="friend-dropdown">
-        <h4>나의 친구 목록</h4>
-        <ul class="friend-list-dropdown">
-          <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
-            <img :src="friend.profileImageUrl || defaultProfileImage" class="profile-icon" />
-            <span class="user-click">{{ friend.userName }}</span>
-            <button @click="selectFriend(friend)">+ 초대</button>
-          </li>
-        </ul>
-      </div>
-      
-      <!-- 초대할 친구 -->
-      <div class="invited-list">
-        <h4>교환일기에 초대할 친구</h4>
-        <ul class="f-list">
-          <li v-if="selectedFriend" class="search-result-item">
-            <img :src="selectedFriend.profileImageUrl || defaultProfileImage" class="profile-icon" />
-            <span class="user-click">{{ selectedFriend.userName }}</span>
-          </li>
-        </ul>
-      </div>
-
-<!-- 모달 하단 버튼들 -->
-          <div class="modal-buttons">
-            <button @click="sendExchangeDiaryRequest">교환일기 신청하기</button>
+      <div class="notification-section">
+        <div class="exchange-diary-section">
+          <div>
+            <button class="request-exchange-button" @click="openModal">교환일기 신청하기</button>
+            <button class="request-exchange-button">관계 끊기</button>
           </div>
 
+          <div v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary">
+            <div class="diary-header">
+              <h4 @click="toggleDiaryEntries(diary.diaryId)">교환 일기 이름: {{ diary.groupName }}</h4>
+              <button class="request-exchange-button" @click="openEntryModal(diary.diaryId)">일기 쓰기</button>
+            </div>
 
+            <div class="participants">
+              참가자: <span>{{ formatParticipants(diary.participants) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 내 교환일기 목록 -->
+      <div class="notification-section">
+          <h3>내 교환 일기 목록</h3>
+        <ul class="exchange-diary-list" >
+          <li v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary-item">
+            <ul v-if="openDiaryId === diary.diaryId">
+              <li v-for="entry in diary.entries" :key="entry.entryId" class="entry-item">
+                <p><strong>제목:</strong> {{ entry.title }}</p>
+                <p><strong>내용:</strong> {{ entry.content }}</p>
+                <small><strong>작성자:</strong> {{ entry.authorName }} | <strong>작성일:</strong> {{ new Date(entry.createdAt).toLocaleString() }} <button class="">삭제</button></small>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 교환일기 생성 모달 -->
+      <transition name="modal">
+        <div class="modal-overlay" v-if="isModalOpen" @click.self="closeModal">
+          <div class="modal-content">
+            <h3>교환일기 신청</h3>
+            <!-- 그룹명 입력 필드 -->
+            <div class="group-name-input">
+              <label for="group-name">그룹명:</label>
+              <input id="group-name" type="text" v-model="groupName" placeholder="그룹명을 입력하세요" />
+            </div>
+            <!-- 친구 목록 드롭다운 -->
+            <div class="friend-dropdown">
+              <h4>나의 친구 목록</h4>
+              <ul class="friend-list-dropdown">
+                <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+                  <img :src="friend.profileImageUrl || defaultProfileImage" class="profile-icon" />
+                  <span class="user-click">{{ friend.userName }}</span>
+                  <button @click="selectFriend(friend)">+ 초대</button>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 초대할 친구 -->
+            <div class="invited-list">
+              <h4>교환일기에 초대할 친구</h4>
+              <ul class="f-list">
+                <li v-if="selectedFriend" class="search-result-item">
+                  <img :src="selectedFriend.profileImageUrl || defaultProfileImage" class="profile-icon" />
+                  <span class="user-click">{{ selectedFriend.userName }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 모달 하단 버튼들 -->
+            <div class="modal-buttons">
+              <button @click="sendExchangeDiaryRequest">교환일기 신청하기</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- 일기 쓰기 모달 -->
+      <transition name="modal">
+        <div class="modal-overlay" v-if="isEntryModalOpen" @click.self="closeEntryModal">
+          <div class="modal-content">
+            <h3>일기 쓰기</h3>
+
+            <!-- 제목 입력 필드 -->
+            <div class="entry-title-input">
+              <label for="entry-title">제목:</label>
+              <input id="entry-title" type="text" v-model="entryTitle" placeholder="제목을 입력하세요" />
+            </div>
+
+            <!-- 내용 입력 필드 -->
+            <div class="entry-content-input">
+              <label for="entry-content">내용:</label>
+              <textarea id="entry-content" v-model="entryContent" placeholder="내용을 입력하세요"></textarea>
+            </div>
+
+            <!-- 모달 하단 버튼들 -->
+            <div class="modal-buttons">
+              <button @click="submitEntry">작성 완료</button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
-  </div>
-</transition>
-</div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -196,11 +214,52 @@ const isModalOpen = ref(false); // 모달 창 열림 상태
 const exchangeDiaries = ref([]); // 교환 일기 목록
 const openDiaryId = ref(null); // 열려 있는 일기의 ID
 const groupName = ref(''); // 그룹명 상태 추가
+const isEntryModalOpen = ref(false); // 일기 쓰기 모달 열림 상태
+const entryTitle = ref(''); // 일기 제목
+const entryContent = ref(''); // 일기 내용
+let selectedDiaryId = ref(null); // 선택한 다이어리 ID
 
+// 일기 쓰기 모달 열기
+const openEntryModal = diaryId => {
+  console.log('diaryId:', diaryId); // 전달된 diaryId 값 확인
+  if (!diaryId) {
+    alert('유효하지 않은 다이어리 ID입니다.');
+    return;
+  }
+  selectedDiaryId.value = diaryId;
+  isEntryModalOpen.value = true;
+};
 
+// 참가자 포맷 함수
+const formatParticipants = participants => {
+  if (participants.length === 1) return participants[0];
+  return `${participants.slice(0, -1).join(', ')}와 ${participants[participants.length - 1]}`;
+};
 
+// 모달 닫기
+const closeEntryModal = () => {
+  isEntryModalOpen.value = false;
+  entryTitle.value = '';
+  entryContent.value = '';
+  selectedDiaryId.value = null;
+};
 
-
+// 일기 제출 함수
+const submitEntry = async () => {
+  try {
+    const response = await axios.post(`${BASE_URL}/exchange-diary-entry/create`, {
+      diaryId: selectedDiaryId.value,
+      userId: userId, // 로그인한 유저 ID
+      title: entryTitle.value,
+      content: entryContent.value,
+    });
+    alert(response.data); // 작성 성공 메시지
+    closeEntryModal(); // 모달 닫기
+  } catch (error) {
+    console.error('Failed to submit entry:', error);
+    alert('일기 작성에 실패했습니다.');
+  }
+};
 
 // 모달 관련 함수들
 const openModal = () => {
@@ -213,10 +272,10 @@ const closeModal = () => {
 };
 
 // 엔트리 목록을 가져오는 함수
-const fetchDiaryEntries = async (diaryId) => {
+const fetchDiaryEntries = async diaryId => {
   try {
     const response = await axios.get(`${BASE_URL}/exchange-diary-entry/exchangeDiaryList/${diaryId}`, {
-      params: { userId: userId }  // 추가된 userId 전달
+      params: { userId: userId }, // 추가된 userId 전달
     });
     const diary = exchangeDiaries.value.find(d => d.diaryId === diaryId);
     diary.entries = response.data;
@@ -225,19 +284,21 @@ const fetchDiaryEntries = async (diaryId) => {
   }
 };
 
-
 // 페이지 로드 시 교환일기 목록을 불러오는 함수
 const loadExchangeDiaries = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/exchange-diary-entry/summary/${userId}`); // 현재 userId로 교환일기 목록 불러오기
-    exchangeDiaries.value = response.data;
+    const response = await axios.get(`${BASE_URL}/exchange-diary-entry/summary/${userId}`);
+    exchangeDiaries.value = response.data.map(diary => ({
+      ...diary,
+      diaryId: diary.diaryId || diary.idx, // 일관성 유지
+    }));
   } catch (error) {
     console.error('Failed to load exchange diaries:', error);
   }
 };
 
 // 엔트리 목록을 토글하는 함수 (팀 이름 클릭 시 호출)
-const toggleDiaryEntries = (diaryId) => {
+const toggleDiaryEntries = diaryId => {
   if (openDiaryId.value === diaryId) {
     openDiaryId.value = null; // 현재 열려있는 항목을 닫음
   } else {
@@ -254,7 +315,7 @@ const loadFriends = async () => {
       response.data.map(async friend => {
         const profileImageUrl = await loadProfileImage(friend.idx);
         return { ...friend, profileImageUrl };
-      })
+      }),
     );
   } catch (error) {
     console.error('Failed to load friends:', error);
@@ -286,7 +347,7 @@ const loadFriendRequests = async () => {
       response.data.map(async request => {
         const profileImageUrl = await loadProfileImage(request.idx);
         return { ...request, profileImageUrl };
-      })
+      }),
     );
   } catch (error) {
     console.error('Failed to load friend requests:', error);
@@ -301,7 +362,7 @@ const loadExchangeDiaryRequests = async () => {
       response.data.map(async request => {
         const profileImageUrl = await loadProfileImage(request.idx);
         return { ...request, profileImageUrl };
-      })
+      }),
     );
   } catch (error) {
     console.error('Failed to load exchange diary requests:', error);
@@ -337,15 +398,21 @@ const acceptFriendRequest = async requesterId => {
 };
 
 // 교환일기 요청 수락
-const acceptExchangeDiaryRequest = async requesterId => {
+const acceptExchangeDiaryRequest = async (diaryId, requesterId, receiverId) => {
+  if (!diaryId) {
+    alert('유효하지 않은 다이어리 ID입니다.');
+    return;
+  }
+
   try {
     await axios.post(`${BASE_URL}/exchange-diary/accept`, null, {
       params: {
+        diaryId,
         requesterId,
-        receiverId: userId,
+        receiverId,
       },
     });
-    exchangeDiaryRequests.value = exchangeDiaryRequests.value.filter(request => request.idx !== requesterId);
+    exchangeDiaryRequests.value = exchangeDiaryRequests.value.filter(request => request.diaryId !== diaryId);
     alert('교환일기 요청을 수락했습니다.');
   } catch (error) {
     console.error('Failed to accept exchange diary request:', error);
@@ -364,7 +431,7 @@ const searchFriends = async () => {
         response.data.map(async user => {
           const profileImageUrl = await loadProfileImage(user.idx);
           return { ...user, profileImageUrl };
-        })
+        }),
       );
     } else {
       searchResults.value = [];
@@ -397,26 +464,24 @@ const selectFriend = friend => {
 
 /// 교환일기 요청 보내기
 const sendExchangeDiaryRequest = async () => {
-  if (!groupName.value) {
-    alert("그룹명을 입력하세요.");
-    return;
-  }
-  
-  if (!selectedFriend.value) {
-    alert("교환일기에 초대할 친구를 선택하세요.");
-    return;
-  }
-
   try {
-    await axios.post(`${BASE_URL}/exchange-diary/request`, null, {
+    const response = await axios.post(`${BASE_URL}/exchange-diary/request`, null, {
       params: {
         requesterId: userId,
         receiverId: selectedFriend.value.idx,
-        groupName: groupName.value // 그룹명 전달
+        groupName: groupName.value,
       },
     });
-    alert("교환일기 신청이 성공적으로 전송되었습니다.");
-    closeModal(); // 모달 닫기
+    const diaryId = response.data; // 백엔드에서 반환된 다이어리 ID 저장
+    alert(`교환일기 신청이 성공적으로 전송되었습니다. Diary ID: ${diaryId}`);
+
+    // 요청 후 교환 일기 목록을 업데이트할 때 diaryId도 포함해서 저장
+    exchangeDiaryRequests.value.push({
+      diaryId,
+      userId: selectedFriend.value.idx,
+      userName: selectedFriend.value.userName,
+      profileImageUrl: selectedFriend.value.profileImageUrl,
+    });
   } catch (error) {
     console.error('Failed to send exchange diary request:', error);
     alert('교환일기 신청에 실패했습니다.');
@@ -424,7 +489,6 @@ const sendExchangeDiaryRequest = async () => {
 };
 // 컴포넌트가 로드될 때 친구 목록 및 요청 목록 가져오기
 onMounted(async () => {
-  
   await loadFriends();
   await loadFriendRequests();
   await loadExchangeDiaries();
@@ -432,10 +496,6 @@ onMounted(async () => {
   console.log(exchangeDiaries.value); // 데이터 로드 확인용 로그
 });
 </script>
-
-
-
-
 
 <style scoped>
 .team-view {
@@ -496,7 +556,6 @@ onMounted(async () => {
   padding: 0; /* 리스트의 기본 패딩을 없앱니다. */
 }
 
-
 .profile-icon {
   width: 45px;
   height: 45px;
@@ -540,7 +599,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   margin: 20px 0;
-  font-size : 1.3rem;
+  font-size: 1.3rem;
 }
 
 .friend-email {
@@ -663,7 +722,8 @@ button:hover {
 
 /* 글씨가 커졌다 작아지는 애니메이션 */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1); /* 원래 크기 */
   }
   70% {
@@ -683,7 +743,7 @@ h3 {
 
 /* 하단에 구분선을 추가 */
 h3::after {
-  content: ""; /* 내용 없음, 구분선 역할 */
+  content: ''; /* 내용 없음, 구분선 역할 */
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -716,7 +776,9 @@ h3 {
   font-size: 1.1em; /* 기본 글씨 크기 */
   font-weight: 600; /* 적당히 두꺼운 글씨 */
   color: #333333; /* 검정색에 가까운 진한 회색 */
-  transition: transform 0.2s ease, color 0.2s ease; /* 부드러운 확대 전환 효과 */
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease; /* 부드러운 확대 전환 효과 */
 }
 
 .user-click:hover {
@@ -795,6 +857,7 @@ h3 {
 }
 
 .exchange-diary-item {
+  list-style: none;
   padding: 10px;
 }
 
@@ -804,11 +867,131 @@ h3 {
 }
 
 .entry-item {
+  list-style: none;
   padding: 5px 0;
 }
 
+.entry-title-input,
+.entry-content-input {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+}
 
+.entry-title-input label,
+.entry-content-input label {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.entry-title-input input,
+.entry-content-input textarea {
+  padding: 12px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  resize: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.entry-title-input input:focus,
+.entry-content-input textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.entry-content-input textarea {
+  min-height: 100px;
+  max-height: 300px;
+}
+.exchange-diary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.exchange-diary-item {
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
+}
+
+.entry-item {
+  border-top: 1px solid #ddd;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.entry-item p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.entry-item small {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 전체 리스트 컨테이너 */
+.exchange-diary-list {
+  list-style: none; /* 불릿 포인트 제거 */
+  padding: 0;
+  margin: 0;
+}
+
+/* 개별 교환 일기 아이템 스타일 */
+.exchange-diary-item {
+  background-color: #fff; /* 배경색 */
+  padding: 15px;
+  margin-bottom: 15px; /* 아래쪽 간격 */
+  border-radius: 10px; /* 둥근 모서리 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  border-left: 5px solid #3b82f6; /* 왼쪽에 색상 강조 */
+}
+
+/* 엔트리 아이템 스타일 */
+.entry-item {
+  background-color: #f9f9f9; /* 연한 배경색 */
+  padding: 10px;
+  margin-top: 10px; /* 각 엔트리 간격 */
+  border-radius: 8px;
+  border: 1px solid #e0e0e0; /* 경계선 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
+}
+
+/* 제목과 내용 텍스트 스타일 */
+.entry-item p {
+  font-size: 1rem;
+  margin: 0;
+  color: #333;
+}
+
+/* 작성자와 작성일 정보 스타일 */
+.entry-item small {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 8px;
+}
+
+.entry-item small button {
+  background-color: #e53e3e; /* 삭제 버튼 색상 */
+  color: white;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin-left: 10px;
+}
+
+.entry-item small button:hover {
+  background-color: #c53030; /* 호버 시 색상 변화 */
+}
 
 </style>
-
-
