@@ -16,13 +16,16 @@
             <transition name="slide-fade">
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
+
                 <div class="form-row" style="width: 450px">
-                  <label v-if="editIndex !== index" for="startdate"> {{ schedule.start }} </label>
-                  <input v-if="editIndex === index" id="startdate" v-model="startdate" type="datetime-local" />
+                  <p v-if="editIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local"
+                    placeholder="Start Time" @click.stop />
                 </div>
                 <div class="form-row" style="width: 450px">
-                  <label v-if="editIndex !== index" for="enddate"> {{ schedule.end }} </label>
-                  <input v-if="editIndex === index" id="enddate" v-model="enddate" type="datetime-local" />
+                  <p v-if="editIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time"
+                    @click.stop />
                 </div>
 
                 <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
@@ -122,6 +125,17 @@
         </div>
       </div>
 
+      <!-- 다이어리 삭제 확인 모달 -->
+      <div v-if="showDiaryDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>삭제하시겠습니까?</h3>
+          <div class="modal-buttons">
+            <button @click="confirmDeleteDiary">확인</button>
+            <button @click="closeDeleteDiaryModal">취소</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
         <div v-if="diaries.length > 0">
@@ -129,8 +143,7 @@
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
-
-              <p class="category">{{ diary.category }}</p>
+              <p class="category">{{ categoryKorean(diary.category) }}</p>
             </div>
 
             <transition name="slide-fade">
@@ -207,6 +220,7 @@ const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
+
 const showDayView = ref(true);
 
 let pollingInterval = null;
@@ -219,18 +233,30 @@ const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
 const isRepeatSchedule = ref(false);  // 반복 일정 여부 상태
 
-  // 반복 타입에 대한 한글 매핑 정의
-  const repeatTypeKoreanMap = {
-    YEARLY: '매년',
-    MONTHLY: '매월',
-    WEEKLY: '매주',
-    DAILY: '매일',
-    NONE: '없음'
-  };
+const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
+const showDiaryDeleteModal = ref(false);
 
-  // 매핑된 한글 반복 타입을 반환하는 함수
-  const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
+// 매핑된 한글 반복 타입을 반환하는 함수
+const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
 
+const categoryKorean = category => categoryKoreanMap[category];
+
+// 반복 타입에 대한 한글 매핑 정의
+const repeatTypeKoreanMap = {
+  YEARLY: '매년',
+  MONTHLY: '매월',
+  WEEKLY: '매주',
+  DAILY: '매일',
+  NONE: '없음'
+};
+
+const categoryKoreanMap = {
+  DAILY: '일기',
+  GROWTH: '성장일지',
+  EXERCISE: '운동',
+  TRIP: '여행',
+  ETC: '기타'
+};
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -239,10 +265,10 @@ const fetchDayData = async selectedDate => {
   };
 
   const [year, month, day] = selectedDate.split('-');
-  const calendarIdx = authStore.calendarIdx;
+  const calendarIdx = ref(authStore.calendarIdx);
 
   try {
-    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${year}/${month}/${day}`);
+    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${year}/${month}/${day}`);
 
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
@@ -272,7 +298,7 @@ const fetchDayData = async selectedDate => {
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
-    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx}/${year}/${month}/${day}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
@@ -741,6 +767,7 @@ const formatDateTime = dateTimeString => {
   background-color: #004080;
   transform: translateY(0);
 }
+
 /* 모달 스타일 */
 .modal-overlay {
   position: fixed;
@@ -778,5 +805,11 @@ const formatDateTime = dateTimeString => {
 .modal-buttons button:last-child {
   background-color: #ddd;
   color: white;
+}
+
+.image-container{
+  position: relative;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

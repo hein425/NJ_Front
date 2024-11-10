@@ -205,8 +205,7 @@ const deleteAccount = async () => {
   if (!checkAuthStoreLoaded()) return;
 
   try {
-    const response = await axios.delete(`${BASE_URL}/user/delete`, {
-      data: { idx: authStore.idx, email: authStore.email },
+    await axios.delete(`${BASE_URL}/user/delete/${authStore.idx}`, {
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
     });
     authStore.logout();

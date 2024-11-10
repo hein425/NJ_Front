@@ -107,7 +107,8 @@ const route = useRoute();
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
-    redirectUri: 'http://192.168.0.87:5173/kakaologin', //카카오 리다이렉트 URI
+    // redirectUri: 'http://192.168.0.87:5173/kakaologin', //카카오 리다이렉트 URI
+    redirectUri: 'http://localhost:5173/kakaologin', //카카오 리다이렉트 URI
   });
 };
 
@@ -120,11 +121,11 @@ watchEffect(async () => {
 
       if (response.status === 200) {
         // 서버로부터 받은 토큰과 사용자 정보를 저장
-        const { accessToken, userName, profileImageUrl } = response.data;
+        const { accessToken, userName, profileImageUrl, email, idx, calendarIdx } = response.data;
 
         // 로컬 스토리지 및 Pinia 스토어 업데이트
         localStorage.setItem('token', accessToken);
-        authStore.login(accessToken, userName, profileImageUrl);
+        authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
 
         alert('카카오 로그인 성공!');
         router.push('/'); // 로그인 후 홈으로 리다이렉트
