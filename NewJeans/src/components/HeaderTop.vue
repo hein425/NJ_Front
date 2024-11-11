@@ -22,11 +22,9 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-// 로고 이미지 URL을 변수로 가져오기
 const logoSrc = getComputedStyle(document.documentElement).getPropertyValue('--logo-image');
-
 const router = useRouter();
 const searchQuery = ref('');
 const selectedOption = ref('ALL');
@@ -37,20 +35,43 @@ const toggleOptions = [
   { label: '일기', value: 'DIARY' },
 ];
 
+// 탭 전환 시 검색어 유지하는 함수
 const selectOption = value => {
   selectedOption.value = value;
+  
+  // localStorage에서 검색어 불러오기
+  const savedQuery = localStorage.getItem('lastSearchQuery');
+  if (savedQuery) {
+    searchQuery.value = savedQuery;
+    goToSearchForm(); // 저장된 검색어로 검색 실행
+  }
 };
 
+// 검색 실행 함수
 const goToSearchForm = () => {
   if (!searchQuery.value.trim()) {
     return;
   }
+  // 검색어를 localStorage에 저장
+  localStorage.setItem('lastSearchQuery', searchQuery.value);
+  
   router.push({
     path: '/searchForm',
     query: { query: searchQuery.value, filterType: selectedOption.value },
   });
+  
+  searchQuery.value = ''; // 검색창 초기화 (필요 시 유지 가능)
 };
+
+// 컴포넌트가 마운트될 때, 이전 검색어를 유지하여 입력 필드에 표시
+onMounted(() => {
+  localStorage.removeItem('lastSearchQuery');
+  searchQuery.value = '';
+});
+
 </script>
+
+
 <style scoped>
 .toggle-list {
   display: flex;
