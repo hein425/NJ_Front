@@ -2,7 +2,8 @@
   <div class="profile">
     <div class="profile-container" v-if="isLoggedIn">
       <!-- 프로필 이미지와 사용자명을 함께 표시 -->
-      <img :src="profile || defaultProfileImage" alt="Profile Picture" class="profile-image" />
+      <img :src="profile || defaultProfileImage" alt="Profile Picture" class="profile-image"
+      @click="navigateToSetting" />
       <p>Welcome, {{ userName }}!</p>
     </div>
     <div class="profile-container" v-else>
@@ -13,14 +14,30 @@
       </div>
     </div>
   </div>
+  <Modal :show="showModal" @close="showModal = false" />
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+import { useRouter } from 'vue-router';
 import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지 경로 지정
-
+import Modal from './MoDal.vue';
+const router = useRouter();
 const authStore = useAuthStore(); // Pinia 스토어 사용
+
+const showModal = ref(false);
+
+const navigateToSetting = () => {
+  if (!authStore.isLoggedIn) {
+    alert('로그인 후 이용해 주십시오.');
+    showModal.value = true; // 로그인 모달을 표시
+  } else {
+    router.push('/setting'); // 로그인이 되어 있다면 Setting 페이지로 이동
+  }
+};
+
+
 
 // 반응형으로 값을 가져오도록 computed 사용
 const isLoggedIn = computed(() => authStore.isLoggedIn);
@@ -61,6 +78,7 @@ console.log('Pinia Profile:', authStore.profile);
   border: 1px solid #ccc; /* 선으로 된 원의 색상 및 두께 */
   padding: 5px; /* 이미지와 테두리 간의 간격 */
   box-sizing: border-box; /* padding을 포함하여 크기를 계산 */
+  cursor: pointer;
 }
 
 .welcome-text {

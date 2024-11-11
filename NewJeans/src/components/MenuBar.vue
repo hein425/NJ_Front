@@ -143,7 +143,7 @@ onMounted(() => {
 
 /* 활성화된 메뉴 (클릭 후 유지되는 상태) */
 .active {
-  background-color: var(--menu-item-active-background-color); /* 변수 사용 */
+  background-color: var(--menu-item-active-background-color);  /* 변수 사용 */
   color: var(--menu-item-active-text-color); /* 텍스트 색상 변수 */
   transform: scale(1.1); /* 버튼을 살짝 키워서 강조 */
   z-index: 1; /* 다른 버튼들 위로 올라옴 */
