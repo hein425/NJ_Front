@@ -15,6 +15,7 @@
           <ul v-if="friendRequests.length" class="request-list">
             <li v-for="request in friendRequests" :key="request.userId" class="search-result-item">
               <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
+              <img :src="request.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ request.userName }}</span>
               <span class="friend-email">{{ request.email }}</span>
               <button @click="acceptFriendRequest(request.userId)">수락</button>
@@ -54,6 +55,7 @@
           <h3>나의 친구 목록</h3>
           <ul class="f-list">
             <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+              {{ console.log(friend) }}
               <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
@@ -232,6 +234,9 @@ const entryTitle = ref(''); // 일기 제목
 const entryContent = ref(''); // 일기 내용
 const selectedDiaryId = ref(null); // 선택한 다이어리 ID
 const entryId = ref(null); // 수정할 일기 ID
+
+
+
 
 // 일기 쓰기 모달 열기
 const openEntryModal = diaryId => {
@@ -577,7 +582,10 @@ const searchFriends = async () => {
       console.log("API Response Data:", response.data); // 응답 데이터 구조 확인
       searchResults.value = await Promise.all(
         response.data.map(async (user) => {
-          const profileImageUrl = await loadProfileImage(user.idx);
+          console.log('5811111 = '+ JSON.stringify(user));
+          //const profileImageUrl = await loadProfileImage(user.idx);
+          const profileImageUrl = `${BASE_URL}${user.profileImageUrl}`;
+          console.log(profileImageUrl);
           return { ...user, profileImageUrl };
         })
       );
