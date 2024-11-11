@@ -33,11 +33,14 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
 const router = useRouter();
+const route = useRoute();
+const diary = ref(null); // 특정 일기 데이터 상태 추가
+const error = ref(null); // 오류 메시지 상태 추가
 const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
@@ -63,6 +66,19 @@ const fetchDiaries = async category => {
     sortOrder.value = 'LATEST';
   } catch (error) {
     console.error('일기 조회 중 오류 발생:', error.response?.data || error.message);
+  }
+};
+
+const fetchDiaryDetail = async () => {
+  const diaryIdx = route.params.idx; // 라우트 매개변수에서 idx 가져오기
+  if (diaryIdx) {
+    try {
+      const response = await axios.get(`${BASE_URL}/diary/detail/${diaryIdx}`);
+      diary.value = response.data;
+    } catch (err) {
+      console.error('일기 상세 조회 중 오류 발생:', err.response?.data || err.message);
+      error.value = '일기 데이터를 불러오는 중 오류가 발생했습니다.';
+    }
   }
 };
 
@@ -101,8 +117,13 @@ const getCategoryLabel = categoryValue => {
   return category ? category.label : '기타';
 };
 
+// 컴포넌트가 마운트될 때 해당 idx로 상세 일기 조회
 onMounted(() => {
-  fetchDiaries('ALL');
+  if (route.params.idx) {
+    fetchDiaryDetail();
+  } else {
+    fetchDiaries('ALL');
+  }
 });
 </script>
 

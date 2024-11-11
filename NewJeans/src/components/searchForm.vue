@@ -5,7 +5,7 @@
     <p v-if="error">{{ error }}</p>
 
     <div v-if="results.length > 0 && !loading && !error" class="results-container">
-      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }">
+      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }" @click="handleItemClick(item)">
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
         <template v-if="item.type === 'SCHEDULE'">
@@ -75,6 +75,13 @@ watch(
     fetchResults();
   },
 );
+
+// 게시글 클릭 시 처리 함수
+const handleItemClick = item => {
+  if (item.type === 'DIARY') {
+    router.push({ name: 'DiaryDetail', params: { idx: item.idx } });
+  }
+};
 
 // 검색 버튼 클릭 시 호출
 const goToSearchForm = () => {

@@ -11,6 +11,9 @@
       </div>
     </div>
 
+    <button>Edit</button>
+    <button>Save</button>
+    <button>Delete</button>
     <button @click="goBack">목록으로 돌아가기</button>
   </div>
 </template>
@@ -36,7 +39,7 @@ const fetchDiaryDetail = async () => {
     data.images = data.images.map(image => `${IMAGE_BASE_URL}${image}`);
     selectedDiary.value = data;
   } catch (error) {
-    console.error('일기 상세 조회 중 오류 발생:',error.response?.data || error.message);
+    console.error('일기 상세 조회 중 오류 발생:', error.response?.data || error.message);
   }
 };
 
