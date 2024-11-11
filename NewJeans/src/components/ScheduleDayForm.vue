@@ -412,6 +412,7 @@ const saveDiaryEdit = async (type, index) => {
 
 const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
+
   // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
   const scheduleRequest = {
@@ -424,14 +425,24 @@ const saveScheduleEdit = async (type, index) => {
     address: editData.value.address,
     content: editData.value.content,
     color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
-
+    deletedImageList: editData.value.deletedImageList || []
   };
 
+  // FormData 생성 및 데이터 추가
   const formData = new FormData();
   formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
 
+  // imageFiles 추가 (다이어리 방식과 동일)
+  if (editData.value.imageFiles) {
+    for (let file of editData.value.imageFiles) {
+      formData.append('imageFiles', file);
+    }
+  }
+
   try {
-    const response = await axios.put(`${BASE_URL}/schedule/update`, formData);
+    const response = await axios.post(`${BASE_URL}/schedule/update`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
   } catch (error) {

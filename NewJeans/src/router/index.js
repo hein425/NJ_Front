@@ -11,6 +11,7 @@ import DiaryDetail from '@/views/DiaryDetail.vue';
 import NotFoundPage from '@/components/NotFoundPage.vue';
 import GraphView from '@/views/GraphView.vue';
 import KakaoLoginView from '@/views/KakaoLoginView.vue';
+import ScheduleDetail from '@/views/ScheduleDetail.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -73,11 +74,18 @@ const router = createRouter({
       name: 'GraphView',
       component: GraphView,
     }
-    ,{
+    ,
+    {
       path:"/kakaologin",
       name:"KakaoLogin",
       component: KakaoLoginView
-    }
+    },
+    {
+      path: '/schedule/:idx',
+      name: 'ScheduleDetail',
+      component: ScheduleDetail,
+      props: true,
+    },
 
   ],
 });

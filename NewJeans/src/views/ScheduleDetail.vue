@@ -33,7 +33,7 @@
   const fetchScheduleDetail = async () => {
     const idx = route.params.idx;
     try {
-      const response = await axios.get(`${BASE_URL}//schedule/${idx}}`);
+      const response = await axios.get(`${BASE_URL}/schedule/${idx}}`);
       const data = response.data;
   
       // 각 이미지 경로 앞에 고정 URL을 추가
