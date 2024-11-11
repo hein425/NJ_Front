@@ -18,7 +18,7 @@
         </button>
         <button class="menu-item" @click="navigateToSetting">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
-          Setting
+          MyPage
         </button>
 
         <!-- 로그인 상태에 따라 Sign In / Sign Out 버튼 표시 -->

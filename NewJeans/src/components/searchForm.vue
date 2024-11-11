@@ -12,7 +12,6 @@
       @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)"
 
       >
-        <h1>{{ item.idx }}</h1>
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
         <template v-if="item.type === 'SCHEDULE'">
