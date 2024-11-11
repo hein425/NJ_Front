@@ -127,7 +127,7 @@ watchEffect(async () => {
         localStorage.setItem('token', accessToken);
         authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
 
-        alert('카카오 로그인 성공!');
+        alert('로그인 되었습니다.');
         router.push('/'); // 로그인 후 홈으로 리다이렉트
       }
     } catch (error) {
