@@ -255,6 +255,11 @@ const removeImage = (index) => {
   justify-content: center; 
 }
 
+.color-label input:checked + .color-circle {
+  border: 3px solid #000; /* 선택 시 검정색 테두리를 추가 */
+  box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.3); /* 약간의 그림자 효과 추가 */
+}
+
 .color-circle {
   margin-top: 10px;
   width: 30px;
@@ -263,6 +268,8 @@ const removeImage = (index) => {
   border: 1px solid #ccc;
   display: inline-block;
   cursor: pointer;
+  box-sizing: border-box; /* 테두리가 요소의 크기를 변경하지 않도록 */
+  transition: border 0.3s ease, box-shadow 0.3s ease; /* 애니메이션 추가 */
 }
 
 .color-radio {
