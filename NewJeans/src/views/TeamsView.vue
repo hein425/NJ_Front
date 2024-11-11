@@ -260,6 +260,12 @@ const closeEntryModal = () => {
 
 // 생성 요청 전송 함수
 const submitEntry = async () => {
+
+  if (!entryTitle.value.trim()) {
+    alert('제목을 입력해야 합니다.');
+    return; // 제목이 비어 있으면 함수 종료
+  }
+
   try {
     const response = await axios.post(`${BASE_URL}/exchange-diary-entry/create`, {
       diaryId: selectedDiaryId.value,
@@ -610,6 +616,12 @@ const selectFriend = friend => {
 
 /// 교환일기 요청 보내기
 const sendExchangeDiaryRequest = async () => {
+
+  if (!groupName.value.trim()) {
+    alert('그룹명을 입력해야 합니다.');
+    return; // 제목이 비어 있으면 함수 종료
+  }
+
   try {
     const response = await axios.post(`${BASE_URL}/exchange-diary/request`, null, {
       params: {
