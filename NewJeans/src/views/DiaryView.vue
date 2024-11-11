@@ -2,7 +2,8 @@
   <div class="diary-view-container">
     <div class="toolbar">
       <div class="category-buttons">
-        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
+        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)"
+          :class="{ selected: selectedCategory === category.value }">
           {{ category.label }}
         </button>
       </div>
@@ -13,7 +14,8 @@
     </div>
 
     <div v-if="paginatedDiaries.length > 0" class="diary-list">
-      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
+      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item"
+        @click="goToDiaryDetail(diary.idx)">
         <h3>{{ diary.title }}</h3>
         <p>{{ getCategoryLabel(diary.category) }}</p>
         <p>{{ diary.date }}</p>
@@ -33,18 +35,17 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const router = useRouter();
-const route = useRoute();
-const diary = ref(null); // 특정 일기 데이터 상태 추가
-const error = ref(null); // 오류 메시지 상태 추가
 const diaries = ref([]);
 const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
-const userIdx = 1;
+const authStore = useAuthStore();
+const calendarIdx = authStore.calendarIdx;
 const currentPage = ref(1); // 현재 페이지 번호
 const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
 
@@ -59,26 +60,13 @@ const categories = [
 
 const fetchDiaries = async category => {
   selectedCategory.value = category;
-  let url = category === 'ALL' ? `${BASE_URL}/diary/${userIdx}/ALL` : `${BASE_URL}/diary/${userIdx}/${category}`;
+  let url = category === 'ALL' ? `${BASE_URL}/diary/${calendarIdx}/ALL` : `${BASE_URL}/diary/${calendarIdx}/${category}`;
   try {
     const response = await axios.get(url);
     diaries.value = response.data;
     sortOrder.value = 'LATEST';
   } catch (error) {
     console.error('일기 조회 중 오류 발생:', error.response?.data || error.message);
-  }
-};
-
-const fetchDiaryDetail = async () => {
-  const diaryIdx = route.params.idx; // 라우트 매개변수에서 idx 가져오기
-  if (diaryIdx) {
-    try {
-      const response = await axios.get(`${BASE_URL}/diary/detail/${diaryIdx}`);
-      diary.value = response.data;
-    } catch (err) {
-      console.error('일기 상세 조회 중 오류 발생:', err.response?.data || err.message);
-      error.value = '일기 데이터를 불러오는 중 오류가 발생했습니다.';
-    }
   }
 };
 
@@ -117,13 +105,8 @@ const getCategoryLabel = categoryValue => {
   return category ? category.label : '기타';
 };
 
-// 컴포넌트가 마운트될 때 해당 idx로 상세 일기 조회
 onMounted(() => {
-  if (route.params.idx) {
-    fetchDiaryDetail();
-  } else {
-    fetchDiaries('ALL');
-  }
+  fetchDiaries('ALL');
 });
 </script>
 

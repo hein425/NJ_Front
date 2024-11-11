@@ -21,6 +21,26 @@
           <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
           <div v-for="date in month.days" :key="date" class="date">
             <span class="date-type">{{ date }}</span>
+
+            <div class="schedule-dot-wrapper">
+              <!-- 이거 어떻게 만들긴 했는데 -->
+              <div
+                v-for="schedule in getSchedulesForDate(dayjs().year(currentYear).month(month.month).date(date))"
+                :key="schedule.id"
+                class="schedule-dot"
+                :style="{
+                  backgroundColor: getHexColor(schedule.color),
+                }"
+              ></div>
+            </div>
+
+            <!-- <template v-for="schedule in schedules" :key="schedule.id">
+              {{ dayjs(schedule.start).format('YYYY/MM/DD') }}
+              {{ console.log(month) }}
+              <template v-if="dayjs(schedule.start).get('month')==month">
+                {{ '스케쥴 월이 같음'}}>
+              </template>
+            </template> -->
           </div>
         </div>
       </div>
@@ -29,13 +49,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import dayjs from 'dayjs';
+import axios from 'axios';
+import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useAuthStore } from '@/stores/authStore';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const calendar = ref([]);
 const currentYear = ref(dayjs().year());
+
+const schedules = ref([]);
+const now = ref(dayjs());
+const authStore = useAuthStore();
+
+const MonthlySchedules = async () => {
+
+  const calendarIdx = authStore.calendarIdx;
+
+  try {
+    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    schedules.value = response.data;
+  } catch (error) {
+    console.error('Failed to show monthly schedules:', error);
+  }
+};
+
+// 컴포넌트가 로드될 때 일정 데이터를 가져옴
+onMounted(() => {
+  MonthlySchedules();
+});
+
+// 달이 바뀔 때마다 새 데이터를 불러오도록 watch 사용
+watch(now, () => {
+  MonthlySchedules();
+});
+
+const getSchedulesForDate = date => {
+  return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 1);
+};
+
+const colorList = [
+  { value: 'PINK', color: '#ff7f7f' },
+  { value: 'ORANGE', color: '#ff9933' },
+  { value: 'YELLOW', color: '#ffe066' },
+  { value: 'BLUE', color: '#4da6ff' },
+  { value: 'GREEN', color: '#5cd65c' },
+  { value: 'VIOLET', color: '#b366ff' },
+  { value: 'GRAY', color: '#a6a6a6' },
+];
+
+const getHexColor = value => {
+  const colorItem = colorList.find(item => item.value === value);
+  return colorItem ? colorItem.color : '#000000'; // 기본값: 검정색
+};
 
 // 연간 캘린더 데이터를 생성하는 함수
 const generateCalendar = () => {
@@ -66,6 +134,13 @@ const resetToCurrentYear = () => {
   currentYear.value = dayjs().year();
   generateCalendar();
 };
+
+// const props = defineProps({
+//   schedules: {
+//     type: Array,
+//     required: true,
+//   }
+// });
 </script>
 
 <style scoped>
@@ -184,8 +259,7 @@ const resetToCurrentYear = () => {
   color: blue;
 }
 
-.blank,
-.date {
+.blank {
   text-align: center;
   padding: 5px;
   border-radius: 4px;
@@ -195,9 +269,35 @@ const resetToCurrentYear = () => {
   background-color: #f1f3f5;
   color: #333;
   position: relative; /* 위치 설정 */
+  border-radius: 4px;
+  aspect-ratio: 1 / 1; /* 정사각형 비율 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.date-type {
+  font-size: 0.8rem;
+  margin-bottom: 1px; /* 숫자와 점 사이의 간격 */
 }
 
 .blank {
   background-color: transparent;
+}
+
+.schedule-dot-wrapper {
+  display: flex;
+  justify-content: center; /* 점을 가운데 정렬 */
+  min-height: 12px; /* 점 영역의 높이를 고정하여 점이 없어도 셀의 높이가 일정하게 유지 */
+}
+
+.schedule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 2px;
 }
 </style>

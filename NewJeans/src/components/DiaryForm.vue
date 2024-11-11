@@ -42,6 +42,7 @@
       <div class="image-preview">
         <div v-for="(image, index) in images" :key="index" class="image-container">
           <img :src="image.url" alt="Preview" />
+          <button class="delete-btn" @click="removeImage(index)">X</button>
         </div>
       </div>
 
@@ -64,6 +65,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
@@ -76,6 +78,8 @@ const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
 const images = ref([]); // 이미지 리스트
+
+const authStore = useAuthStore();
 
 const handleImageUpload = event => {
   const files = Array.from(event.target.files); // 선택한 모든 파일을 배열로 변환
@@ -102,7 +106,7 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value, 
-    calendarsIdx: 1,
+    calendarIdx: authStore.calendarIdx,
   };
 
   const formData = new FormData();
@@ -135,6 +139,11 @@ const submitDiary = async () => {
 const cancelForm = () => {
   emit('closeForm');
 };
+
+const removeImage = (index) => {
+  images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
+};
+
 </script>
 
 <style scoped>
@@ -207,6 +216,7 @@ const cancelForm = () => {
 
 .image-container {
   margin: 5px;
+  position: relative;
 }
 
 .image-container img {
@@ -245,5 +255,22 @@ const cancelForm = () => {
 .cancel-button {
   background-color: #808080;
   color: white;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

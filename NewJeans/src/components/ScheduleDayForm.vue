@@ -16,51 +16,51 @@
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
 
-                <!-- 일정 시작, 종료일자 -->
-                <div>
-                  <p v-if="editIndex !== index"><strong>Start Time:</strong> {{ formatDateTime(schedule.start) }}</p>
-                  <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
+                <div class="form-row" style="width: 450px">
+                  <p v-if="editIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local"
+                    placeholder="Start Time" @click.stop />
+                </div>
+                <div class="form-row" style="width: 450px">
+                  <p v-if="editIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time"
+                    @click.stop />
                 </div>
 
-                <div style="margin-top: 10px">
-                  <p v-if="editIndex !== index"><strong>End Time:</strong> {{ formatDateTime(schedule.end) }}</p>
-                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
-                </div>
+                <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
 
-                <p v-if="editIndex !== index"><strong>반복: </strong> {{ schedule.repeatType }}</p>
-                <input v-else v-model="editData.repeat" class="input-field" placeholder="Enter Repeat Frequency" @click.stop />
+                <div v-if="editIndex === index">
+                  <div class="form-row" style="width: 450px">
+                    <label>반복</label>
+                    <div class="repeat-options">
+                      <label for="yearly" class="radio-label">
+                        <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
+                        매년
+                      </label>
+                      <label for="monthly" class="radio-label">
+                        <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
+                        매월
+                      </label>
+                      <label for="weekly" class="radio-label">
+                        <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
+                        매주
+                      </label>
+                      <label for="daily" class="radio-label">
+                        <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
+                        매일
+                      </label>
+                      <label for="none" class="radio-label">
+                        <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
+                        안함
+                      </label>
+                    </div>
+                  </div>
 
-                <!-- 반복 설정 -->
-                <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>반복 :</strong> {{ schedule.repeatType }}</p>
-                <div v-else class="repeat-options">
-                  <label for="yearly" class="radio-label">
-                    <input id="yearly" type="radio" v-model="editData.repeatType" value="YEARLY" />
-                    매년
-                  </label>
-                  <label for="monthly" class="radio-label">
-                    <input id="monthly" type="radio" v-model="editData.repeatType" value="MONTHLY" />
-                    매월
-                  </label>
-                  <label for="weekly" class="radio-label">
-                    <input id="weekly" type="radio" v-model="editData.repeatType" value="WEEKLY" />
-                    매주
-                  </label>
-                  <label for="daily" class="radio-label">
-                    <input id="daily" type="radio" v-model="editData.repeatType" value="DAILY" />
-                    매일
-                  </label>
-                  <label for="none" class="radio-label">
-                    <input id="none" type="radio" v-model="editData.repeatType" value="NONE" />
-                    안함
-                  </label>
+                  <div class="form-row" v-if="editData.repeatType !== 'NONE'" style="width: 450px">
+                    <label for="repeatEndDate">반복 종료 날짜</label>
+                    <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
+                  </div>
                 </div>
-                <!-- 반복 종료일자 -->
-                <div v-if="editData.repeatType !== 'NONE'" style="margin-top: 10px">
-                  <label for="repeatEndDate">반복 종료 날짜</label>
-                  <input id="repeatEndDate" v-model="editData.repeatEndDate" type="date" />
-                </div>
-                <!--  -->
 
                 <hr class="divider" />
                 <p v-if="editIndex !== index">{{ schedule.content }}</p>
@@ -73,7 +73,15 @@
                 </div>
 
                 <!-- 이미지 관리 섹션 -->
-                <div class="schedule-images">
+                <div v-if="editIndex === index" class="schedule-images">
+                  <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
+                    <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
+                    <button class="delete-btn" @click.stop="removeScheduleImage(imgIndex, imageUrl)">X</button>
+                  </div>
+                  <input type="file" @change="onScheduleFileChange" multiple accept="image/*" />
+                </div>
+
+                <div v-else class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
                     <img :src="`${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
                   </div>
@@ -103,7 +111,7 @@
           <h3>삭제 옵션 선택</h3>
           <p>삭제할 방식을 선택해주세요:</p>
           <div class="delete-options">
-            <button @click="confirmDelete('deleteOption')">현재 일정만 삭제</button>
+            <button @click="confirmDelete('deleteOnlyThis')">현재 일정만 삭제</button>
             <button @click="confirmDelete('deleteAllRepeats')">모든 반복 일정 삭제</button>
             <button @click="confirmDelete('deleteAfter')">이후 반복 일정 삭제</button>
           </div>
@@ -141,7 +149,7 @@
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
-              <p class="category">{{ diary.category }}</p>
+              <p class="category">{{ categoryKorean(diary.category) }}</p>
             </div>
 
             <transition name="slide-fade">
@@ -193,6 +201,7 @@ import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
@@ -214,22 +223,42 @@ const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
 const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
-
 const showDayView = ref(true);
 
 let pollingInterval = null;
 
-// 모달 관련 상태
-const showDeleteModal = ref(false);
-const showDiaryDeleteModal = ref(false);
-
-const diaryToDeleteIndex = ref(null);
+const authStore = useAuthStore();
 
 // 모달 관련 상태
 const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
 const deleteIndex = ref(null);
 const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
+
+const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
+const showDiaryDeleteModal = ref(false);
+
+// 매핑된 한글 반복 타입을 반환하는 함수
+const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
+
+const categoryKorean = category => categoryKoreanMap[category];
+
+// 반복 타입에 대한 한글 매핑 정의
+const repeatTypeKoreanMap = {
+  YEARLY: '매년',
+  MONTHLY: '매월',
+  WEEKLY: '매주',
+  DAILY: '매일',
+  NONE: '없음'
+};
+
+const categoryKoreanMap = {
+  DAILY: '일기',
+  GROWTH: '성장일지',
+  EXERCISE: '운동',
+  TRIP: '여행',
+  ETC: '기타'
+};
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -238,10 +267,11 @@ const fetchDayData = async selectedDate => {
   };
 
   const [year, month, day] = selectedDate.split('-');
-  const idx = 1;
+  const calendarIdx = ref(authStore.calendarIdx);
 
   try {
-    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${idx}/${year}/${month}/${day}`);
+    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${year}/${month}/${day}`);
+
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
       let longitude = 126.9786567;
@@ -270,7 +300,7 @@ const fetchDayData = async selectedDate => {
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
-    const diaryResponse = await axios.get(`${BASE_URL}/diary/${idx}/${year}/${month}/${day}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
@@ -383,24 +413,36 @@ const saveDiaryEdit = async (type, index) => {
 const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
 
+  // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
-    start: editData.value.start,
-    end: editData.value.end,
+    start: editData.value.start, // 시작 시간 추출
+    end: editData.value.end, // 종료 시간 추출
     repeatType: editData.value.repeatType,
     repeatEndDate: editData.value.repeatEndDate,
     address: editData.value.address,
     content: editData.value.content,
-    color: editData.value.color || 'DEFAULT_COLOR',
+    color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
+    deletedImageList: editData.value.deletedImageList || []
   };
 
+  // FormData 생성 및 데이터 추가
   const formData = new FormData();
   formData.append('scheduleRequest', new Blob([JSON.stringify(scheduleRequest)], { type: 'application/json' }));
 
+  // imageFiles 추가 (다이어리 방식과 동일)
+  if (editData.value.imageFiles) {
+    for (let file of editData.value.imageFiles) {
+      formData.append('imageFiles', file);
+    }
+  }
+
   try {
-    const response = await axios.put(`${BASE_URL}/schedule/update`, formData);
+    const response = await axios.post(`${BASE_URL}/schedule/update`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
   } catch (error) {
@@ -414,6 +456,7 @@ const cancelEdit = () => {
   editIndex.value = null;
 };
 
+// 모달을 열 때 호출되는 함수
 const openDeleteModal = index => {
   deleteIndex.value = index;
   console.log('index = ' + index);
@@ -428,12 +471,6 @@ const openDeleteModal = index => {
     showSingleDeleteModal.value = true;
   }
 };
-
-// const closeDeleteModal = () => {
-//   showDeleteModal.value = false;
-//   deleteIndex.value = null;
-//   deleteType.value = '';
-// };
 
 // 반복 삭제 모달을 닫을 때 호출되는 함수
 const closeRepeatDeleteModal = () => {
@@ -583,6 +620,44 @@ const formatDateTime = dateTimeString => {
   }
 
   return `${date} ${period} ${String(hourInt).padStart(2, '0')}:${minute}`;
+};
+
+// 스케줄 수정시 이미지 삭제,추가
+const onScheduleFileChange = event => {
+  const files = event.target.files;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      editData.value.images.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+
+    if (!editData.value.imageFiles) {
+      editData.value.imageFiles = [];
+    }
+    editData.value.imageFiles.push(file);
+  }
+
+  event.target.value = '';
+};
+
+const removeScheduleImage = index => {
+  const imageUrl = editData.value.images[index];
+
+  if (!imageUrl) {
+    console.error('Image URL is not defined');
+    return;
+  }
+
+  if (!editData.value.deletedImageList) {
+    editData.value.deletedImageList = [];
+  }
+  editData.value.deletedImageList.push(imageUrl);
+
+  editData.value.images.splice(index, 1);
 };
 </script>
 
@@ -783,5 +858,28 @@ const formatDateTime = dateTimeString => {
 .modal-buttons button:last-child {
   background-color: #ddd;
   color: white;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-container{
+  position: relative;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

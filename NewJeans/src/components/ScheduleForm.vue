@@ -1,112 +1,106 @@
 <template>
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
-      <div class="form-grid">
+      <!-- 제목 -->
+      <div class="row">
+        <label for="title" style="width: 80px; margin-bottom: 5px;">제목</label>
+        <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
+      </div>
 
-        <!-- 제목 -->
-        <div class="form-row" style="width: 450px">
-          <label for="title">제목</label>
-          <input id="title" v-model="title" placeholder="Enter Title" />
+      <!-- 색깔 선택 -->
+      <div class="row">
+        <label style="width: 80px; margin-bottom: 5px;">색깔 선택</label>
+        <div class="color-options">
+          <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
+            <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
+            <span class="color-circle" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
+          </label>
         </div>
+      </div>
 
-        <!-- 색깔 선택 (색상 원으로 표시, 라디오 버튼 숨김) -->
-        <div class="form-row" style="width: 450px">
-          <label>색깔 선택</label>
-          <div class="color-options">
-            <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
-              <!-- 색상 선택 부분에서만 라디오 버튼 숨김 -->
-              <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
-              <span class="color-circle" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
-            </label>
-          </div>
-        </div>
+      <!-- 시작 날짜, 종료 날짜 -->
+      <div class="row">
+        <label for="startdate" style="width: 80px; margin-bottom: 5px;">시작 날짜</label>
+        <input id="startdate" v-model="startdate" type="datetime-local" class="input-field" />
+      </div>
+      <div class="row">
+        <label for="enddate" style="width: 80px; margin-bottom: 5px;">종료 날짜</label>
+        <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate" class="input-field" />
+      </div>
 
-        <!-- 시작 날짜, 종료 날짜 -->
-        <div class="form-row" style="width: 450px">
-          <label for="startdate">시작 날짜</label>
-          <input id="startdate" v-model="startdate" type="datetime-local" />
+      <!-- 반복 설정 -->
+      <div class="row">
+        <label style="width: 80px; margin-bottom: 5px;">반복</label>
+        <div class="repeat-options">
+          <label for="yearly" class="radio-label">
+            <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
+            매년
+          </label>
+          <label for="monthly" class="radio-label">
+            <input id="monthly" type="radio" v-model="repeatType" value="MONTHLY" />
+            매월
+          </label>
+          <label for="weekly" class="radio-label">
+            <input id="weekly" type="radio" v-model="repeatType" value="WEEKLY" />
+            매주
+          </label>
+          <label for="daily" class="radio-label">
+            <input id="daily" type="radio" v-model="repeatType" value="DAILY" />
+            매일
+          </label>
+          <label for="none" class="radio-label">
+            <input id="none" type="radio" v-model="repeatType" value="NONE" />
+            안함
+          </label>
         </div>
-        <div class="form-row" style="width: 450px">
-          <label for="enddate">종료 날짜</label>
-          <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate"/>
-        </div>
+      </div>
 
-        <!-- 반복 설정을 세로로 배치 (라디오 버튼 보이도록) -->
-        <div class="form-row" style="width: 450px">
-          <label>반복</label>
-          <div class="repeat-options">
-            <label for="yearly" class="radio-label">
-              <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
-              매년
-            </label>
-            <label for="monthly" class="radio-label">
-              <input id="monthly" type="radio" v-model="repeatType" value="MONTHLY" />
-              매월
-            </label>
-            <label for="weekly" class="radio-label">
-              <input id="weekly" type="radio" v-model="repeatType" value="WEEKLY" />
-              매주
-            </label>
-            <label for="daily" class="radio-label">
-              <input id="daily" type="radio" v-model="repeatType" value="DAILY" />
-              매일
-            </label>
-            <label for="none" class="radio-label">
-              <input id="none" type="radio" v-model="repeatType" value="NONE" />
-              안함
-            </label>
-          </div>
-        </div>
+      <div class="row" v-if="repeatType !== 'NONE'">
+        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px;">반복 종료</label>
+        <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
+      </div>
 
-        <div class="form-row" v-if="repeat !== 'NONE'" style="width: 450px">
-          <label for="repeatEndDate">반복 종료 날짜</label>
-          <input id="repeatEndDate" v-model="repeatEndDate" type="date" />
+      <!-- 지도 -->
+      <div class="row">
+        <label for="location" style="width: 80px; margin-bottom: 5px;">지도</label>
+        <div class="map-container">
+          <KakaoMap @updateLocation="updateLocation"/>
         </div>
+      </div>
 
-        <!-- 카카오 지도 컴포넌트를 Add Note 위에 배치 -->
-        <div class="form-row">
-          <label for="location">지도</label>
-          <KakaoMap @updateLocation="updateLocation" />
-          <!-- 위치 업데이트 이벤트 -->
+      <!-- 내용 입력 -->
+      <div class="row">
+        <label for="content" style="width: 80px; margin-bottom: 5px;">메모</label>
+        <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
+      </div>
+
+      <!-- 이미지 업로드 -->
+      <div class="row">
+        <label for="image" style="width: 80px; margin-bottom: 5px;">이미지</label>
+        <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+      </div>
+
+      <div class="image-preview">
+        <div v-for="(image, index) in images" :key="index" class="image-container">
+          <img :src="image.url" alt="Preview" />
+          <button class="delete-btn" @click="removeImage(index)">X</button>
         </div>
+      </div>
 
-        <!-- 내용 입력 -->
-        <div class="form-row" style="width: 450px">
-          <div class="icon-label">
-            <i class="icon-note"></i>
-            <label for="content">메모</label>
-          </div>
-          <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
-        </div>
-
-        <!-- 이미지 업로드 -->
-        <div class="form-row">
-          <label for="image" style="width: 450px">이미지</label>
-          <input id="image" type="file" @chnpmange="handleImageUpload" multiple class="input-field" />
-        </div>
-
-        <div class="image-preview">
-          <div v-for="(image, index) in images" :key="index" class="image-container">
-            <img :src="image.url" alt="Preview" />
-            <button class="delete-btn" @click="removeImage(index)">X</button>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <!-- 저장 버튼 -->
-          <button type="submit" class="submit-button">
-            <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
-          </button>
-
-          <!-- 취소 버튼 -->
-          <button type="button" @click="cancelForm" class="cancel-button">
-            <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
-          </button>
-        </div>
+      <!-- 버튼 -->
+      <div class="button-row">
+        <button type="submit" class="submit-button">
+          <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
+        </button>
+        <button type="button" @click="cancelForm" class="cancel-button">
+          <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
+        </button>
       </div>
     </form>
   </div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
@@ -114,11 +108,14 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   selectedDate: String,
 });
 const emit = defineEmits(['closeForm']);
+
+const authStore = useAuthStore();
 
 const title = ref('');
 const color = ref('ORANGE');
@@ -129,6 +126,7 @@ const description = ref('');
 const repeatType = ref('NONE');
 const repeatEndDate = ref(''); // 반복 종료 날짜를 추가
 const images = ref([]); // 이미지 파일을 저장
+const calendarIdx = ref(authStore.calendarIdx);
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -180,7 +178,7 @@ const submitSchedule = async () => {
     end: enddate.value,
     location: location.value,
     content: description.value,
-    calendarsIdx: 1,
+    calendarIdx: calendarIdx.value,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
   };
@@ -227,118 +225,117 @@ watch(startdate, newStartDate => {
     enddate.value = newEndDate;
   }
 });
-</script>
 
+const removeImage = (index) => {
+  images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
+};
+
+</script>
 <style scoped>
 .schedule-form {
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  max-width: 600px;
-  margin-top: 100px;
-  padding: 50px 0;
   border: 1px solid #ccc;
+  margin-top: 10vh;
+  padding: 20px;
+  border-radius: 10px;
+  height: auto;
 }
 
-/* 그리드를 1열로 변경 */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* 1열로 배치 */
-  grid-gap: 20px;
-}
-
-.form-row {
+.row {
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
-}
-
-.form-row label {
-  margin-bottom: 15px;
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
   font-weight: bold;
 }
 
-input,
-select,
-textarea {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-textarea {
-  height: 80px;
-}
-
-/* 색깔 선택 부분 */
 .color-options {
+  align-items: center;
   display: flex;
-  gap: 20px;
+  gap: 10px;
+  justify-content: center;
+}
+
+.color-label input:checked + .color-circle {
+  border: 3px solid #000; /* 선택 시 검정색 테두리를 추가 */
+  box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.3); /* 약간의 그림자 효과 추가 */
 }
 
 .color-circle {
+  margin-top: 10px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
   border: 1px solid #ccc;
   display: inline-block;
   cursor: pointer;
+  box-sizing: border-box; /* 테두리가 요소의 크기를 변경하지 않도록 */
+  transition: border 0.3s ease, box-shadow 0.3s ease; /* 애니메이션 추가 */
 }
 
-/* 색깔 선택 라디오 버튼만 숨김 */
 .color-radio {
   display: none;
 }
 
-/* 선택된 색깔 원에 스타일 추가 */
-input[type='radio']:checked + .color-circle {
-  border: 2px solid black;
-}
-
-/* 반복 옵션 스타일 (라디오 버튼 보이게) */
-.repeat-options {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-.icon-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-note {
-  font-size: 18px;
-  color: #343434;
-}
-
-.input-field {
-  border: 1px solid #ccc;
+input, select, textarea {
+  border: none;
+  width: 100%;
   padding: 10px;
-  font-size: 14px;
   border-radius: 5px;
+  font-size: 1rem;
 }
 
 .textarea-field {
-  height: 80px;
+  height: 220px;
   resize: none;
+}
+
+.repeat-options {
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  flex-wrap: nowrap; /* 줄바꿈 방지 */
+
+}
+
+.radio-label {
+  display: flex;
+  align-items: center; /* 라디오 버튼과 텍스트를 한 줄로 정렬 */
+  gap: 5px;
+  white-space: nowrap; /* 얘도 줄바꿈 방지 */
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.image-container {
+  margin: 5px;
+  position: relative;
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
 .button-row {
   display: flex;
   justify-content: center;
   gap: 10px;
+  margin-top: 30px;
+  margin-bottom: 10px;
 }
 
-.submit-button,
-.cancel-button {
+.submit-button, .cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   border: none;
-  font-size: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -350,27 +347,32 @@ input[type='radio']:checked + .color-circle {
   color: white;
 }
 
+/* .map-container{
+  display: flex;
+  justify-content: center;
+  width: 100%;
+} */
+
 .cancel-button {
   background-color: #808080;
   color: white;
 }
 
-/* 이미지 미리보기 */
-.image-preview {
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 14px;
   display: flex;
-  flex-wrap: wrap; /* 여러 줄로 표시 */
-  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
-.image-container {
-  position: relative;
-  margin: 5px;
-}
-
-.image-container img {
-  width: 100px;
-  height: 100px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
 </style>
