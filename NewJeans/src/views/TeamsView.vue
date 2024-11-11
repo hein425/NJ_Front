@@ -1,75 +1,11 @@
 <template>
-  <div class="team-view">
-    <!-- 친구 요청 및 교환일기 요청 섹션 -->
-    <div class="notification-container">
-      <!-- 친구 요청 구역 -->
-      <div class="notification-section">
-        <div class="request-notification" @click="toggleRequestList">
-          <span class="notification-message">새로운 친구 요청이 확인하기</span>
-          <div v-if="friendRequests.length > 0" class="notification-badge">
-            {{ friendRequests.length }}
-          </div>
-        </div>
-        <!-- 친구 요청 목록 (토글) -->
-        <transition name="fade">
-          <ul v-if="friendRequests.length" class="request-list">
-            <li v-for="request in friendRequests" :key="request.userId" class="search-result-item">
-              <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
-              <img :src="request.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
-              <span class="user-click">{{ request.userName }}</span>
-              <span class="friend-email">{{ request.email }}</span>
-              <button @click="acceptFriendRequest(request.userId)">수락</button>
-              <button class="delete-button-ex" @click="rejectFriendRequest(request.userId)">거절</button>
-            </li>
-          </ul>
-        </transition>
-      </div>
-
-      <!-- 교환일기 요청 구역 -->
-      <div class="notification-section">
-        <div class="request-notification" @click="toggleExchangeDiaryRequestList">
-          <span class="notification-message">새로운 교환일기 요청이 확인하기</span>
-          <div v-if="exchangeDiaryRequests.length > 0" class="notification-badge">
-            {{ exchangeDiaryRequests.length }}
-          </div>
-        </div>
-        <!-- 교환일기 요청 목록 (토글) -->
-        <transition name="fade">
-          <ul v-if="exchangeDiaryRequests.length" class="request-list">
-            <li v-for="request in exchangeDiaryRequests" :key="request.diaryId" class="search-result-item">
-              <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
-              <span class="user-click">{{ request.userName }}</span>
-              <span class="friend-email">{{ request.email }}</span>
-              <button @click="acceptExchangeDiaryRequest(request.diaryId, request.userId, userId)">수락</button>
-              <button class="delete-button-ex" @click="rejectExchangeDiaryRequest(request.diaryId)">거절</button>
-            </li>
-          </ul>
-        </transition>
-      </div>
-    </div>
-
-    <!-- 친구 목록과 친구 검색 섹션 -->
-    <div class="notification-container">
-      <div class="notification-section">
-        <div class="friends-list">
-          <h3>나의 친구 목록</h3>
-          <ul class="f-list">
-            <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
-              {{ console.log(friend) }}
-              <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
-              <span class="user-click">{{ friend.userName }}</span>
-              <span class="friend-email">{{ friend.email }}</span>
-              <button>콕 찌르기</button>
-              <button class="delete-button">친구 삭제</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
+   <div class="team-view">
+    <!-- 상단: 친구 검색, 친구 요청, 교환일기 요청 -->
+    <div class="top-section">
       <!-- 친구 검색 섹션 -->
-      <div class="notification-section">
+      <div class="friend-search-container">
+        <h3>친구 검색</h3>
         <div class="friend-search">
-          <h3>친구 검색</h3>
           <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
           <div v-if="searchResults.length > 0" class="search-results">
             <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
@@ -77,58 +13,85 @@
               <span class="user-click">{{ user.userName }}</span>
               <span class="friend-email">{{ user.email }}</span>
               <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
-
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 친구 요청 섹션 -->
+      <div class="friend-request-container">
+        <h3>친구 요청</h3>
+        <div class="notification-section">
+          <div class="request-notification" @click="toggleRequestList">
+            <span class="notification-message">새로운 친구 요청 확인하기</span>
+            <div v-if="friendRequests.length > 0" class="notification-badge">
+              {{ friendRequests.length }}
+            </div>
+          </div>
+          <transition name="fade">
+            <ul v-if="showRequestList" class="request-list">
+              <li v-for="request in friendRequests" :key="request.userId" class="search-result-item">
+                <img :src="request.profileImageUrl || defaultProfileImage " alt="프로필 이미지" class="profile-icon" />
+                <span class="user-click">{{ request.userName }}</span>
+                <span class="friend-email">{{ request.email }}</span>
+                <button @click="acceptFriendRequest(request.userId)">수락</button>
+                <button class="delete-button-ex" @click="rejectFriendRequest(request.userId)">거절</button>
+              </li>
+            </ul>
+          </transition>
+        </div>
+      </div>
+
+      <!-- 교환일기 요청 섹션 -->
+      <div class="exchange-diary-request-container">
+        <h3>교환일기 요청</h3>
+        <div class="notification-section">
+          <div class="request-notification" @click="toggleExchangeDiaryRequestList">
+            <span class="notification-message">새로운 교환일기 요청 확인하기</span>
+            <div v-if="exchangeDiaryRequests.length > 0" class="notification-badge">
+              {{ exchangeDiaryRequests.length }}
+            </div>
+          </div>
+          <transition name="fade">
+            <ul v-if="showExchangeDiaryRequestList" class="request-list">
+              <li v-for="request in exchangeDiaryRequests" :key="request.diaryId" class="search-result-item">
+                <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
+                <span class="user-click">{{ request.userName }}</span>
+                <span class="friend-email">{{ request.email }}</span>
+                <button @click="acceptExchangeDiaryRequest(request.diaryId, request.userId, userId)">수락</button>
+                <button class="delete-button-ex" @click="rejectExchangeDiaryRequest(request.diaryId)">거절</button>
+              </li>
+            </ul>
+          </transition>
         </div>
       </div>
     </div>
 
-    <!-- 내 교환일기 섹션 -->
-    <div class="notification-container">
-      <div class="notification-section">
-        <div class="exchange-diary-section">
-          <div>
-            <button class="request-exchange-button" @click="openCreateEntryModal">교환일기 신청하기</button>
-          </div>
-          <div v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary">
-            <div class="diary-header">
-              <h4 @click="toggleDiaryEntries(diary.diaryId)">교환 일기 이름: {{ diary.groupName }}</h4>
-              <button class="request-exchange-button" @click="openEntryModal(diary.diaryId)">일기 쓰기</button>
-              <button class="delete-button-ex" @click="deleteExchangeDiary(diary.diaryId)">교환 관계 끊고 모든 데이터 삭제</button>
-            </div>
-            <div class="participants">
-              참가자: <span>{{ formatParticipants(diary.participants) }}</span>
-            </div>
-          </div>
+    <!-- 중간: 친구 목록 및 교환 일기 목록 -->
+    <div class="middle-section">
+      <!-- 친구 목록 섹션 -->
+      <div class="friend-list-container">
+        <h3>나의 친구 목록</h3>
+        <div class="friends-list">
+          <ul class="f-list">
+            <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+              <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
+              <span class="user-click">{{ friend.userName }}</span>
+              <span class="friend-email">{{ friend.email }}</span>
+              <button class="delete-button">친구 삭제</button>
+            </li>
+          </ul>
         </div>
       </div>
 
-      <!-- 일기 수정 모달 -->
-      <transition name="modal">
-        <div class="modal-overlay" v-if="isUpdateModalOpen" @click.self="closeUpdateModal">
-          <div class="modal-content">
-            <h3>일기 수정</h3>
-            <div class="entry-title-input">
-              <label for="entry-title">제목:</label>
-              <input id="entry-title" type="text" v-model="entryTitle" placeholder="제목을 입력하세요" />
-            </div>
-            <div class="entry-content-input">
-              <label for="entry-content">내용:</label>
-              <textarea id="entry-content" v-model="entryContent" placeholder="내용을 입력하세요"></textarea>
-            </div>
-            <div class="modal-buttons">
-              <button @click="submitEntryUpdate">수정 완료</button>
-            </div>
-          </div>
-        </div>
-      </transition>
-
-      <!-- 내 교환일기 목록 -->
-      <div class="notification-section">
+      <!-- 내 교환일기 목록 섹션 -->
+      <div class="my-exchange-diary-container">
         <h3>내 교환 일기 목록</h3>
         <ul class="exchange-diary-list">
           <li v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary-item">
+            <h4 @click="toggleDiaryEntries(diary.diaryId)">교환 일기: {{ diary.groupName }}</h4>
+            <button class="delete-button-ex" @click="deleteExchangeDiary(diary.diaryId)">교환 관계 끊기</button>
+            <button @click="openEntryModal(diary.diaryId)">일기 쓰기</button>
             <ul v-if="openDiaryId === diary.diaryId">
               <li v-for="entry in diary.entries" :key="entry.entryId" class="entry-item">
                 <p><strong>제목:</strong> {{ entry.title }}</p>
@@ -143,65 +106,53 @@
           </li>
         </ul>
       </div>
-
-      <!-- 교환일기 생성 모달 -->
-      <transition name="modal">
-        <div class="modal-overlay" v-if="isCreateModalOpen " @click.self="closeCreateModal">
-          <div class="modal-content">
-            <h3>교환일기 신청</h3>
-            <div class="group-name-input">
-              <label for="group-name">그룹명:</label>
-              <input id="group-name" type="text" v-model="groupName" placeholder="그룹명을 입력하세요" />
-            </div>
-            <div class="friend-dropdown">
-              <h4>나의 친구 목록</h4>
-              <ul class="friend-list-dropdown">
-                <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
-                  <img :src="friend.profileImageUrl || defaultProfileImage" class="profile-icon" />
-                  <span class="user-click">{{ friend.userName }}</span>
-                  <button @click="selectFriend(friend)">+ 초대</button>
-                </li>
-              </ul>
-            </div>
-            <div class="invited-list">
-              <h4>교환일기에 초대할 친구</h4>
-              <ul class="f-list">
-                <li v-if="selectedFriend" class="search-result-item">
-                  <img :src="selectedFriend.profileImageUrl || defaultProfileImage" class="profile-icon" />
-                  <span class="user-click">{{ selectedFriend.userName }}</span>
-                </li>
-              </ul>
-            </div>
-            <div class="modal-buttons">
-              <button @click="sendExchangeDiaryRequest">교환일기 신청하기</button>
-            </div>
-          </div>
-        </div>
-      </transition>
-
-      <!-- 일기 쓰기 모달 -->
-      <transition name="modal">
-        <div class="modal-overlay" v-if="isEntryModalOpen" @click.self="closeEntryModal">
-          <div class="modal-content">
-            <h3>일기 쓰기</h3>
-            <div class="entry-title-input">
-              <label for="entry-title">제목:</label>
-              <input id="entry-title" type="text" v-model="entryTitle" placeholder="제목을 입력하세요" />
-            </div>
-            <div class="entry-content-input">
-              <label for="entry-content">내용:</label>
-              <textarea id="entry-content" v-model="entryContent" placeholder="내용을 입력하세요"></textarea>
-            </div>
-            <div class="modal-buttons">
-              <button @click="submitEntry">작성 완료</button>
-            </div>
-          </div>
-        </div>
-      </transition>
     </div>
-  </div>
-</template>
 
+    <!-- 하단: 교환일기 신청 -->
+    <div class="exchange-diary-apply-container">
+      <h3>교환일기 신청</h3>
+      <button class="request-exchange-button" @click="isCreateModalOpen = true">교환일기 신청하기</button>
+    </div>
+
+    <!-- 일기 작성 모달 -->
+    <div v-if="isEntryModalOpen" class="modal-overlay">
+      <div class="modal">
+        <h3>새 일기 작성</h3>
+        <input v-model="entryTitle" placeholder="제목을 입력하세요" />
+        <textarea v-model="entryContent" placeholder="내용을 입력하세요"></textarea>
+        <button @click="submitEntry">작성 완료</button>
+        <button @click="closeEntryModal">취소</button>
+      </div>
+    </div>
+
+    <!-- 교환일기 신청 모달 -->
+    <div v-if="isCreateModalOpen" class="modal-overlay">
+      <div class="modal">
+        <h3>교환일기 신청</h3>
+        <input v-model="groupName" placeholder="그룹명을 입력하세요" />
+        <div class="friend-dropdown">
+          <h4>친구 목록</h4>
+          <ul class="friend-list-dropdown">
+            <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+              <img :src="friend.profileImageUrl || defaultProfileImage" class="profile-icon" />
+              <span class="user-click">{{ friend.userName }}</span>
+              <button @click="selectFriend(friend)">초대</button>
+            </li>
+          </ul>
+        </div>
+        <div v-if="selectedFriend" class="invited-list">
+          <h4>초대된 친구</h4>
+          <div class="search-result-item">
+            <img :src="selectedFriend.profileImageUrl || defaultProfileImage" class="profile-icon" />
+            <span class="user-click">{{ selectedFriend.userName }}</span>
+          </div>
+        </div>
+        <button @click="sendExchangeDiaryRequest">신청하기</button>
+        <button @click="isCreateModalOpen = false">취소</button>
+      </div>
+    </div>
+    </div>
+</template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -669,521 +620,208 @@ onMounted(async () => {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background-color: #f3f4f6;
+  background-color: #f9f9f9;
   border-radius: 12px;
-  max-width: 1250px;
+  max-width: 1200px;
   margin: auto;
-  margin-left: 50px;
 }
 
-/* 알림 컨테이너 */
-.notification-container {
-  display: flex;
-  gap: 20px;
-}
-
-/* 알림 섹션 */
-.notification-section {
-  flex: 1;
+.friend-request-container,
+.exchange-diary-request-container,
+.friend-list-container,
+.friend-search-container,
+.exchange-diary-apply-container,
+.my-exchange-diary-container {
   background-color: #ffffff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  width: 585px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.my-exchange-diary-container {
+  width: 70vh;
+}
+
+.friend-request-container,
+.exchange-diary-request-container,
+.friend-search-container,
+.exchange-diary-apply-container {
+  width: 32vh;
+}
+
+input.search-input {
+  width: 95%; /* input 검색창의 넓이를 95%로 설정 */
+}
+
+.friend-list-container {
+  width: 32vh;
+}
+
+
+.friend-request-container:hover,
+.exchange-diary-request-container:hover,
+.friend-list-container:hover,
+.friend-search-container:hover,
+.exchange-diary-apply-container:hover,
+.my-exchange-diary-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+h3 {
+  font-size: 1.5rem;
+  color: #333;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.notification-section,
+.friends-list,
+.friend-search,
+.exchange-diary-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .request-notification {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #3b82f6;
+  background-color: #333;
   color: white;
-  padding: 8px;
-  border-radius: 50px;
+  padding: 10px 15px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.3s;
+}
+
+.request-notification:hover {
+  background-color: #ddd;
 }
 
 .notification-badge {
   background-color: #ef4444;
   color: white;
-  border-radius: 30%;
-  width: 35px;
-  height: 35px;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2em;
+  font-size: 0.9rem;
   font-weight: bold;
-  margin-right: 10px;
-}
-
-.request-list {
-  margin: 0; /* 리스트 자체의 마진을 없앱니다. */
-  padding: 0; /* 리스트의 기본 패딩을 없앱니다. */
 }
 
 .profile-icon {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   margin-right: 10px;
-  border: 2px solid #ddd;
 }
 
-/* 친구 목록과 검색 섹션 */
-.friend-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 균등한 열 비율 */
-  gap: 20px;
-  width: 100%; /* 부모 요소에 맞게 확장 */
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.team-section {
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.friends-list,
-.friend-search {
-  width: 100%;
-}
-
-.f-list,
-.search-results {
-  list-style: none;
-  padding: 0;
-}
-
-.f-list li,
 .search-result-item {
   display: flex;
   align-items: center;
-  margin: 20px 0;
-  font-size: 1.3rem;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #e2e8f0;
+  transform: scale(1.02);
 }
 
 .friend-email {
   margin-left: auto;
-  font-size: 1.1em;
+  font-size: 0.9rem;
   color: #6b7280;
 }
 
-/* 버튼 스타일 */
 button {
-  margin-left: auto;
-  background-color: #3b82f6;
+  background-color: #333;
   color: white;
   border: none;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 10px;
   transition: background-color 0.3s;
-  font-size: 0.85em;
-  font-weight: 500;
 }
 
 button:hover {
-  background-color: #2563eb;
+  background-color: #ddd;
 }
 
-/* 모달 스타일 */
+.delete-button,
+.delete-button-ex {
+  background-color: #e53e3e;
+}
+
+.delete-button:hover,
+.delete-button-ex:hover {
+  background-color: #c53030;
+}
+
+.request-exchange-button {
+  background-color: #10b981;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.request-exchange-button:hover {
+  background-color: #059669;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
 }
 
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  background: white;
+.modal {
+  background-color: #fff;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-width: 500px;
   width: 100%;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
 }
 
-.friend-list-dropdown {
-  margin: 10px 0;
-  padding: 0;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.friend-list-dropdown li {
-  display: flex;
-  align-items: center;
+input,
+textarea {
+  width: 100%;
+  margin-bottom: 10px;
   padding: 8px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-buttons {
-  text-align: center;
-  margin-top: 15px;
-}
-
-.modal-buttons button {
-  background-color: #3b82f6;
-  color: white;
-  padding: 8px 16px;
-}
-
-.modal-buttons button:hover {
-  background-color: #2563eb;
-}
-
-.search-input {
-  width: 100%; /* 검색창의 너비를 100%로 설정하여 부모 요소에 맞게 확장 */
-  max-width: 400px; /* 최대 너비를 설정하여 너무 길어지지 않도록 제한 */
-  padding: 12px 20px; /* 위, 아래는 12px, 양옆은 20px의 여백 */
-  font-size: 1.3em; /* 검색창 글자 크기를 키워 가독성 향상 */
-  border: 1px solid #ddd; /* 기본 테두리 색상 설정 */
-  border-radius: 10px; /* 둥근 모서리로 세련된 느낌 */
-  outline: none; /* 클릭 시 나타나는 기본 테두리 제거 */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 효과 추가 */
-  transition: all 0.3s ease; /* 포커스 시 부드러운 전환 효과 */
-  /* 배경색을 밝은 회색으로 설정하여 현대적인 느낌 */
-  background-color: #f9f9f9;
-  color: #333; /* 글자 색상 */
-  margin-left: 60px;
-}
-
-.search-input::placeholder {
-  color: #aaa; /* 플레이스홀더 글자 색상 */
-}
-
-/* 포커스 시의 스타일 */
-.search-input:focus {
-  border-color: #3b82f6; /* 포커스 시 테두리 색상을 파란색으로 */
-  background-color: #ffffff; /* 포커스 시 배경을 흰색으로 전환 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 포커스 시 그림자 강조 */
-}
-.notification-message {
-  font-size: 1.2em; /* 기본 글자 크기 */
-  font-weight: bold; /* 굵은 글씨로 강조 */
-  color: #ffffff; /* 알림 메시지 색상 */
-  animation: pulse 1.5s infinite; /* 애니메이션 추가 */
-  display: block; /* 블록으로 변경하여 중앙 정렬에 적용 */
-  text-align: center; /* 텍스트를 중앙으로 정렬 */
-  padding-left: 130px;
-  margin: 10px 0; /* 상하 여백 */
-}
-
-/* 글씨가 커졌다 작아지는 애니메이션 */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1); /* 원래 크기 */
-  }
-  70% {
-    transform: scale(1.05); /* 중간에 약간 커짐 */
-  }
-}
-/* h3 스타일 */
-h3 {
-  font-size: 1.6em; /* 글씨 크기 */
-  font-weight: 600; /* 굵은 글씨체 */
-  color: #333; /* 짙은 회색 글씨 색상 */
-  margin-bottom: 15px; /* 아래쪽 여백 */
-  position: relative; /* 가로 구분선을 위한 위치 설정 */
-  padding-bottom: 8px; /* 구분선과의 간격 */
-  text-align: center; /* 텍스트 중앙 정렬 */
-}
-
-/* 하단에 구분선을 추가 */
-h3::after {
-  content: ''; /* 내용 없음, 구분선 역할 */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  width: 60%; /* 구분선 너비 */
-  height: 3px; /* 구분선 두께 */
-  background-color: #3b82f6; /* 구분선 색상 */
-  border-radius: 2px; /* 둥근 모서리 */
-  opacity: 0.8; /* 약간의 투명도 */
-}
-
-/* 애니메이션 효과 추가 */
-h3 {
-  animation: fadeIn 1s ease; /* 서서히 나타나는 효과 */
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0; /* 투명하게 시작 */
-    transform: translateY(-10px); /* 위에서 내려오는 효과 */
-  }
-  to {
-    opacity: 1; /* 완전히 보이도록 */
-    transform: translateY(0); /* 원래 위치 */
-  }
-}
-.user-click {
-  cursor: pointer;
-  margin-left: 10px;
-  font-size: 1.1em; /* 기본 글씨 크기 */
-  font-weight: 600; /* 적당히 두꺼운 글씨 */
-  color: #333333; /* 검정색에 가까운 진한 회색 */
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease; /* 부드러운 확대 전환 효과 */
-}
-
-.user-click:hover {
-  color: #000000; /* 마우스 오버 시 검정색으로 변경 */
-  transform: scale(1.05); /* 약간 확대되는 효과 */
-}
-
-.user-click:active {
-  transform: scale(1); /* 클릭 시 원래 크기로 돌아감 */
-}
-.exchange-diary-section {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.request-exchange-button {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  padding: 10px 20px;
   border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: 600;
-  margin-bottom: 20px;
-  transition: background-color 0.3s;
+  border: 1px solid #ccc;
 }
 
-.request-exchange-button:hover {
-  background-color: #2563eb;
+.top-section {
+  display: flex;
+  gap: 20px;
 }
 
-.exchange-diary {
+.middle-section {
+  display: flex;
+  gap: 20px;
   margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #ffffff;
 }
-
-.exchange-diary h4 {
-  margin: 0;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.exchange-diary ul {
-  margin-top: 10px;
-}
-
-.modal-buttons {
-  text-align: center;
-  margin-top: 15px;
-}
-
-.modal-buttons button {
-  background-color: #3b82f6;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: 600;
-}
-
-.modal-buttons button:hover {
-  background-color: #2563eb;
-}
-/* 스타일은 필요에 따라 추가 */
-.exchange-diary-list {
+.exchange-diary-item{
   list-style: none;
-  padding: 0;
 }
-
-.exchange-diary-item {
-  list-style: none;
-  padding: 10px;
-}
-
-.participants {
-  font-size: 0.9em;
-  color: #666;
-}
-
-.entry-item {
-  list-style: none;
-  padding: 5px 0;
-}
-
-.entry-title-input,
-.entry-content-input {
-  margin: 20px 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.entry-title-input label,
-.entry-content-input label {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.entry-title-input input,
-.entry-content-input textarea {
-  padding: 12px;
-  font-size: 1em;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  outline: none;
-  resize: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.entry-title-input input:focus,
-.entry-content-input textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
-}
-
-.entry-content-input textarea {
-  min-height: 100px;
-  max-height: 300px;
-}
-.exchange-diary-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.exchange-diary-item {
-  border-bottom: 1px solid #ccc;
-  padding: 10px;
-}
-
-.entry-item {
-  border-top: 1px solid #ddd;
-  padding: 8px;
-  margin-top: 8px;
-}
-
-.entry-item p {
-  font-size: 1rem;
-  margin: 0;
-}
-
-.entry-item small {
-  display: block;
-  font-size: 0.875rem;
-  color: #666;
-  margin-top: 4px;
-}
-
-/* 전체 리스트 컨테이너 */
-.exchange-diary-list {
-  list-style: none; /* 불릿 포인트 제거 */
-  padding: 0;
-  margin: 0;
-}
-
-/* 개별 교환 일기 아이템 스타일 */
-.exchange-diary-item {
-  background-color: #fff; /* 배경색 */
-  padding: 15px;
-  margin-bottom: 15px; /* 아래쪽 간격 */
-  border-radius: 10px; /* 둥근 모서리 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-  border-left: 5px solid #3b82f6; /* 왼쪽에 색상 강조 */
-}
-
-/* 엔트리 아이템 스타일 */
-.entry-item {
-  background-color: #f9f9f9; /* 연한 배경색 */
-  padding: 10px;
-  margin-top: 10px; /* 각 엔트리 간격 */
-  border-radius: 8px;
-  border: 1px solid #e0e0e0; /* 경계선 */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
-}
-
-/* 제목과 내용 텍스트 스타일 */
-.entry-item p {
-  font-size: 1rem;
-  margin: 0;
-  color: #333;
-}
-
-/* 작성자와 작성일 정보 스타일 */
-.entry-item small {
-  display: block;
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 8px;
-}
-
-.entry-item small button {
-  background-color: #e53e3e; /* 삭제 버튼 색상 */
-  color: white;
-  padding: 2px 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8em;
-  margin-left: 10px;
-}
-
-.entry-item small button:hover {
-  background-color: #c53030; /* 호버 시 색상 변화 */
-}
-.delete-button{
-  background-color: #e53e3e; /* 삭제 버튼 색상 */
-  color: white;
-  padding: 2px 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.6em;
-  margin-left: 10px;
-}
-.delete-button:hover{
-  background-color: #c53030; /* 호버 시 색상 변화 */
-}
-.delete-button-ex{
-  background-color: #e53e3e; /* 삭제 버튼 색상 */
-  color: white;
-  padding: 6px 13px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.85em;
-  margin-left: 10px;
-}
-.delete-button-ex:hover{
-  background-color: #c53030; /* 호버 시 색상 변화 */
-}
-
 </style>
