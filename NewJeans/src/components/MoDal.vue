@@ -11,21 +11,20 @@
             <input type="password" placeholder="Password" v-model="password" required />
           </div>
           <button type="submit" class="login-button">로그인</button>
-          <!-- 비밀번호 찾기 버튼 추가 -->
-          <button @click="handleForgotPassword" class="forgot-password-button">Forgot password?</button>
+          <p class="forgot-password-button">간편 계정 등록 및 회원가입</p>
         </form>
 
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
-          <button a id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
-            <img src="@/assets/kakao.png" alt="Kakao Icon" class="social-icon" /> 카카오 계정으로 로그인
+          <button id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
+            <img src="@/assets/kakao.png" alt="Kakao Icon" class="social-icon" />
+            카카오 계정으로 로그인
           </button>
           <button class="social-button google-button">
-            <img src="@/assets/google.png" alt="Google Icon" class="social-icon" /> 구글 계정으로 로그인
+            <img src="@/assets/google.png" alt="Google Icon" class="social-icon" />
+            구글 계정으로 로그인
           </button>
-          <button class="social-button naver-button">
-            네이버 계정으로 로그인
-          </button>
+          <button class="social-button naver-button">네이버 계정으로 로그인</button>
         </div>
 
         <!-- 회원가입 버튼 추가 -->
@@ -37,24 +36,26 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router'; 
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore'; // Pinia store import
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+import { BASE_URL } from '@/config';
+import axios from 'axios';
 
-import { watchEffect } from "vue";
-import { useRoute } from "vue-router";
-import axios from "axios";
-
-// useRouter 훅 import
+// Pinia store 사용
+const authStore = useAuthStore();
 
 const router = useRouter(); // useRouter 훅 사용
 
 // props 정의
-/* eslint-disable-next-line no-unused-vars */
 const props = defineProps({
   show: {
     type: Boolean,
     required: true,
   },
 });
+
 const emit = defineEmits(['close']);
 
 // 로그인 관련 상태
@@ -63,14 +64,37 @@ const password = ref('');
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
-  const signUpUrl = router.resolve({ path: '/signupp' }).href; // this.$router 대신 router 사용
-  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
+  router.push({ path: '/signupp' });
+  //const signUpUrl = router.resolve({ path: '/signupp' }).href;
+//  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
+
 };
 
-// 로그인 처리 함수
-const handleLogin = () => {
-  console.log(`Logging in with: ${username.value}, ${password.value}`);
-  closeModal(); // 로그인 후 모달 닫기
+
+// 로그인 처리 함수 (일반 로그인)
+const handleLogin = async () => {
+  try {
+    // 서버로 로그인 요청 보내기
+    const response = await axios.post(`${BASE_URL}/auth/login`, {
+      email: username.value,
+      password: password.value,
+    });
+
+    if (response.status === 200) {
+      console.log(response.data);
+      // 로그인 성공 시 Pinia store에 상태 업데이트
+      await authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx, response.data.calendarIdx);
+
+      alert('로그인 성공!');
+      await authStore.check();
+      closeModal(); // 모달 닫기
+      router.push('/'); // 로그인 후 홈으로 이동
+    }
+  } catch (error) {
+    // 로그인 실패 시 에러 처리
+    alert('로그인 실패: ' + (error.response?.data?.message || '로그인에 실패했습니다.'));
+    console.error('로그인 오류:', error);
+  }
 };
 
 // 모달 닫기 함수
@@ -78,35 +102,46 @@ const closeModal = () => {
   emit('close'); // 부모 컴포넌트에 모달 닫기 이벤트 전달
 };
 
-// 비밀번호 찾기 핸들러
-const handleForgotPassword = () => {
-  console.log('비밀번호 찾기 페이지로 이동');
-};
-
-
 //카카오 로그인
-
 const route = useRoute();
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
-    redirectUri: "http://localhost:5173/kakaologin",
+    // redirectUri: 'http://192.168.0.87:5173/kakaologin', //카카오 리다이렉트 URI
+    redirectUri: 'http://localhost:5173/kakaologin', //카카오 리다이렉트 URI
   });
 };
 
-watchEffect(() => {
+// 카카오 리다이렉트 후 처리
+watchEffect(async () => {
   if (route.query.code) {
-    axios.get("http://localhost:10000/kakao/login?code=" + route.query.code)
-  .then((response) => {
-    console.log(response.data);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+    try {
+      // 백엔드로 GET 요청을 보내서 액세스 토큰을 가져오는 부분
+      const response = await axios.get(`${BASE_URL}/auth/kakao/login?code=${route.query.code}`);
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        // 서버로부터 받은 토큰과 사용자 정보를 저장
+        const { accessToken, userName, profileImageUrl, email, idx, calendarIdx } = response.data;
+
+        // 로컬 스토리지 및 Pinia 스토어 업데이트
+        localStorage.setItem('token', accessToken);
+        await authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
+
+        console.log(authStore.profileImageUrl);
+
+        alert('로그인 되었습니다.');
+        router.push('/'); // 로그인 후 홈으로 리다이렉트
+      }
+    } catch (error) {
+      console.log('카카오 로그인 실패:', error);
+      alert('카카오 로그인에 실패했습니다.');
+    }
   }
 });
-</script>
 
+</script>
 
 <style scoped>
 .modal-overlay {
@@ -174,20 +209,14 @@ input:focus {
   background-color: transparent; /* 배경을 투명하게 */
   color: #2c2c2c; /* 글자색 */
   border: none;
-  cursor: pointer;
   font-size: 14px;
-  margin-top: 10px; /* 위쪽 여백 */
+  margin-top: 30px; /* 위쪽 여백 */
   padding: 0;
-  text-decoration: underline;
-}
-
-.forgot-password-button:hover {
-  text-decoration: underline; /* 호버 시 밑줄 추가 */
 }
 
 /* 소셜 로그인 버튼 스타일 */
 .social-login-buttons {
-  margin-top: 20px; /* 소셜 로그인 버튼 위쪽 여백 */
+  margin-top: 30px; /* 소셜 로그인 버튼 위쪽 여백 */
 }
 
 .social-button {
@@ -239,7 +268,6 @@ input:focus {
   font-size: 16px;
   transition: background-color 0.3s;
   width: 100%; /* 버튼 너비 100% */
-  margin-top: 10px; /* 버튼과 위 요소 간의 여백 */
 }
 
 .signup-button:hover {

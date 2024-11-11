@@ -13,7 +13,8 @@
       <div class="form-group">
         <input type="password" placeholder="비밀번호 확인" v-model="confirmPassword" required />
         <p class="password-rule">
-          영문/숫자/특수문자 중 2가지 이상 포함,<br> 8자 이상 20자 이하 입력 (공백 제외)
+          영문/숫자/특수문자 중 2가지 이상 포함,<br />
+          8자 이상 20자 이하 입력 (공백 제외)
         </p>
       </div>
       <div class="form-group">
@@ -27,22 +28,47 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import
+import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref(''); // 비밀번호 확인 필드
 const nickname = ref(''); // 별명 필드
-
 const router = useRouter(); // 라우터 객체 초기화
 
-const handleSignUp = () => {
-  // 회원가입 로직 추가 (예: 비밀번호와 비밀번호 확인이 일치하는지 검사)
+const handleSignUp = async () => {
+  // 비밀번호 확인 (예: 비밀번호와 비밀번호 확인이 일치하는지 검사)
   if (password.value !== confirmPassword.value) {
     alert('비밀번호가 일치하지 않습니다.');
     return;
+  } 
+
+  try {
+    //회원가입 데이터 객체
+    const signUpDate = {
+      email: email.value,
+      password: password.value,
+      userName: nickname.value,
+    };
+
+    //백엔드로 회원가입 요청 보내기(백엔드에서 url 받아서 집어넣으면 됨)
+    const response = await axios.post(`${BASE_URL}/auth/join`, signUpDate);
+
+    // 성공적으로 회원가입이 완료된 경우
+    if (response.status === 200) {
+      alert('회원가입이 완료되었습니다!');
+      router.push({ path: '/', query: { showLogin: 'true' }}); // 회원가입 후 로그인 페이지로 이동
+    }
+  } catch (error) {
+    // 오류가 발생한 경우
+    console.error('회원가입 오류:', error);
+    if (error.response && error.response.data && error.response.data.message) {
+      alert(`회원가입 실패: ${error.response.data.message}`);
+    } else {
+      alert('회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    }
   }
-  
-  console.log(`회원가입 정보: 이메일=${email.value}, 비밀번호=${password.value}, 별명=${nickname.value}`);
 };
 
 // 로고 클릭 시 메인 페이지로 이동
@@ -68,9 +94,9 @@ const goToMainPage = () => {
 }
 
 .logo {
-padding-bottom: 10%;
-padding-left: 33%;
-cursor: pointer;
+  padding-bottom: 10%;
+  padding-left: 33%;
+  cursor: pointer;
 }
 
 .logo img {
@@ -112,5 +138,4 @@ input {
   margin-bottom: 10px; /* 다른 입력 필드와의 간격 */
   text-align: center; /* 규칙 설명도 가운데 정렬 */
 }
-
 </style>
