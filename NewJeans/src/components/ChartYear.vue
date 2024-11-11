@@ -18,7 +18,7 @@
 
   
   Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement);
-  const authStore = useAuthStore();
+  
   
   export default {
     name: 'CombinedChartYear',
@@ -37,10 +37,11 @@
       };
     },
     async mounted() {
-      await this.fetchData();
+      const authStore = useAuthStore();
+      await this.fetchData(authStore.idx);
     },
     methods: {
-      async fetchData() {
+      async fetchData(userIdx) {
         if (this.isLoading) return;
         this.isLoading = true;
   
@@ -54,7 +55,7 @@
           }
   
           const response = await axios.get(`${BASE_URL}/statistics/year`, {
-            params: { userIdx: authStore.idx, year: this.currentYear },
+            params: { userIdx, year: this.currentYear },
           });
           const data = response.data || [];
   

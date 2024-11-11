@@ -18,7 +18,7 @@
 
 
   Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement);
-  const authStore = useAuthStore();
+  
 
   export default {
     name: 'CombinedChartMonth',
@@ -44,10 +44,11 @@
       },
     },
     async mounted() {
-      await this.loadChartData();
+      const authStore = useAuthStore();
+      await this.loadChartData(authStore.idx);
     },
     methods: {
-      async loadChartData() {
+      async loadChartData(userIdx) {
         if (this.isLoading) return;
         this.isLoading = true;
   
@@ -64,7 +65,7 @@
           }
   
           const response = await axios.get(`${BASE_URL}/statistics/month`, {
-            params: { userIdx: authStore.idx, year: this.currentYear, month: this.currentMonth },
+            params: { userIdx, year: this.currentYear, month: this.currentMonth },
           });
   
           const data = response.data || [];

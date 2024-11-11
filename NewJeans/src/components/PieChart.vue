@@ -14,7 +14,6 @@
 
 
   Chart.register(PieController, ArcElement, Tooltip, Legend, ChartDataLabels);
-  const authStore = useAuthStore();
   
   export default {
     data() {
@@ -33,6 +32,7 @@
     },
     async mounted() {
       try {
+        const authStore = useAuthStore();
         const userIdx = authStore.idx; // 적절한 userIdx 설정
         const response = await axios.get(`${BASE_URL}/statistics/category?userIdx=${userIdx}`);
         console.log("Response Data:", response.data);
