@@ -8,7 +8,9 @@
     <p v-if="searchQuery">검색어: "{{ searchQuery }}"</p> <!-- 입력했던 검색어 표시 -->
 
     <div v-if="results.length > 0 && !loading && !error" class="results-container">
-      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }">
+      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }"
+      @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)">
+
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
         <template v-if="item.type === 'SCHEDULE'">
@@ -32,7 +34,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-import { useRoute, onBeforeRouteLeave } from 'vue-router'; // vue-router에서 onBeforeRouteLeave 임포트
+import { useRoute, onBeforeRouteLeave, useRouter } from 'vue-router'; // vue-router에서 onBeforeRouteLeave 임포트
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
@@ -41,7 +43,10 @@ const results = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const searchQuery = ref(route.query.query || '');
+const router = useRouter();
 const selectedOption = ref(route.query.filterType || 'ALL');
+
+
 
 // 날짜 포맷 함수
 const formatDate = date => {
@@ -82,6 +87,14 @@ watch(
 onBeforeRouteLeave(() => {
   localStorage.removeItem('lastSearchQuery');
 });
+
+const goToDiaryDetail = idx => {
+  router.push({ name: 'DiaryDetail', params: { idx } });
+};
+
+const goToScheduleDetail = idx => {
+  router.push({ name: 'ScheduleDetail', params: { idx } });
+};
 
 </script>
 
