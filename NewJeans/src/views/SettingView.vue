@@ -64,7 +64,7 @@ const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
 const email = computed(() => authStore.email);
 
-const profileImage = computed(() => authStore.profile || defaultProfileImage); // 기본 이미지 적용
+const profileImage = computed(() => authStore.profileImageUrl || defaultProfileImage); // 기본 이미지 적용
 
 const isEditingName = ref(false);
 const newUserName = ref(userName.value);
@@ -131,7 +131,7 @@ const handleFileChange = async event => {
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
-      authStore.profile = reader.result;
+      authStore.profileImageUrl = reader.result;
       uploadProfileImage(file);
     };
     reader.readAsDataURL(file);
@@ -148,7 +148,7 @@ const uploadProfileImage = async file => {
   try {
     const response = await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
     if (response.data.profileImageUrl) {
-      authStore.profile = response.data.profileImageUrl;
+      authStore.profileImageUrl = response.data.profileImageUrl;
       localStorage.setItem('profile', response.data.profileImageUrl);
     }
   } catch (error) {

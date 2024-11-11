@@ -25,7 +25,7 @@ const authStore = useAuthStore(); // Pinia 스토어 사용
 // 반응형으로 값을 가져오도록 computed 사용
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const userName = computed(() => authStore.userName);
-const profile = computed(() => authStore.profile || defaultProfileImage); // 프로필 이미지 상태를 반응형으로 가져옴
+const profile = computed(() => authStore.profileImageUrl || defaultProfileImage); // 프로필 이미지 상태를 반응형으로 가져옴
 
 // localStorage 값 확인
 console.log('Token in localStorage:', localStorage.getItem('token'));

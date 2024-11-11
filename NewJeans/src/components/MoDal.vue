@@ -119,13 +119,17 @@ watchEffect(async () => {
       // 백엔드로 GET 요청을 보내서 액세스 토큰을 가져오는 부분
       const response = await axios.get(`${BASE_URL}/auth/kakao/login?code=${route.query.code}`);
 
+      console.log(response.data);
+
       if (response.status === 200) {
         // 서버로부터 받은 토큰과 사용자 정보를 저장
         const { accessToken, userName, profileImageUrl, email, idx, calendarIdx } = response.data;
 
         // 로컬 스토리지 및 Pinia 스토어 업데이트
         localStorage.setItem('token', accessToken);
-        authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
+        await authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
+
+        console.log(authStore.profileImageUrl);
 
         alert('로그인 되었습니다.');
         router.push('/'); // 로그인 후 홈으로 리다이렉트
