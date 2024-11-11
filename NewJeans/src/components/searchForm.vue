@@ -1,8 +1,11 @@
 <template>
   <div class="wrapper">
     <h1>검색 결과</h1>
+    <h4 class="head-color">제목과 내용 모두 검색한 결과입니다.</h4>
     <p v-if="loading">Loading...</p>
     <p v-if="error">{{ error }}</p>
+
+    <p v-if="searchQuery">검색어: "{{ searchQuery }}"</p> <!-- 입력했던 검색어 표시 -->
 
     <div v-if="results.length > 0 && !loading && !error" class="results-container">
       <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }">
@@ -26,14 +29,14 @@
   </div>
 </template>
 
+
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, onBeforeRouteLeave } from 'vue-router'; // vue-router에서 onBeforeRouteLeave 임포트
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 
 const route = useRoute();
-const router = useRouter();
 const results = ref([]);
 const loading = ref(false);
 const error = ref(null);
@@ -45,7 +48,7 @@ const formatDate = date => {
   return date ? new Date(date).toLocaleDateString() : '';
 };
 
-// 검색 요청 함수 분리
+// 검색 요청 함수
 const fetchResults = async () => {
   loading.value = true;
   error.value = null;
@@ -66,7 +69,7 @@ const fetchResults = async () => {
 // 컴포넌트가 마운트될 때 초기 검색
 onMounted(fetchResults);
 
-// route.query가 변경될 때마다 검색 실행
+// 라우트 쿼리가 변경될 때마다 검색 실행
 watch(
   () => route.query,
   newQuery => {
@@ -76,21 +79,18 @@ watch(
   },
 );
 
-// 검색 버튼 클릭 시 호출
-const goToSearchForm = () => {
-  if (!searchQuery.value.trim()) return; // 검색어가 비어있으면 검색 실행하지 않음
-  router.push({
-    path: '/searchForm',
-    query: { query: searchQuery.value, filterType: selectedOption.value },
-  });
-};
+onBeforeRouteLeave(() => {
+  localStorage.removeItem('lastSearchQuery');
+});
+
 </script>
+
+
 
 <style scoped>
 .wrapper {
   background-color: white;
   border-radius: 10px;
-  perspective: 1000px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -112,9 +112,7 @@ const goToSearchForm = () => {
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.2s,
-    background-color 0.3s;
+  transition: transform 0.2s, background-color 0.3s;
   cursor: pointer;
 }
 
@@ -124,11 +122,11 @@ const goToSearchForm = () => {
 }
 
 .result-item.schedule {
-  border-left: 4px solid #ff9933; /* 일정 구분을 위한 왼쪽 테두리 */
+  border-left: 4px solid #ff9933;
 }
 
 .result-item.diary {
-  border-left: 4px solid #2196f3; /* 일기 구분을 위한 왼쪽 테두리 */
+  border-left: 4px solid #2196f3;
 }
 
 .result-item h3 {
@@ -145,4 +143,21 @@ const goToSearchForm = () => {
 .result-item p strong {
   color: #333;
 }
+
+.head-color {
+  background-color: hsl(0, 0%, 91%); /* 연한 회색 배경 */
+  color: #333333; /* 짙은 회색 텍스트 */
+  padding: 8px 15px;
+  font-size: 1rem;
+  font-weight: bold; /* 볼드 처리 */
+  border-radius: 4px;
+  text-align: center;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* 부드러운 그림자 */
+  margin-bottom: 15px;
+  width: fit-content;
+  display: inline-block;
+  letter-spacing: 0.5px;
+  text-transform: uppercase; /* 대문자로 강조 */
+}
+
 </style>
