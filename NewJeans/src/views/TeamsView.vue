@@ -74,7 +74,8 @@
               <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
               <span class="user-click">{{ user.userName }}</span>
               <span class="friend-email">{{ user.email }}</span>
-              <button @click="sendFriendRequest(user.idx)">친구 추가 요청</button>
+              <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
+
             </div>
           </div>
         </div>
@@ -560,29 +561,33 @@ const deleteExchangeDiaryEntry = async (entryId) => {
   }
 };
 
-// 친구 검색
+//친구 검색
 const searchFriends = async () => {
   try {
     if (searchQuery.value.trim()) {
       const response = await axios.get(`${BASE_URL}/friend/search`, {
         params: { userId: userId, userName: searchQuery.value },
       });
+      console.log("API Response Data:", response.data); // 응답 데이터 구조 확인
       searchResults.value = await Promise.all(
-        response.data.map(async user => {
+        response.data.map(async (user) => {
           const profileImageUrl = await loadProfileImage(user.idx);
           return { ...user, profileImageUrl };
-        }),
+        })
       );
+      console.log("Mapped searchResults Data:", searchResults.value); // 매핑 후 결과 확인
     } else {
       searchResults.value = [];
     }
   } catch (error) {
-    console.error('Failed to search friends:', error);
+    console.error("Failed to search friends:", error);
   }
 };
 
 // 친구 추가 요청 보내기
-const sendFriendRequest = async receiverId => {
+const sendFriendRequest = async (receiverId) => {
+  console.log("Attempting to add friend with receiverId:", receiverId); // receiverId가 올바르게 표시되는지 확인
+  console.log("User object:", userId); // requesterId인 userId가 올바르게 표시되는지 확인
   try {
     await axios.post(`${BASE_URL}/friend/request`, null, {
       params: {
@@ -590,12 +595,13 @@ const sendFriendRequest = async receiverId => {
         receiverId,
       },
     });
-    alert('친구 요청이 성공적으로 전송되었습니다.');
+    alert("친구 요청이 성공적으로 전송되었습니다.");
   } catch (error) {
-    console.error('Failed to send friend request:', error);
-    alert('친구 요청 전송에 실패했습니다.');
+    console.error("Failed to send friend request:", error);
+    alert("친구 요청 전송에 실패했습니다.");
   }
 };
+
 
 // 친구 선택 함수 (한 명만 선택 가능)
 const selectFriend = friend => {
