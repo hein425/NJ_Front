@@ -14,8 +14,11 @@
   import axios from 'axios';
   import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement } from 'chart.js';
   import { BASE_URL } from '@/config';
+  import { useAuthStore } from '@/stores/authStore';
+
   
   Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement);
+  const authStore = useAuthStore();
   
   export default {
     name: 'CombinedChartYear',
@@ -51,7 +54,7 @@
           }
   
           const response = await axios.get(`${BASE_URL}/statistics/year`, {
-            params: { userIdx: 1, year: this.currentYear },
+            params: { userIdx: authStore.idx, year: this.currentYear },
           });
           const data = response.data || [];
   

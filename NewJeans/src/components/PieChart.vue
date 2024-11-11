@@ -10,8 +10,11 @@
   import ChartDataLabels from 'chartjs-plugin-datalabels';
   import axios from 'axios';
   import { BASE_URL } from '@/config';
-  
+  import { useAuthStore } from '@/stores/authStore';
+
+
   Chart.register(PieController, ArcElement, Tooltip, Legend, ChartDataLabels);
+  const authStore = useAuthStore();
   
   export default {
     data() {
@@ -30,7 +33,7 @@
     },
     async mounted() {
       try {
-        const userIdx = 1; // 적절한 userIdx 설정
+        const userIdx = authStore.idx; // 적절한 userIdx 설정
         const response = await axios.get(`${BASE_URL}/statistics/category?userIdx=${userIdx}`);
         console.log("Response Data:", response.data);
   
