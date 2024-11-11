@@ -9,8 +9,10 @@
 
     <div v-if="results.length > 0 && !loading && !error" class="results-container">
       <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }"
-      @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)">
+      @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)"
 
+      >
+        <h1>{{ item.idx }}</h1>
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
         <template v-if="item.type === 'SCHEDULE'">
