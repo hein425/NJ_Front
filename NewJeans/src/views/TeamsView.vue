@@ -87,7 +87,7 @@
       <div class="notification-section">
         <div class="exchange-diary-section">
           <div>
-            <button class="request-exchange-button" @click="openModal">교환일기 신청하기</button>
+            <button class="request-exchange-button" @click="openCreateEntryModal">교환일기 신청하기</button>
           </div>
           <div v-for="diary in exchangeDiaries" :key="diary.diaryId" class="exchange-diary">
             <div class="diary-header">
