@@ -4,25 +4,6 @@
       <!-- 수정된 부분: authStore에서 profile 값을 직접 가져옴 -->
       <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
-        <!-- <RouterLink to="/" class="menu-item" active-class="active">
-          <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
-          Calendar
-        </RouterLink>
-        <RouterLink to="/diary" class="menu-item" active-class="active">
-          <FontAwesomeIcon class="fa-icon" :icon="faBook" />
-          Diary
-        </RouterLink>
-
-        <RouterLink to="/teams" class="menu-item" active-class="active">
-          <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
-          Teams
-        </RouterLink>
-
-        <RouterLink to="/setting" class="menu-item" active-class="active">
-          <FontAwesomeIcon class="fa-icon" :icon="faCog" />
-          Setting
-        </RouterLink> -->
-
         <button class="menu-item" @click="navigateToCalendar">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
           Calendar

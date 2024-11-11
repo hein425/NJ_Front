@@ -10,6 +10,7 @@ import SearchForm from '@/components/searchForm.vue';
 import DiaryDetail from '@/views/DiaryDetail.vue';
 import NotFoundPage from '@/components/NotFoundPage.vue';
 import GraphView from '@/views/GraphView.vue';
+import KakaoLoginView from '@/views/KakaoLoginView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,7 +72,12 @@ const router = createRouter({
       path: '/graphView',
       name: 'GraphView',
       component: GraphView,
-    },
+    }
+    ,{
+      path:"/kakaologin",
+      name:"KakaoLogin",
+      component: KakaoLoginView
+    }
 
   ],
 });

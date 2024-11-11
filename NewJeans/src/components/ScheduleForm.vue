@@ -252,7 +252,7 @@ const removeImage = (index) => {
   align-items: center;
   display: flex;
   gap: 10px;
-  justify-content: center; 
+  justify-content: center;
 }
 
 .color-label input:checked + .color-circle {
@@ -292,10 +292,10 @@ input, select, textarea {
 .repeat-options {
   justify-content: center;
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   gap: 20px;
   flex-wrap: nowrap; /* 줄바꿈 방지 */
- 
+
 }
 
 .radio-label {
@@ -350,7 +350,7 @@ input, select, textarea {
 /* .map-container{
   display: flex;
   justify-content: center;
-  width: 100%; 
+  width: 100%;
 } */
 
 .cancel-button {

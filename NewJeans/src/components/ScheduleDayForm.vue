@@ -17,12 +17,14 @@
                 <hr class="divider" />
 
                 <div class="form-row" style="width: 450px">
-                  <p v-if="editIndex !== index"><strong>Start Time:</strong> {{ formatDateTime(schedule.start) }}</p>
-                  <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
+                  <p v-if="editIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local"
+                    placeholder="Start Time" @click.stop />
                 </div>
                 <div class="form-row" style="width: 450px">
-                  <p v-if="editIndex !== index"><strong>End Time:</strong> {{ formatDateTime(schedule.end) }}</p>
-                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
+                  <p v-if="editIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time"
+                    @click.stop />
                 </div>
 
                 <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
@@ -147,8 +149,7 @@
             <div class="title-container">
               <h4 v-if="editIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
-
-              <p class="category">{{ diary.category }}</p>
+              <p class="category">{{ categoryKorean(diary.category) }}</p>
             </div>
 
             <transition name="slide-fade">
@@ -237,17 +238,27 @@ const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
 const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
 const showDiaryDeleteModal = ref(false);
 
+// 매핑된 한글 반복 타입을 반환하는 함수
+const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
+
+const categoryKorean = category => categoryKoreanMap[category];
+
 // 반복 타입에 대한 한글 매핑 정의
 const repeatTypeKoreanMap = {
   YEARLY: '매년',
   MONTHLY: '매월',
   WEEKLY: '매주',
   DAILY: '매일',
-  NONE: '없음',
+  NONE: '없음'
 };
 
-// 매핑된 한글 반복 타입을 반환하는 함수
-const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
+const categoryKoreanMap = {
+  DAILY: '일기',
+  GROWTH: '성장일지',
+  EXERCISE: '운동',
+  TRIP: '여행',
+  ETC: '기타'
+};
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
@@ -256,10 +267,10 @@ const fetchDayData = async selectedDate => {
   };
 
   const [year, month, day] = selectedDate.split('-');
-  const calendarIdx = authStore.calendarIdx;
+  const calendarIdx = ref(authStore.calendarIdx);
 
   try {
-    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${year}/${month}/${day}`);
+    const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${year}/${month}/${day}`);
 
     schedules.value = scheduleResponse.data.map(schedule => {
       let latitude = 37.566826; // 기본값 (서울 좌표)
@@ -289,7 +300,7 @@ const fetchDayData = async selectedDate => {
 
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
-    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx}/${year}/${month}/${day}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${year}/${month}/${day}`);
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
@@ -413,6 +424,7 @@ const saveScheduleEdit = async (type, index) => {
     address: editData.value.address,
     content: editData.value.content,
     color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
+
   };
 
   const formData = new FormData();
