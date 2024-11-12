@@ -3,35 +3,19 @@
     <div class="nav_wrapper">
       <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
-        <button 
-          class="menu-item" 
-          :class="{ active: activeMenu === 'calendar' }" 
-          @click="navigateToCalendar('calendar')"
-        >
+        <button class="menu-item" :class="{ active: activeMenu === 'calendar' }" @click="navigateToCalendar('calendar')">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
           Calendar
         </button>
-        <button 
-          class="menu-item" 
-          :class="{ active: activeMenu === 'diary' }" 
-          @click="navigateToDiary('diary')"
-        >
+        <button class="menu-item" :class="{ active: activeMenu === 'diary' }" @click="navigateToDiary('diary')">
           <FontAwesomeIcon class="fa-icon" :icon="faBook" />
           Diary
         </button>
-        <button 
-          class="menu-item" 
-          :class="{ active: activeMenu === 'teams' }" 
-          @click="navigateToTeams('teams')"
-        >
+        <button class="menu-item" :class="{ active: activeMenu === 'teams' }" @click="navigateToTeams('teams')">
           <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
-          Teams
+          Friends
         </button>
-        <button 
-          class="menu-item" 
-          :class="{ active: activeMenu === 'setting' }" 
-          @click="navigateToSetting('setting')"
-        >
+        <button class="menu-item" :class="{ active: activeMenu === 'setting' }" @click="navigateToSetting('setting')">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           MyPage
         </button>
@@ -66,16 +50,16 @@ const router = useRouter();
 const showModal = ref(false);
 const activeMenu = ref(''); // 현재 활성화된 메뉴 상태
 
-const setActiveMenu = (menu) => {
+const setActiveMenu = menu => {
   activeMenu.value = menu;
 };
 
-const navigateToCalendar = (menu) => {
+const navigateToCalendar = menu => {
   setActiveMenu(menu);
   router.push('/');
 };
 
-const navigateToDiary = (menu) => {
+const navigateToDiary = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
     showModal.value = true;
@@ -85,7 +69,7 @@ const navigateToDiary = (menu) => {
   }
 };
 
-const navigateToTeams = (menu) => {
+const navigateToTeams = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
     showModal.value = true;
@@ -95,7 +79,7 @@ const navigateToTeams = (menu) => {
   }
 };
 
-const navigateToSetting = (menu) => {
+const navigateToSetting = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
     showModal.value = true;

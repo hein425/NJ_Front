@@ -74,11 +74,11 @@
         <h3>나의 친구 목록</h3>
         <div class="friends-list">
           <ul class="f-list" style="padding: 0">
-            <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+            <li v-for="friend in friends" :key="friend.idx" class="search-result-item-4">
               <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
-              <button class="delete-button">친구 삭제</button>
+              <button class="delete-button-4">친구 삭제</button>
             </li>
           </ul>
         </div>
@@ -133,7 +133,7 @@
         <div class="friend-dropdown">
           <h4>친구 목록</h4>
           <ul class="friend-list-dropdown">
-            <li v-for="friend in friends" :key="friend.idx" class="search-result-item">
+            <li v-for="friend in friends" :key="friend.idx" class="search-result-item-1">
               <img :src="friend.profileImageUrl || defaultProfileImage" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <button @click="selectFriend(friend)">초대</button>
@@ -624,7 +624,6 @@ onMounted(async () => {
 
 <style scoped>
 .team-view {
-  height: 83vh;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -633,6 +632,8 @@ onMounted(async () => {
   border-radius: 12px;
   max-width: 100vh;
   margin-left: 5vh;
+  height: 83vh;
+  /* 기본 높이 설정 대신 콘텐츠에 맞게 조정되도록 설정 */
 }
 
 .friend-request-container,
@@ -789,20 +790,149 @@ h3 {
 }
 
 .search-result-item {
-  display: flex;
-  align-items: center;
   background-color: #f1f5f9;
   border-radius: 8px;
-  padding: 6px;
+  padding: 10px;
   margin-bottom: 10px;
-  transition:
-    background-color 0.3s,
-    transform 0.2s;
+  overflow: hidden;
+  display: table; /* 테이블 레이아웃 사용 */
+  width: 94%;
 }
 
-.search-result-item:hover {
-  background-color: #e2e8f0;
-  transform: scale(1.02);
+.search-result-item img {
+  display: table-cell;
+  vertical-align: top;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.search-result-item .user-info {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.search-result-item .user-click {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.search-result-item .friend-email {
+  display: block;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.search-result-item .button-group {
+  display: block;
+}
+
+.search-result-item button {
+  background-color: #333;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.search-result-item button:hover {
+  background-color: #ddd;
+}
+
+.search-result-item-4 {
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  display: block;
+  width: 94%;
+  height: 55px;
+}
+
+.search-result-item-4 img {
+  display: table-cell;
+  vertical-align: top;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.search-result-item-4 .user-info {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.search-result-item-4 .user-click {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+  position: relative;
+  left: 7vh;
+  bottom: 3.1vh;
+}
+
+.search-result-item-4 .friend-email {
+  display: block;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.search-result-item-4 .button-group {
+  display: block;
+}
+
+.search-result-item-4 button {
+  background-color: #333;
+  color: white;
+  padding: 6px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 22px;
+}
+
+.search-result-item-4 button:hover {
+  background-color: #ddd;
+}
+
+.search-result-item-1 {
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  display: table; /* 테이블 레이아웃 사용 */
+  width: 50%;
+  list-style: none;
+}
+
+.search-result-item-1 .user-click {
+  /* display: block; */
+  font-size: 1rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+  position: relative;
+  left: 1vh;
+  bottom: 1.5vh;
+}
+
+.search-result-item-1 button {
+  background-color: #333;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 44px;
+  margin-top: 7px;
+  position: absolute;
 }
 
 .friend-email {
@@ -897,11 +1027,13 @@ textarea {
 }
 
 .middle-section {
-  position: relative; /* 자식 요소의 절대 위치 기준 */
+  position: relative;
   display: flex;
   gap: 20px;
   margin-top: 20px;
+  /* height: auto; 추가 */
 }
+
 /* 교환 일기 항목 스타일 추가 */
 .exchange-diary-item {
   list-style: none;
@@ -929,5 +1061,14 @@ textarea {
 
 .exchange-diary-item ul {
   padding-left: 0px; /* 서브 리스트 들여쓰기 */
+}
+.request-list {
+  padding: 0;
+}
+
+.delete-button-4 {
+  position: relative;
+  left: 16vh;
+  bottom: 7vh;
 }
 </style>
