@@ -624,6 +624,7 @@ onMounted(async () => {
 
 <style scoped>
 .team-view {
+  height: 83vh;
   display: flex;
   flex-direction: column;
   gap: 20px;

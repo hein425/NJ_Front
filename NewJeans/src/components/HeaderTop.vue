@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="search-container">
-      <div class="toggle-list">
+      <div class="toggle-list custom-toggle-buttons">
         <button v-for="option in toggleOptions" :key="option.value" :class="{ active: selectedOption === option.value }" @click="selectOption(option.value)">
           {{ option.label }}
         </button>
@@ -77,17 +77,20 @@ onMounted(() => {
   display: flex;
   margin-right: 1rem;
 }
-.toggle-list button {
-  margin-right: 0.5rem;
-  padding: 0.5rem 1rem;
+.custom-toggle-buttons button {
+  background-color: var(--custom-button-background-color);
+  color: var(--custom-button-text-color);
   border: none;
-  background-color: #ddd;
-  cursor: pointer;
+  padding: 0.5rem 1rem;
   border-radius: 1rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
 }
-.toggle-list button.active {
-  background-color: #333;
-  color: #fff;
+
+.custom-toggle-buttons button.active {
+  background-color: var(--custom-button-active-background-color);
+  color: var(--custom-button-active-text-color);
 }
 
 .header {

@@ -65,15 +65,32 @@ const now = ref(dayjs());
 const authStore = useAuthStore();
 
 const MonthlySchedules = async () => {
-
   const calendarIdx = authStore.calendarIdx;
 
+  // try {
+  //   const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+  //   schedules.value = response.data;
+  // } catch (error) {
+  //   console.error('Failed to show monthly schedules:', error);
+  // } 
+
   try {
-    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
+    const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);
   }
+
+  // try {
+  //   const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${authStore.token}`, // 인증 토큰을 추가
+  //     },
+  //   });
+  //   schedules.value = response.data;
+  // } catch (error) {
+  //   console.error('asdf', error);
+  // }
 };
 
 // 컴포넌트가 로드될 때 일정 데이터를 가져옴
