@@ -100,7 +100,7 @@ const fetchProfileImage = async () => {
     const response = await axios.get(`${BASE_URL}/user/profileImage/${authStore.idx}`);
     // BASE_URL을 사용해 전체 URL 생성
     authStore.profileImageUrl = `${BASE_URL}${response.data}?timestamp=${new Date().getTime()}`; // 캐시 방지
-    localStorage.setItem('profileImageUrl',authStore.profileImageUrl);
+    localStorage.setItem('profileImageUrl', authStore.profileImageUrl);
   } catch (error) {
     console.error('프로필 이미지 가져오기 실패:', error);
   }
@@ -134,7 +134,7 @@ const themes = [
   { value: 'Light', label: 'Light Theme', backgroundColor: '#f5f5f5', icon: 'src/assets/white_icon.jpg' },
   { value: 'Dark', label: 'Dark Theme', backgroundColor: '#242424', icon: 'src/assets/dark_icon.jpg' },
   { value: 'Pink', label: 'Pink Theme', backgroundImage: 'url("src/assets/flowers-3435886_1920.jpg")', icon: 'src/assets/flowers_icon.jpg' },
-  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/sky-5534319_1920.jpg")', icon: 'src/assets/sky_icon.jpg' },
+  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/1668166281774105.webp")', icon: 'src/assets/sky_icon.jpg' },
 ];
 
 const applyTheme = () => {
@@ -202,7 +202,6 @@ const showStatistics = () => {
   router.push('/graphView');
 };
 </script>
-
 
 <style scoped>
 .settings-container {
