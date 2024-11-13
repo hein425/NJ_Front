@@ -134,7 +134,7 @@ const themes = [
   { value: 'Light', label: 'Light Theme', backgroundColor: '#f5f5f5', icon: 'src/assets/white_icon.jpg' },
   { value: 'Dark', label: 'Dark Theme', backgroundColor: '#242424', icon: 'src/assets/dark_icon.jpg' },
   { value: 'Pink', label: 'Pink Theme', backgroundImage: 'url("src/assets/flowers-3435886_1920.jpg")', icon: 'src/assets/flowers_icon.jpg' },
-  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/1668166281774105.webp")', icon: 'src/assets/sky_icon.jpg' },
+  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/1668166281774105.webp")', icon: 'src/assets/다람이.png' },
 ];
 
 const applyTheme = () => {
