@@ -13,7 +13,7 @@
       <div class="form-group">
         <input type="password" placeholder="비밀번호 확인" v-model="confirmPassword" required />
         <p class="password-rule">
-          영문/숫자/특수문자 중 2가지 이상 포함,<br />
+          영문/숫자/특수문자 최소 1자 씩 포함,<br />
           8자 이상 20자 이하 입력 (공백 제외)
         </p>
       </div>
@@ -42,7 +42,7 @@ const handleSignUp = async () => {
   if (password.value !== confirmPassword.value) {
     alert('비밀번호가 일치하지 않습니다.');
     return;
-  } 
+  }
 
   try {
     //회원가입 데이터 객체
@@ -58,7 +58,7 @@ const handleSignUp = async () => {
     // 성공적으로 회원가입이 완료된 경우
     if (response.status === 200) {
       alert('회원가입이 완료되었습니다!');
-      router.push({ path: '/', query: { showLogin: 'true' }}); // 회원가입 후 로그인 페이지로 이동
+      router.push({ path: '/', query: { showLogin: 'true' } }); // 회원가입 후 로그인 페이지로 이동
     }
   } catch (error) {
     // 오류가 발생한 경우

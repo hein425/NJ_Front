@@ -29,11 +29,11 @@
         currentYear: today.getFullYear(),
         currentMonth: today.getMonth() + 1,
         colors: {
-          DAILY: '#ff6384',
-          GROWTH: '#36a2eb',
-          TRIP: '#ffce56',
-          EXERCISE: '#4bc0c0',
-          ETC: '#9966ff',
+          DAILY: '#fcd1d7',
+          GROWTH: '#adf2f1',
+          TRIP: '#d0eed5',
+          EXERCISE: '#ffffc9',
+          ETC: '#ebcbf4',
         },
         isLoading: false,
       };
@@ -65,7 +65,7 @@
           }
   
           const response = await axios.get(`${BASE_URL}/statistics/month`, {
-            params: { userIdx, year: this.currentYear, month: this.currentMonth },
+            params: { userIdx: userIdx, year: this.currentYear, month: this.currentMonth },
           });
   
           const data = response.data || [];
@@ -176,22 +176,24 @@
         }
       },
       goToPreviousMonth() {
+        const authStore = useAuthStore();
         if (this.currentMonth === 1) {
           this.currentMonth = 12;
           this.currentYear -= 1;
         } else {
           this.currentMonth -= 1;
         }
-        this.loadChartData();
+        this.loadChartData(authStore.idx);
       },
       goToNextMonth() {
+        const authStore = useAuthStore();
         if (this.currentMonth === 12) {
           this.currentMonth = 1;
           this.currentYear += 1;
         } else {
           this.currentMonth += 1;
         }
-        this.loadChartData();
+        this.loadChartData(authStore.idx);
       },
     },
   };
