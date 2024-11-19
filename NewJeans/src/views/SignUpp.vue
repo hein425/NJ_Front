@@ -13,7 +13,7 @@
       <div class="form-group">
         <input type="password" placeholder="비밀번호 확인" v-model="confirmPassword" required />
         <p class="password-rule">
-          영문/숫자/특수문자 중 2가지 이상 포함,<br />
+          영문/숫자/특수문자 최소 1자 씩 포함,<br />
           8자 이상 20자 이하 입력 (공백 제외)
         </p>
       </div>
@@ -42,7 +42,7 @@ const handleSignUp = async () => {
   if (password.value !== confirmPassword.value) {
     alert('비밀번호가 일치하지 않습니다.');
     return;
-  } 
+  }
 
   try {
     //회원가입 데이터 객체

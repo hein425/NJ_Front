@@ -45,8 +45,13 @@ import axios from 'axios';
 
 // Pinia store 사용
 const authStore = useAuthStore();
-
 const router = useRouter(); // useRouter 훅 사용
+const route = useRoute();
+const emit = defineEmits(['close']);
+
+// 로그인 관련 상태
+const username = ref('');
+const password = ref('');
 
 // props 정의
 const props = defineProps({
@@ -55,12 +60,6 @@ const props = defineProps({
     required: true,
   },
 });
-
-const emit = defineEmits(['close']);
-
-// 로그인 관련 상태
-const username = ref('');
-const password = ref('');
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
@@ -103,7 +102,7 @@ const closeModal = () => {
 };
 
 //카카오 로그인
-const route = useRoute();
+
 
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
@@ -129,7 +128,7 @@ watchEffect(async () => {
         localStorage.setItem('token', accessToken);
         await authStore.login(accessToken, userName, profileImageUrl, email, idx, calendarIdx);
 
-        console.log(authStore.profileImageUrl);
+        console.log("authStore.profileImageUrl = " + authStore.profileImageUrl);
 
         alert('로그인 되었습니다.');
         router.push('/'); // 로그인 후 홈으로 리다이렉트

@@ -100,7 +100,7 @@ const fetchProfileImage = async () => {
     const response = await axios.get(`${BASE_URL}/user/profileImage/${authStore.idx}`);
     // BASE_URL을 사용해 전체 URL 생성
     authStore.profileImageUrl = `${BASE_URL}${response.data}?timestamp=${new Date().getTime()}`; // 캐시 방지
-    localStorage.setItem('profileImageUrl',authStore.profileImageUrl);
+    localStorage.setItem('profileImageUrl', authStore.profileImageUrl);
   } catch (error) {
     console.error('프로필 이미지 가져오기 실패:', error);
   }
@@ -134,23 +134,42 @@ const themes = [
   { value: 'Light', label: 'Light Theme', backgroundColor: '#f5f5f5', icon: 'src/assets/white_icon.jpg' },
   { value: 'Dark', label: 'Dark Theme', backgroundColor: '#242424', icon: 'src/assets/dark_icon.jpg' },
   { value: 'Pink', label: 'Pink Theme', backgroundImage: 'url("src/assets/flowers-3435886_1920.jpg")', icon: 'src/assets/flowers_icon.jpg' },
-  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/sky-5534319_1920.jpg")', icon: 'src/assets/sky_icon.jpg' },
+  { value: 'Sky', label: 'Sky Theme', backgroundImage: 'url("src/assets/1668166281774105.webp")', icon: 'src/assets/다람이.png' },
 ];
 
 const applyTheme = () => {
+  // 모든 테마 클래스를 제거하고 새로운 테마 클래스를 추가
   document.documentElement.classList.remove('Light-theme', 'Dark-theme', 'Pink-theme', 'Sky-theme');
   document.documentElement.classList.add(`${selectedTheme.value}-theme`);
 
+  // 선택된 테마의 스타일을 가져옴
   const selected = themes.find(theme => theme.value === selectedTheme.value);
+
   if (selected) {
     if (selected.backgroundColor) {
+      // 배경색 설정 및 배경 이미지 제거
       document.documentElement.style.backgroundColor = selected.backgroundColor;
       document.documentElement.style.backgroundImage = 'none';
     } else if (selected.backgroundImage) {
+      // 배경 이미지를 설정하고 배경색을 제거
       document.documentElement.style.backgroundImage = selected.backgroundImage;
       document.documentElement.style.backgroundColor = 'transparent';
     }
   }
+
+  // MenuBar에도 테마 적용
+  document.querySelector('.nav_wrapper').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
+  });
+
+  // 로고 이미지도 테마에 따라 변경
+  const logoElement = document.querySelector('.logo img');
+  if (logoElement) {
+    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim().replace(/["']/g, '');
+  }
+
+  // 테마를 localStorage에 저장
   localStorage.setItem('selectedTheme', selectedTheme.value);
 };
 
@@ -166,24 +185,32 @@ onMounted(() => {
 
 // 계정 삭제 함수
 const deleteAccount = async () => {
+  const confirmDelete = window.confirm('계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+
+  if (!confirmDelete) {
+    return; // 사용자가 취소 버튼을 누른 경우 함수 종료
+  }
+
   try {
-    await axios.delete(`${BASE_URL}/user/delete/${authStore.idx}`, {
+    await axios.delete(`${BASE_URL}/user/delete/${authStore.email}`, {
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
     });
     authStore.logout();
     alert('계정이 삭제되었습니다.');
+    router.push('/');
   } catch (error) {
     console.error('계정 삭제 중 오류:', error);
+    console.log('authStore.accessToken = ' + authStore.accessToken);
     alert('계정을 삭제하는 중 문제가 발생했습니다.');
   }
 };
+
 
 // 통계 보기 페이지로 이동
 const showStatistics = () => {
   router.push('/graphView');
 };
 </script>
-
 
 <style scoped>
 .settings-container {

@@ -1,40 +1,36 @@
 <template>
   <header>
     <div class="nav_wrapper">
-      <!-- 수정된 부분: authStore에서 profile 값을 직접 가져옴 -->
       <Profile :isLoggedIn="authStore.isLoggedIn" :userName="authStore.userName" :profile="authStore.profile" />
       <nav class="menu-grid">
-        <button class="menu-item" @click="navigateToCalendar">
+        <button class="menu-item" :class="{ active: activeMenu === 'calendar' }" @click="navigateToCalendar('calendar')">
           <FontAwesomeIcon class="fa-icon" :icon="faCalendarAlt" />
           Calendar
         </button>
-        <button class="menu-item" @click="navigateToDiary">
+        <button class="menu-item" :class="{ active: activeMenu === 'diary' }" @click="navigateToDiary('diary')">
           <FontAwesomeIcon class="fa-icon" :icon="faBook" />
           Diary
         </button>
-        <button class="menu-item" @click="navigateToTeams">
+        <button class="menu-item" :class="{ active: activeMenu === 'teams' }" @click="navigateToTeams('teams')">
           <FontAwesomeIcon class="fa-icon" :icon="faUsers" />
-          Teams
+          Friends
         </button>
-        <button class="menu-item" @click="navigateToSetting">
+        <button class="menu-item" :class="{ active: activeMenu === 'setting' }" @click="navigateToSetting('setting')">
           <FontAwesomeIcon class="fa-icon" :icon="faCog" />
           MyPage
         </button>
 
-        <!-- 로그인 상태에 따라 Sign In / Sign Out 버튼 표시 -->
         <button v-if="!authStore.isLoggedIn" class="menu-item sign-in" @click="showModal = true">
           <FontAwesomeIcon class="fa-icon" :icon="faSignInAlt" />
           Sign In
         </button>
 
-        <!-- 로그아웃 버튼 -->
         <button v-else class="menu-item sign-in" @click="handleLogout">
           <FontAwesomeIcon class="fa-icon" :icon="faSignOutAlt" />
           Sign Out
         </button>
       </nav>
 
-      <!-- Modal 컴포넌트 -->
       <Modal :show="showModal" @close="showModal = false" />
     </div>
   </header>
@@ -47,51 +43,56 @@ import Modal from './MoDal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore'; // Pinia store import
+import { useAuthStore } from '@/stores/authStore';
 
-// Pinia store 사용
 const authStore = useAuthStore();
 const router = useRouter();
+const showModal = ref(false);
+const activeMenu = ref(''); // 현재 활성화된 메뉴 상태
 
-// 모달 표시 상태 관리
-const showModal = ref(false); // 기본값 false로 시작
-
-// 로그아웃 처리 함수
-const handleLogout = async () => {
-  await authStore.logout(); // Pinia 스토어에서 로그아웃 처리
-  router.push('/'); // 로그아웃 후 로그인 페이지로 이동
+const setActiveMenu = menu => {
+  activeMenu.value = menu;
 };
 
-// 특정 페이지로 이동하는 함수들
-const navigateToCalendar = () => {
+const navigateToCalendar = menu => {
+  setActiveMenu(menu);
   router.push('/');
 };
 
-const navigateToDiary = () => {
+const navigateToDiary = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
-    showModal.value = true; // 로그인 모달을 표시
+    showModal.value = true;
   } else {
-    router.push('/diary'); // 로그인이 되어 있다면 Diary 페이지로 이동
+    setActiveMenu(menu);
+    router.push('/diary');
   }
 };
 
-const navigateToTeams = () => {
+const navigateToTeams = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
-    showModal.value = true; // 로그인 모달을 표시
+    showModal.value = true;
   } else {
-    router.push('/teams'); // 로그인이 되어 있다면 Teams 페이지로 이동
+    setActiveMenu(menu);
+    router.push('/teams');
   }
 };
 
-const navigateToSetting = () => {
+const navigateToSetting = menu => {
   if (!authStore.isLoggedIn) {
     alert('로그인 후 이용해 주십시오.');
-    showModal.value = true; // 로그인 모달을 표시
+    showModal.value = true;
   } else {
-    router.push('/setting'); // 로그인이 되어 있다면 Setting 페이지로 이동
+    setActiveMenu(menu);
+    router.push('/setting');
   }
+};
+
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/');
+  setActiveMenu('');
 };
 
 // Pinia store의 상태가 복원되었는지 확인
@@ -105,50 +106,47 @@ onMounted(() => {
 <style scoped>
 .nav_wrapper {
   display: flex;
-  flex-direction: column; /* 세로 방향으로 정렬 */
-  align-items: flex-start; /* 왼쪽 정렬 */
-  padding: 5vh 0 0 17vw; /* vh와 vw 단위로 패딩 설정 */
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 5vh 0 0 17vw;
 }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2개의 열 */
-  grid-template-rows: repeat(3, 10vh); /* vh 단위로 행 높이 설정 */
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 10vh);
   gap: 0;
-  width: 12vw; /* 전체 너비를 vw 단위로 설정 */
-  margin-top: 2vh; /* 프로필과 메뉴 간의 간격 */
+  width: 12vw;
+  margin-top: 2vh;
 }
 
-/* 각 메뉴 항목의 스타일 */
 .menu-item {
-  padding: 1.5rem 1rem; /* rem 단위로 패딩 설정 */
-  background-color: var(--menu-item-background-color); /* 변수 사용 */
+  padding: 1.5rem 1rem;
+  background-color: var(--menu-item-background-color);
   border: 1px solid #ccc;
   text-align: center;
   cursor: pointer;
-  font-size: 1rem; /* rem 단위로 폰트 크기 설정 */
+  font-size: 1rem;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: all 0.3s ease;
   border-radius: 0;
-  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
+  color: var(--menu-item-text-color);
 }
 
-/* 아이콘과 텍스트 간격 */
 .menu-item .fa-icon {
-  margin-bottom: 0.5rem; /* rem 단위로 간격 설정 */
+  margin-bottom: 0.5rem;
 }
 
-/* 활성화된 메뉴 (클릭 후 유지되는 상태) */
 .active {
-  background-color: var(--menu-item-active-background-color);  /* 변수 사용 */
-  color: var(--menu-item-active-text-color); /* 텍스트 색상 변수 */
-  transform: scale(1.1); /* 버튼을 살짝 키워서 강조 */
-  z-index: 1; /* 다른 버튼들 위로 올라옴 */
-  border-color: var(--menu-item-active-border-color); /* 테두리 색상 변수 */
-  border-radius: 0.8rem; /* 둥근 모서리 */
+  background-color: var(--menu-item-active-background-color);
+  color: var(--menu-item-active-text-color);
+  transform: scale(1.1);
+  z-index: 1;
+  border-color: var(--menu-item-active-border-color);
+  border-radius: 0.8rem;
 }
 
 /* Calendar 메뉴 */
@@ -161,26 +159,24 @@ onMounted(() => {
   border-top-right-radius: 1rem; /* 우측 상단 모서리 둥글게 */
 }
 
-/* Sign In / Sign Out 버튼 */
 .sign-in {
-  grid-column: span 2; /* 마지막 줄에서 두 칸 병합 */
+  grid-column: span 2;
   border-bottom-right-radius: 1rem;
   border-bottom-left-radius: 1rem;
-  color: var(--menu-item-text-color); /* 텍스트 색상 변수 사용 */
-  color: var(--menu-text-color); /* 테마 색상 유지 */
+  color: var(--menu-item-text-color);
+  color: var(--menu-text-color);
 }
 
-/* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 768px) {
   .menu-grid {
-    grid-template-columns: 1fr; /* 작은 화면에서는 1열로 변경 */
-    width: 80vw; /* 너비를 화면 전체에 맞추기 */
-    grid-template-rows: repeat(5, 8vh); /* 높이를 5행으로 변경 */
+    grid-template-columns: 1fr;
+    width: 80vw;
+    grid-template-rows: repeat(5, 8vh);
   }
 
   .menu-item {
-    font-size: 0.9rem; /* 작은 화면에서 폰트 크기를 줄임 */
-    padding: 1rem 0.5rem; /* 패딩을 줄여서 작은 화면에서도 보기 좋게 설정 */
+    font-size: 0.9rem;
+    padding: 1rem 0.5rem;
   }
 }
 </style>
