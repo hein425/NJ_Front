@@ -4,7 +4,7 @@
       <!-- 프로필 이미지와 사용자명을 함께 표시 -->
       <img :src="profile || defaultProfileImage" alt="Profile Picture" class="profile-image"
       @click="navigateToSetting" />
-      <p class="ptext">Welcome, {{ userName }}!</p>
+      <p>Welcome, {{ userName }}!</p>
     </div>
     <div class="profile-container" v-else>
       <img :src="defaultProfileImage" alt="Default Profile Picture" class="profile-image" />
@@ -69,10 +69,6 @@ console.log('Pinia Profile:', authStore.profile);
   flex-direction: column; /* 세로 방향으로 정렬 */
   align-items: center; /* 수평 정렬 */
   margin-bottom: 10px; /* 각 프로필 블록 간의 간격 */
-}
-
-.ptext{
-  color: var(--ptext-text-color);
 }
 
 .profile-image {

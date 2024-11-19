@@ -19,10 +19,6 @@ body {
   --menu-item-text-color: #5c5c5c; /* 기본 글자색 */
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --logo-image: url('src/assets/logo2.png');
-  --custom-button-background-color: #ddd;
-  --custom-button-text-color: #000;
-  --custom-button-active-background-color: #333;
-  --custom-button-active-text-color: #fff;
 }
 
 .Light-theme {
@@ -39,10 +35,6 @@ body {
   --menu-item-active-border-color: transparent;
   --logo-image: url('src/assets/logo2.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --custom-button-background-color: #ddd;
-  --custom-button-text-color: #000;
-  --custom-button-active-background-color: #333;
-  --custom-button-active-text-color: #fff;
 }
 
 .Dark-theme {
@@ -61,11 +53,6 @@ body {
   --menu-item-text-color: #ffffff;
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --logo-image: url('src/assets/logo_white.png');
-  --custom-button-background-color: #444;
-  --custom-button-text-color: #ccc;
-  --custom-button-active-background-color: #fff;
-  --custom-button-active-text-color: #000;
-  --ptext-text-color:white;
 }
 
 .Pink-theme {
@@ -86,16 +73,11 @@ body {
   --menu-item-text-color: #4a4a4a;
   --logo-image: url('src/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --custom-button-background-color: #ffadc1;
-  --custom-button-text-color: #4a4a4a;
-  --custom-button-active-background-color: #e75480;
-  --custom-button-active-text-color: #fff;
-  --ptext-text-color:white;
 }
 
 .Sky-theme {
   --background-color: #e0f7fa; /* 연한 하늘색 배경 */
-  --text-color: #4a4a4a; /* 텍스트 */
+  --text-color: #007bb2; /* 어두운 파란색 텍스트 */
   --button-background: #4dd0e1; /* 버튼 하늘색 배경 */
   --button-text-color: white; /* 버튼 텍스트 색상 */
   --border-color: #00acc1; /* 테두리 하늘색 */
@@ -111,9 +93,4 @@ body {
   --menu-item-text-color: #007bb2;
   --logo-image: url('src/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --custom-button-background-color: #4dd0e1;
-  --custom-button-text-color: #007bb2;
-  --custom-button-active-background-color: #007bb2;
-  --custom-button-active-text-color: #fff;
-  --ptext-text-color:white;
 }

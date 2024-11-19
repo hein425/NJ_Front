@@ -138,38 +138,19 @@ const themes = [
 ];
 
 const applyTheme = () => {
-  // 모든 테마 클래스를 제거하고 새로운 테마 클래스를 추가
   document.documentElement.classList.remove('Light-theme', 'Dark-theme', 'Pink-theme', 'Sky-theme');
   document.documentElement.classList.add(`${selectedTheme.value}-theme`);
 
-  // 선택된 테마의 스타일을 가져옴
   const selected = themes.find(theme => theme.value === selectedTheme.value);
-
   if (selected) {
     if (selected.backgroundColor) {
-      // 배경색 설정 및 배경 이미지 제거
       document.documentElement.style.backgroundColor = selected.backgroundColor;
       document.documentElement.style.backgroundImage = 'none';
     } else if (selected.backgroundImage) {
-      // 배경 이미지를 설정하고 배경색을 제거
       document.documentElement.style.backgroundImage = selected.backgroundImage;
       document.documentElement.style.backgroundColor = 'transparent';
     }
   }
-
-  // MenuBar에도 테마 적용
-  document.querySelector('.nav_wrapper').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
-  document.querySelectorAll('.menu-item').forEach(item => {
-    item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
-  });
-
-  // 로고 이미지도 테마에 따라 변경
-  const logoElement = document.querySelector('.logo img');
-  if (logoElement) {
-    logoElement.src = getComputedStyle(document.documentElement).getPropertyValue('--logo-image').trim().replace(/["']/g, '');
-  }
-
-  // 테마를 localStorage에 저장
   localStorage.setItem('selectedTheme', selectedTheme.value);
 };
 
