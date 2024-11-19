@@ -4,7 +4,7 @@
 
 <template>
     <div>
-        <h1>404낫파운드</h1>
+
     </div>
 </template>
 
