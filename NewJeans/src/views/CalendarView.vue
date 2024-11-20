@@ -24,7 +24,6 @@ const colorList = [
 ];
 
 const router = useRouter();
-
 const authStore = useAuthStore();
 const calendarIdx = ref(authStore.calendarIdx);
 
@@ -107,10 +106,15 @@ const flipBack = () => {
 
 const subMonth = () => {
   now.value = dayjs(now.value).subtract(1, 'month');
+  selectedYear.value = now.value.year(); // 드롭다운 값 업데이트
+  selectedMonth.value = now.value.month() + 1; // 드롭다운 값 업데이트
 };
 const addMonth = () => {
   now.value = dayjs(now.value).add(1, 'month');
+  selectedYear.value = now.value.year(); // 드롭다운 값 업데이트
+  selectedMonth.value = now.value.month() + 1; // 드롭다운 값 업데이트
 };
+
 const selectDateFn = date => {
   // 로그인 여부 확인
   if (!authStore.isLoggedIn) {
@@ -126,6 +130,8 @@ const selectDateFn = date => {
 
 const goToday = () => {
   now.value = dayjs();
+  selectedYear.value = now.value.year(); // 드롭다운 값 업데이트
+  selectedMonth.value = now.value.month() + 1; // 드롭다운 값 업데이트
 };
 
 const showScheduleForm = () => {
