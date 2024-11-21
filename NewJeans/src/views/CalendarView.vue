@@ -460,12 +460,26 @@ const closeModal = () => {
   gap: 5px;
 }
 
-select {
+/* select {
   padding: 5px;
   border-radius: 5px;
   font-size: 1rem;
   margin-right: 5px;
+} */
+/* select {
+  margin: 0 2px;
+} */
+
+select {
+  font-size: 1.05rem;
+  border-radius: 5px;
+  color: #333;
+  padding: 5px; /* 내부 패딩 */
+  margin: 0 2px; /* 외부 마진 초기화 */
+  width: 115px; /* 각 select의 가로 길이 조정 */
 }
+
+
 
 .year,
 .month {
