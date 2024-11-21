@@ -27,11 +27,19 @@
         combinedChart: null,
         currentYear: 2024,
         colors: {
+<<<<<<< HEAD
           DAILY: '#ff6384',
           GROWTH: '#36a2eb',
           TRIP: '#ffce56',
           EXERCISE: '#4bc0c0',
           ETC: '#9966ff',
+=======
+          DAILY: '#fcd1d7',
+          GROWTH: '#adf2f1',
+          TRIP: '#d0eed5',
+          EXERCISE: '#ffffc9',
+          ETC: '#ebcbf4',
+>>>>>>> HEIN
         },
         isLoading: false,
       };
@@ -55,7 +63,11 @@
           }
   
           const response = await axios.get(`${BASE_URL}/statistics/year`, {
+<<<<<<< HEAD
             params: { userIdx, year: this.currentYear },
+=======
+            params: { userIdx: userIdx, year: this.currentYear },
+>>>>>>> HEIN
           });
           const data = response.data || [];
   
@@ -160,8 +172,14 @@
         }
       },
       changeYear(direction) {
+<<<<<<< HEAD
         this.currentYear += direction;
         this.fetchData();
+=======
+        const authStore = useAuthStore();
+        this.currentYear += direction;
+        this.fetchData(authStore.idx);
+>>>>>>> HEIN
       },
     },
   };

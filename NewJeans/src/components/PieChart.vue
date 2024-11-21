@@ -21,11 +21,19 @@ export default {
       categoryLabels: ['DAILY', 'GROWTH', 'TRIP', 'EXERCISE', 'ETC'],
       categoryData: [],
       colors: {
+<<<<<<< HEAD
         DAILY: '#FF6384',
         GROWTH: '#36A2EB',
         TRIP: '#FFCE56',
         EXERCISE: '#4BC0C0',
         ETC: '#9966FF',
+=======
+        DAILY: '#fcd1d7',
+        GROWTH: '#adf2f1',
+        TRIP: '#d0eed5',
+        EXERCISE: '#ffffc9',
+        ETC: '#ebcbf4',
+>>>>>>> HEIN
       },
     };
   },
@@ -55,7 +63,11 @@ export default {
         options: {
           plugins: {
             datalabels: {
+<<<<<<< HEAD
               color: '#fff',
+=======
+              color: '#323232',
+>>>>>>> HEIN
               formatter: (value, context) => {
                 const label = context.chart.data.labels[context.dataIndex];
                 return `${label}\n${value.toFixed(1)}%`; // 소수점 첫째 자리까지 표시

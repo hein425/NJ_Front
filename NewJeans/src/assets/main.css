@@ -65,7 +65,11 @@ body {
   --custom-button-text-color: #ccc;
   --custom-button-active-background-color: #fff;
   --custom-button-active-text-color: #000;
+<<<<<<< HEAD
   --ptext-text-color: white;
+=======
+  --ptext-text-color:white;
+>>>>>>> HEIN
 }
 
 .Pink-theme {
@@ -90,7 +94,11 @@ body {
   --custom-button-text-color: #4a4a4a;
   --custom-button-active-background-color: #e75480;
   --custom-button-active-text-color: #fff;
+<<<<<<< HEAD
   --ptext-text-color: white;
+=======
+  --ptext-text-color:white;
+>>>>>>> HEIN
 }
 
 .Sky-theme {
@@ -115,5 +123,9 @@ body {
   --custom-button-text-color: #007bb2;
   --custom-button-active-background-color: #007bb2;
   --custom-button-active-text-color: #fff;
+<<<<<<< HEAD
   --ptext-text-color: white;
+=======
+  --ptext-text-color:white;
+>>>>>>> HEIN
 }
