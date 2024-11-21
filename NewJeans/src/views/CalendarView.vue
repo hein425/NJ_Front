@@ -24,10 +24,6 @@ const colorList = [
 ];
 
 const router = useRouter();
-<<<<<<< HEAD
-
-=======
->>>>>>> HEIN
 const authStore = useAuthStore();
 const calendarIdx = ref(authStore.calendarIdx);
 
@@ -243,14 +239,11 @@ watch(
     deep: true,
   },
 );
-watchEffect(
-  () => {
-    calendarIdx.value = authStore.calendarIdx;
-    MonthlySchedules();
-    fetchDiaryEntriesForMonth();
-  }
-);
-
+watchEffect(() => {
+  calendarIdx.value = authStore.calendarIdx;
+  MonthlySchedules();
+  fetchDiaryEntriesForMonth();
+});
 
 // 회원가입 후 여기로 바로 오면서 로그인 모달 열어줌
 const showModal = ref(false); // 모달 표시 상태
@@ -267,8 +260,6 @@ onMounted(() => {
 const closeModal = () => {
   showModal.value = false;
 };
-
-
 </script>
 
 <template>

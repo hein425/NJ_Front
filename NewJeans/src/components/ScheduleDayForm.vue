@@ -18,13 +18,11 @@
 
                 <div class="form-row" style="width: 450px">
                   <p v-if="editIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
-                  <input v-else v-model="editData.start" class="input-field" type="datetime-local"
-                    placeholder="Start Time" @click.stop />
+                  <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
                 </div>
                 <div class="form-row" style="width: 450px">
                   <p v-if="editIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
-                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time"
-                    @click.stop />
+                  <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
                 </div>
 
                 <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
@@ -249,7 +247,7 @@ const repeatTypeKoreanMap = {
   MONTHLY: '매월',
   WEEKLY: '매주',
   DAILY: '매일',
-  NONE: '없음'
+  NONE: '없음',
 };
 
 const categoryKoreanMap = {
@@ -257,7 +255,7 @@ const categoryKoreanMap = {
   GROWTH: '성장일지',
   EXERCISE: '운동',
   TRIP: '여행',
-  ETC: '기타'
+  ETC: '기타',
 };
 
 const fetchDayData = async selectedDate => {
@@ -425,7 +423,7 @@ const saveScheduleEdit = async (type, index) => {
     address: editData.value.address,
     content: editData.value.content,
     color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
-    deletedImageList: editData.value.deletedImageList || []
+    deletedImageList: editData.value.deletedImageList || [],
   };
 
   // FormData 생성 및 데이터 추가
@@ -877,14 +875,11 @@ const removeScheduleImage = index => {
   justify-content: center;
 }
 
-.image-container{
+.image-container {
   position: relative;
   display: inline-block;
   margin: 5px;
 }
-<<<<<<< HEAD
-=======
-
 
 .no-DS-message {
   font-size: 1.1rem; /* 글씨를 조금 더 크게 설정 */
@@ -897,5 +892,4 @@ const removeScheduleImage = index => {
   background-color: #f8f8f8; /* 살짝 톤다운된 배경색 */
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
 }
->>>>>>> HEIN
 </style>
