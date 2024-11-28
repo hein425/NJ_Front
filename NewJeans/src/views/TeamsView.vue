@@ -78,7 +78,7 @@
               <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
-              <button class="delete-button-4" @click="deleteFriend(friend.id)">친구 삭제</button>
+              <button class="delete-button-4" @click="deleteFriend(friend.idx)">친구 삭제</button>
             </li>
           </ul>
         </div>
@@ -211,20 +211,24 @@ const entryId = ref(null); // 수정할 일기 ID
 //친구 삭제
 const deleteFriend = async (friendId) => {
   try {
+    console.log("API 호출 URL:", `${BASE_URL}/friend/delete`);
+    console.log("쿼리 파라미터:", { userId, friendId });
+
     await axios.post(`${BASE_URL}/friend/delete`, null, {
       params: {
         userId: userId, // 현재 로그인한 사용자 ID
         friendId: friendId, // 삭제할 친구의 id
+        
       },
     });
     // 삭제 성공 시 친구 목록에서 해당 친구 제거
-    friends.value = friends.value.filter(friend => friend.id !== friendId);
-    console.log('friendIdx','userId')
-    alert('친구가 성공적으로 삭제되었습니다.');
+    friends.value = friends.value.filter((friend) => friend.idx !== friendId);
+    alert("친구가 성공적으로 삭제되었습니다.");
   } catch (error) {
     console.error('Failed to delete friend:', error);
     alert('친구 삭제에 실패했습니다.');
   }
+
 };
 
 
