@@ -100,7 +100,7 @@ const fetchProfileImage = async () => {
     const response = await axios.get(`${BASE_URL}/user/profileImage/${authStore.idx}`);
     // BASE_URL을 사용해 전체 URL 생성
     authStore.profileImageUrl = `${BASE_URL}${response.data}?timestamp=${new Date().getTime()}`; // 캐시 방지
-    localStorage.setItem('profileImageUrl', authStore.profileImageUrl);
+    localStorage.setItem('profileImageUrl',authStore.profileImageUrl);
   } catch (error) {
     console.error('프로필 이미지 가져오기 실패:', error);
   }
@@ -202,6 +202,7 @@ const showStatistics = () => {
   router.push('/graphView');
 };
 </script>
+
 
 <style scoped>
 .settings-container {

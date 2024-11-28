@@ -78,7 +78,7 @@
               <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
-              <button class="delete-button-4">친구 삭제</button>
+              <button class="delete-button-4" @click="deleteFriend(friend.id)">친구 삭제</button>
             </li>
           </ul>
         </div>
@@ -205,6 +205,30 @@ const entryTitle = ref(''); // 일기 제목
 const entryContent = ref(''); // 일기 내용
 const selectedDiaryId = ref(null); // 선택한 다이어리 ID
 const entryId = ref(null); // 수정할 일기 ID
+
+
+
+//친구 삭제
+const deleteFriend = async (friendId) => {
+  try {
+    await axios.post(`${BASE_URL}/friend/delete`, null, {
+      params: {
+        userId: userId, // 현재 로그인한 사용자 ID
+        friendId: friendId, // 삭제할 친구의 id
+      },
+    });
+    // 삭제 성공 시 친구 목록에서 해당 친구 제거
+    friends.value = friends.value.filter(friend => friend.id !== friendId);
+    console.log('friendIdx','userId')
+    alert('친구가 성공적으로 삭제되었습니다.');
+  } catch (error) {
+    console.error('Failed to delete friend:', error);
+    alert('친구 삭제에 실패했습니다.');
+  }
+};
+
+
+
 
 // 일기 쓰기 모달 열기
 const openEntryModal = diaryId => {

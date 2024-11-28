@@ -239,11 +239,14 @@ watch(
     deep: true,
   },
 );
-watchEffect(() => {
-  calendarIdx.value = authStore.calendarIdx;
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-});
+watchEffect(
+  () => {
+    calendarIdx.value = authStore.calendarIdx;
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+  }
+);
+
 
 // 회원가입 후 여기로 바로 오면서 로그인 모달 열어줌
 const showModal = ref(false); // 모달 표시 상태
@@ -260,6 +263,8 @@ onMounted(() => {
 const closeModal = () => {
   showModal.value = false;
 };
+
+
 </script>
 
 <template>
@@ -455,12 +460,26 @@ const closeModal = () => {
   gap: 5px;
 }
 
-select {
+/* select {
   padding: 5px;
   border-radius: 5px;
   font-size: 1rem;
   margin-right: 5px;
+} */
+/* select {
+  margin: 0 2px;
+} */
+
+select {
+  font-size: 1.05rem;
+  border-radius: 5px;
+  color: #333;
+  padding: 5px; /* 내부 패딩 */
+  margin: 0 2px; /* 외부 마진 초기화 */
+  width: 115px; /* 각 select의 가로 길이 조정 */
 }
+
+
 
 .year,
 .month {

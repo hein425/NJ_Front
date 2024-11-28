@@ -3,13 +3,13 @@
     <form @submit.prevent="submitSchedule">
       <!-- 제목 -->
       <div class="row">
-        <label for="title" style="width: 80px; margin-bottom: 5px">제목</label>
+        <label for="title" style="width: 80px; margin-bottom: 5px;">제목</label>
         <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
       </div>
 
       <!-- 색깔 선택 -->
       <div class="row">
-        <label style="width: 80px; margin-bottom: 5px">색깔 선택</label>
+        <label style="width: 80px; margin-bottom: 5px;">색깔 선택</label>
         <div class="color-options">
           <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
             <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
@@ -20,17 +20,17 @@
 
       <!-- 시작 날짜, 종료 날짜 -->
       <div class="row">
-        <label for="startdate" style="width: 80px; margin-bottom: 5px">시작 날짜</label>
+        <label for="startdate" style="width: 80px; margin-bottom: 5px;">시작 날짜</label>
         <input id="startdate" v-model="startdate" type="datetime-local" class="input-field" />
       </div>
       <div class="row">
-        <label for="enddate" style="width: 80px; margin-bottom: 5px">종료 날짜</label>
+        <label for="enddate" style="width: 80px; margin-bottom: 5px;">종료 날짜</label>
         <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate" class="input-field" />
       </div>
 
       <!-- 반복 설정 -->
       <div class="row">
-        <label style="width: 80px; margin-bottom: 5px">반복</label>
+        <label style="width: 80px; margin-bottom: 5px;">반복</label>
         <div class="repeat-options">
           <label for="yearly" class="radio-label">
             <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
@@ -56,36 +56,36 @@
       </div>
 
       <div class="row" v-if="repeatType !== 'NONE'">
-        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px">반복 종료</label>
+        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px;">반복 종료</label>
         <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
       </div>
 
       <!-- 지도 -->
       <div class="row">
-        <label for="location" style="width: 80px; margin-bottom: 5px">지도</label>
+        <label for="location" style="width: 80px; margin-bottom: 5px;">지도</label>
         <div class="map-container">
-          <KakaoMap @updateLocation="updateLocation" />
+          <KakaoMap @updateLocation="updateLocation"/>
         </div>
       </div>
 
       <!-- 내용 입력 -->
       <div class="row">
-        <label for="content" style="width: 80px; margin-bottom: 5px">메모</label>
+        <label for="content" style="width: 80px; margin-bottom: 5px;">메모</label>
         <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
       <!-- 이미지 업로드 -->
       <div class="row">
-        <label for="image" style="width: 80px; margin-bottom: 5px">이미지</label>
+        <label for="image" style="width: 80px; margin-bottom: 5px;">이미지</label>
         <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
       </div>
 
       <div class="image-preview">
-        <div v-for="(image, index) in images" :key="index" class="image-container">
-          <img :src="image.url" alt="Preview" />
-          <button class="delete-btn" type="button" @click.stop.prevent="removeImage(index)">X</button>
-        </div>
-      </div>
+  <div v-for="(image, index) in images" :key="index" class="image-container">
+    <img :src="image.url" alt="Preview" />
+    <button class="delete-btn" type="button" @click.stop.prevent="removeImage(index)">X</button>
+  </div>
+</div>
 
       <!-- 버튼 -->
       <div class="button-row">
@@ -99,6 +99,8 @@
     </form>
   </div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
@@ -224,9 +226,10 @@ watch(startdate, newStartDate => {
   }
 });
 
-const removeImage = index => {
+const removeImage = (index) => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
+
 </script>
 <style scoped>
 .schedule-form {
@@ -266,18 +269,14 @@ const removeImage = index => {
   display: inline-block;
   cursor: pointer;
   box-sizing: border-box; /* 테두리가 요소의 크기를 변경하지 않도록 */
-  transition:
-    border 0.3s ease,
-    box-shadow 0.3s ease; /* 애니메이션 추가 */
+  transition: border 0.3s ease, box-shadow 0.3s ease; /* 애니메이션 추가 */
 }
 
 .color-radio {
   display: none;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   border: none;
   width: 100%;
   padding: 10px;
@@ -296,6 +295,7 @@ textarea {
   flex-direction: row;
   gap: 20px;
   flex-wrap: nowrap; /* 줄바꿈 방지 */
+
 }
 
 .radio-label {
@@ -331,8 +331,7 @@ textarea {
   margin-bottom: 10px;
 }
 
-.submit-button,
-.cancel-button {
+.submit-button, .cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -414,18 +413,14 @@ textarea {
   display: inline-block;
   cursor: pointer;
   box-sizing: border-box;
-  transition:
-    border 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
 .color-radio {
   display: none;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   border: 1px solid #ccc;
   padding: 12px;
   border-radius: 6px;
@@ -434,9 +429,7 @@ textarea {
   transition: border-color 0.3s ease;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   border-color: #2196f3;
 }
 
@@ -460,7 +453,7 @@ textarea:focus {
   cursor: pointer;
 }
 
-input[type='radio'] {
+input[type="radio"] {
   appearance: none;
   width: px;
   height: 18px;
@@ -471,7 +464,7 @@ input[type='radio'] {
   transition: all 0.3s ease;
 }
 
-input[type='radio']:checked {
+input[type="radio"]:checked {
   border-color: #2196f3;
   background-color: #2196f3;
 }
@@ -509,8 +502,7 @@ input[type='radio']:checked {
   margin-top: 20px;
 }
 
-.submit-button,
-.cancel-button {
+.submit-button, .cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -544,11 +536,11 @@ input[type='radio']:checked {
 }
 
 /* 파일 선택 버튼 스타일 */
-input[type='file'] {
+input[type="file"] {
   display: none;
 }
 
-label[for='image'] {
+label[for="image"] {
   display: inline-block;
   padding: 10px 20px;
   background-color: #222222;
@@ -560,7 +552,9 @@ label[for='image'] {
   text-align: center;
 }
 
-label[for='image']:hover {
+label[for="image"]:hover {
   background-color: #525151;
 }
+
+
 </style>

@@ -1,12 +1,12 @@
-<template>
-    <div>
-        로그인중
-    </div>
-</template>
-
 <script setup>
 
 </script>
+
+<template>
+    <div>
+
+    </div>
+</template>
 
 <style lang="scss" scoped>
 

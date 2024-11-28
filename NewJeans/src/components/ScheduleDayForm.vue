@@ -7,7 +7,7 @@
         <div v-if="schedules.length > 0">
           <div v-for="(schedule, index) in schedules" :key="index" class="schedule-item" :style="{ borderColor: schedule.color }" @click="toggleScheduleExpand(index)">
             <div class="title-container">
-              <h4 v-if="editIndex !== index">{{ schedule.title }}</h4>
+              <h4 v-if="scheduleEditIndex !== index">{{ schedule.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
               <p class="date">{{ schedule.date }}</p>
             </div>
@@ -17,17 +17,17 @@
                 <hr class="divider" />
 
                 <div class="form-row" style="width: 450px">
-                  <p v-if="editIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
+                  <p v-if="scheduleEditIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
                   <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
                 </div>
                 <div class="form-row" style="width: 450px">
-                  <p v-if="editIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
+                  <p v-if="scheduleEditIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
                   <input v-else v-model="editData.end" class="input-field" type="datetime-local" placeholder="End Time" @click.stop />
                 </div>
 
-                <p v-if="editIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
+                <p v-if="scheduleEditIndex !== index"><strong>반복: </strong> {{ repeatTypeKorean(schedule.repeatType) }}</p>
 
-                <div v-if="editIndex === index">
+                <div v-if="scheduleEditIndex === index">
                   <div class="form-row" style="width: 450px">
                     <label>반복</label>
                     <div class="repeat-options">
@@ -61,17 +61,17 @@
                 </div>
 
                 <hr class="divider" />
-                <p v-if="editIndex !== index">{{ schedule.content }}</p>
+                <p v-if="scheduleEditIndex !== index">{{ schedule.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <hr class="divider" />
-                <p v-show="editIndex !== index"><strong>Address:</strong></p>
+                <p v-show="scheduleEditIndex !== index"><strong>Address:</strong></p>
                 <div v-if="isScheduleExpanded[index]" class="map-container">
                   <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
                 </div>
 
                 <!-- 이미지 관리 섹션 -->
-                <div v-if="editIndex === index" class="schedule-images">
+                <div v-if="scheduleEditIndex === index" class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
                     <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeScheduleImage(imgIndex, imageUrl)">X</button>
@@ -86,12 +86,12 @@
                 </div>
 
                 <div class="button-group">
-                  <button @click.stop="startEdit('schedule', index)" v-if="editIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteModal(index)" v-if="editIndex !== index">Delete</button>
+                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index">Edit</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index">Delete</button>
 
-                  <div v-if="editIndex === index">
+                  <div v-if="scheduleEditIndex === index">
                     <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
-                    <button @click.stop="cancelEdit">Cancel</button>
+                    <button @click.stop="cancelEdit('schedule')">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -145,7 +145,7 @@
         <div v-if="diaries.length > 0">
           <div v-for="(diary, index) in diaries" :key="index" class="diary-item" @click="toggleDiaryExpand(index)">
             <div class="title-container">
-              <h4 v-if="editIndex !== index">{{ diary.title }}</h4>
+              <h4 v-if="diaryEditIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
               <p class="category">{{ categoryKorean(diary.category) }}</p>
             </div>
@@ -153,14 +153,14 @@
             <transition name="slide-fade">
               <div v-show="isDiaryExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-                <p v-if="editIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
+                <p v-if="diaryEditIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
                 <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date" @click.stop />
                 <hr class="divider" />
-                <p v-if="editIndex !== index">{{ diary.content }}</p>
+                <p v-if="diaryEditIndex !== index">{{ diary.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
 
                 <!-- 이미지 관리 섹션 -->
-                <div v-if="editIndex === index" class="diary-images">
+                <div v-if="diaryEditIndex === index" class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in editData.images" :key="imgIndex" class="image-container">
                     <img :src="isNewImage(imageUrl) ? imageUrl : `${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                     <button class="delete-btn" @click.stop="removeImage(imgIndex, imageUrl)">X</button>
@@ -174,12 +174,12 @@
                   </div>
                 </div>
                 <div class="button-group">
-                  <button @click.stop="startEdit('diary', index)" v-if="editIndex !== index">Edit</button>
+                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index">Edit</button>
                   <button @click.stop="openDeleteDiaryModal(index)">Delete</button>
 
-                  <div v-if="editIndex === index">
+                  <div v-if="diaryEditIndex === index">
                     <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
-                    <button @click.stop="cancelEdit">Cancel</button>
+                    <button @click.stop="cancelEdit('diary')">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -219,9 +219,11 @@ const schedules = ref([]);
 const diaries = ref([]);
 const isScheduleExpanded = ref([]);
 const isDiaryExpanded = ref([]);
-const editIndex = ref(null);
+// const editIndex = ref(null);
 const editData = ref({ title: '', content: '', address: '', start: '', end: '', repeatType: '', repeatEndDate: '', images: [] });
 const showDayView = ref(true);
+const scheduleEditIndex = ref(null); // 일정 편집 상태 인덱스
+const diaryEditIndex = ref(null); // 일기 편집 상태 인덱스
 
 let pollingInterval = null;
 
@@ -349,26 +351,23 @@ watch(
 );
 
 const toggleScheduleExpand = index => {
-  if (editIndex.value === index) return;
+  if (scheduleEditIndex.value === index) return;
   isScheduleExpanded.value[index] = !isScheduleExpanded.value[index];
 };
 
 const toggleDiaryExpand = index => {
-  if (editIndex.value === index) return;
+  if (diaryEditIndex.value === index) return;
   isDiaryExpanded.value[index] = !isDiaryExpanded.value[index];
 };
 
 const startEdit = (type, index) => {
-  editIndex.value = index;
-  editData.value =
-    type === 'schedule'
-      ? {
-          ...schedules.value[index],
-          images: [...schedules.value[index].images],
-          repeatType: schedules.value[index].repeatType,
-          repeatEndDate: schedules.value[index].repeatEndDate,
-        }
-      : { ...diaries.value[index], images: [...diaries.value[index].images] };
+  if (type === 'schedule') {
+    scheduleEditIndex.value = index; // 일정 편집 상태 설정
+    editData.value = { ...schedules.value[index] }; // 편집 데이터를 복사
+  } else if (type === 'diary') {
+    diaryEditIndex.value = index; // 일기 편집 상태 설정
+    editData.value = { ...diaries.value[index] }; // 편집 데이터를 복사
+  }
 };
 
 const saveDiaryEdit = async (type, index) => {
@@ -404,7 +403,7 @@ const saveDiaryEdit = async (type, index) => {
   } catch (error) {
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
-    editIndex.value = null;
+    diaryEditIndex.value = null;
   }
 };
 
@@ -413,6 +412,8 @@ const saveScheduleEdit = async (type, index) => {
 
   // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
+
+  // JSON으로 보낼 기본 요청 데이터
   const scheduleRequest = {
     idx: scheduleToUpdate.id,
     title: editData.value.title,
@@ -446,12 +447,16 @@ const saveScheduleEdit = async (type, index) => {
   } catch (error) {
     console.error('Error during schedule update:', error.response ? error.response.data : error.message);
   } finally {
-    editIndex.value = null;
+    scheduleEditIndex.value = null;
   }
 };
 
-const cancelEdit = () => {
-  editIndex.value = null;
+const cancelEdit = type => {
+  if (type === 'schedule') {
+    scheduleEditIndex.value = null;
+  } else if (type === 'diary') {
+    diaryEditIndex.value = null;
+  }
 };
 
 // 모달을 열 때 호출되는 함수
@@ -758,7 +763,7 @@ const removeScheduleImage = index => {
 
 .input-field {
   border: none;
-  width: 20%;
+  width: 25%;
   padding: 10px;
   border-radius: 5px;
   font-size: 1rem;
