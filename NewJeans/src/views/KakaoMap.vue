@@ -1,8 +1,15 @@
 <template>
+  <!-- 메뉴 접기/펼치기 버튼 -->
+  <button type="button" class="toggle-menu-btn" @click="toggleMenu">
+{{ isMenuOpen ? "검색창 닫기🔺" : "검색하기🔻" }}
+</button>
   <div class="map_wrap">
     <div id="map" style="width: 450px; height: 300px"></div>
-
-    <div id="menu_wrap" class="bg_white">
+    
+    
+    
+    <!-- 검색 메뉴 -->
+    <div id="menu_wrap" class="bg_white" v-show="isMenuOpen">
       <div class="option">
         <form @submit.prevent="searchPlaces">
           키워드 : <input type="text" v-model="keyword" id="keyword" size="15" />
@@ -14,11 +21,17 @@
       <div id="pagination"></div>
     </div>
     <div v-if="address" class="addressPreview">
-        {{ address }} 
-        <span class="remove" @click="removeAddress">❌</span>
-      </div>
+      {{ address }}
+      <span class="remove" @click="removeAddress">❌</span>
+    </div>
   </div>
 </template>
+
+
+
+
+
+
 
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue';
@@ -30,6 +43,13 @@ const markers = ref([]); // 마커 배열
 let infowindow = null; // 인포윈도우 객체
 const showAddressInput = ref(false); // 주소 입력 미리보기 표시 여부
 const address = ref(''); // 미리보기 주소
+const isMenuOpen = ref(true); // true: 열림, false: 닫힘
+
+// 메뉴 상태를 토글하는 함수
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+  console.log("isMenuOpen 상태:", isMenuOpen.value); // 상태 변화 확인
+};
 
 const initMap = () => {
   if (!window.kakao || !window.kakao.maps) {
@@ -199,19 +219,6 @@ onMounted(() => {
 }
 
 #menu_wrap {
-  padding-top: 0; /* 상단 패딩을 제거 */
-  padding-bottom: 5px;
-}
-
-
-.map_wrap {
-  position: relative;
-  width: 100%;
-  padding-top: 0; /* 상단 패딩을 제거 */
-  padding-bottom: 5px;
-}
-
-#menu_wrap {
   position: absolute;
   top: 0;
   left: 0;
@@ -330,4 +337,6 @@ onMounted(() => {
   font-weight: bold;
   color: #777;
 }
+
+
 </style>
