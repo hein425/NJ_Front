@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import MenuBar from './components/MenuBar.vue';
+import MenuBar2 from './components/MenuBar2.vue';
 import HeaderTop from './components/HeaderTop.vue';
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
@@ -65,7 +65,7 @@ const isSignUpPage = computed(() => route.path === '/signupp');
 <template>
   <HeaderTop v-if="!isSignUpPage" />
   <div class="app-layout">
-    <MenuBar v-if="!isSignUpPage" />
+    <MenuBar2 v-if="!isSignUpPage" />
     <div class="content-area">
       <RouterView />
     </div>
@@ -80,5 +80,6 @@ const isSignUpPage = computed(() => route.path === '/signupp');
 .content-area {
   padding: 0;
   width: 100%;
+  margin-left: 25vh;
 }
 </style>

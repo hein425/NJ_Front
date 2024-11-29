@@ -206,33 +206,26 @@ const entryContent = ref(''); // 일기 내용
 const selectedDiaryId = ref(null); // 선택한 다이어리 ID
 const entryId = ref(null); // 수정할 일기 ID
 
-
-
 //친구 삭제
-const deleteFriend = async (friendId) => {
+const deleteFriend = async friendId => {
   try {
-    console.log("API 호출 URL:", `${BASE_URL}/friend/delete`);
-    console.log("쿼리 파라미터:", { userId, friendId });
+    console.log('API 호출 URL:', `${BASE_URL}/friend/delete`);
+    console.log('쿼리 파라미터:', { userId, friendId });
 
     await axios.post(`${BASE_URL}/friend/delete`, null, {
       params: {
         userId: userId, // 현재 로그인한 사용자 ID
         friendId: friendId, // 삭제할 친구의 id
-        
       },
     });
     // 삭제 성공 시 친구 목록에서 해당 친구 제거
-    friends.value = friends.value.filter((friend) => friend.idx !== friendId);
-    alert("친구가 성공적으로 삭제되었습니다.");
+    friends.value = friends.value.filter(friend => friend.idx !== friendId);
+    alert('친구가 성공적으로 삭제되었습니다.');
   } catch (error) {
     console.error('Failed to delete friend:', error);
     alert('친구 삭제에 실패했습니다.');
   }
-
 };
-
-
-
 
 // 일기 쓰기 모달 열기
 const openEntryModal = diaryId => {

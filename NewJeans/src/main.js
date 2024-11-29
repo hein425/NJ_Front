@@ -15,10 +15,7 @@ import { faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, 
 
 // 아이콘들을 라이브러리에 추가
 
-library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil );
-
-// library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight);
-
+library.add(faCalendarAlt, faBook, faUsers, faCog, faSignInAlt, faSearch, faCheck, faTimes, faBookmark, faAngleLeft, faAngleRight, faPencil);
 
 // Vue 앱 생성
 const app = createApp(App);
@@ -31,10 +28,10 @@ app.use(createPinia());
 app.use(router);
 
 window.onload = () => {
-    if (window.Kakao) {
-      window.Kakao.init('2515f45fc0d9a50bfeee4e2db7c37005');
-    }
-  };
+  if (window.Kakao) {
+    window.Kakao.init('2515f45fc0d9a50bfeee4e2db7c37005');
+  }
+};
 
 // 앱 마운트
 app.mount('#app');
