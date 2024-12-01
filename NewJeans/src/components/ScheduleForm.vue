@@ -1,11 +1,47 @@
 <template>
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
+          <!-- 녹음 상태 모달 -->
+    <div v-if="isRecording" class="modal-overlay">
+      <div class="modal">
+        <p> 마이크에 입력하고 싶은 음성을 녹음하세요</p>
+        <p> 녹음 중입니다...🎙️</p>
+        <button @click="stopRecording" class="stop-recording-button">녹음 중지</button>
+      </div>
+    </div>
       <!-- 제목 -->
       <div class="row">
-        <label for="title" style="width: 80px; margin-bottom: 5px;">제목</label>
-        <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
-      </div>
+  <label for="title" style="width: 80px; margin-bottom: 5px;">제목</label>
+  <div class="input-with-buttons">
+    <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
+    <button type="button" @click="toggleRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+  </div>
+</div>
+
+<!-- 언어 선택 및 듣기 버튼 - 기본 숨김 -->
+ 
+<div class="language-recording-container" v-if="isRecordingMenuVisible">
+  <!-- 닫기 버튼 -->
+  <button type="button" class="close-button" @click="closeLanguageRecordingContainer">X</button>
+  <!-- 언어 선택 -->
+  <div class="row">
+    <label style="width: 80px; margin-bottom: 5px;">언어 선택</label>
+    <div class="language-options">
+      <button
+        v-for="(lang, index) in languages"
+        :key="index"
+        :class="{ 'active-lang': selectedLanguage === lang.code }"
+        @click="changeLanguage(lang.code)"
+        type="button"
+      >
+        {{ lang.name }}
+      </button>
+    </div>
+  </div>
+  <button type="button" @click="startRecording('title')" class="play-button"> 시작하기⏺️</button>
+  <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+</div>
+
 
       <!-- 색깔 선택 -->
       <div class="row">
@@ -68,11 +104,37 @@
         </div>
       </div>
 
-      <!-- 내용 입력 -->
-      <div class="row">
-        <label for="content" style="width: 80px; margin-bottom: 5px;">메모</label>
-        <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
-      </div>
+           <!-- 내용입력 -->
+<div class="row">
+  <label for="content" style="width: 80px; margin-bottom: 5px;">메모</label>
+  <div class="input-with-buttons">
+    <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
+    <button type="button" @click="toggleMemoRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+  </div>
+</div>
+
+<!-- 메모 언어 선택 및 듣기 버튼 - 기본 숨김 -->
+<div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
+  <!-- 닫기 버튼 -->
+  <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer">X</button>
+  <!-- 언어 선택 -->
+  <div class="row">
+    <label style="width: 80px; margin-bottom: 5px;">언어 선택</label>
+    <div class="language-options">
+      <button
+        v-for="(lang, index) in languages"
+        :key="index"
+        :class="{ 'active-lang': selectedLanguage === lang.code }"
+        @click="changeLanguage(lang.code)"
+        type="button"
+      >
+        {{ lang.name }}
+      </button>
+    </div>
+  </div>
+  <button type="button" @click="startRecording('description')" class="play-button"> 시작하기⏺️</button>
+  <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
+</div>
 
       <!-- 이미지 업로드 -->
       <div class="row">
@@ -127,6 +189,113 @@ const repeatType = ref('NONE');
 const repeatEndDate = ref(''); // 반복 종료 날짜를 추가
 const images = ref([]); // 이미지 파일을 저장
 const calendarIdx = ref(authStore.calendarIdx);
+const isRecording = ref(false); // 녹음 상태
+const recordingField = ref(null); // 현재 녹음 중인 필드 ('title' 또는 'description')
+let recognition = null; // SpeechRecognition 객체 초기화
+const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
+
+const isRecordingMenuVisible = ref(false);
+const isMemoRecordingMenuVisible = ref(false); // 메모 녹음 메뉴 상태
+
+
+// 메모 메뉴 토글
+const toggleMemoRecordingMenu = () => {
+  isMemoRecordingMenuVisible.value = !isMemoRecordingMenuVisible.value;
+};
+
+// 메모 언어 선택 및 듣기 버튼 컨테이너 닫기
+const closeMemoLanguageRecordingContainer = () => {
+  isMemoRecordingMenuVisible.value = false;
+};
+
+
+const closeLanguageRecordingContainer = () => {
+  isRecordingMenuVisible.value = false; // 메뉴 닫기
+};
+
+// 메뉴 토글 함수
+const toggleRecordingMenu = () => {
+  isRecordingMenuVisible.value = !isRecordingMenuVisible.value;
+};
+
+// 지원 언어 목록
+const languages = ref([
+  { name: '한국어', code: 'ko-KR' },
+  { name: '영어', code: 'en-US' },
+  { name: '일본어', code: 'ja-JP' },
+  { name: '중국어', code: 'zh-CN' },
+]);
+
+// 녹음 시작
+const startRecording = (field) => {
+  if (isRecording.value) {
+    alert('이미 녹음 중입니다.');
+    return;
+  }
+
+  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+    alert('Web Speech API를 지원하지 않는 브라우저입니다.');
+    return;
+  }
+
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = selectedLanguage.value;
+
+  isRecording.value = true;
+  recordingField.value = field;
+
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map((result) => result[0].transcript)
+      .join('');
+    if (field === 'title') {
+      title.value += transcript;
+    } else if (field === 'description') {
+      description.value += transcript;
+    }
+  };
+
+  recognition.onend = () => {
+    isRecording.value = false;
+    recordingField.value = null;
+  };
+
+  recognition.onerror = (error) => {
+    console.error('SpeechRecognition Error:', error);
+    isRecording.value = false;
+    recordingField.value = null;
+  };
+
+  recognition.start();
+};
+
+// 녹음 중지
+const stopRecording = () => {
+  if (!isRecording.value || !recognition) {
+    alert('녹음 중이 아닙니다.');
+    return;
+  }
+
+  recognition.stop();
+  isRecording.value = false;
+  recordingField.value = null;
+};
+
+// 텍스트 읽기
+const playText = (field) => {
+  const synth = window.speechSynthesis;
+  const utterance = new SpeechSynthesisUtterance();
+
+  utterance.lang = selectedLanguage.value;
+  utterance.text = field === 'title' ? title.value : description.value;
+
+  synth.speak(utterance);
+};
+
+// 언어 변경
+const changeLanguage = (langCode) => {
+  selectedLanguage.value = langCode;
+};
 
 const colorList = [
   { value: 'PINK', color: '#ff7f7f' },
@@ -238,6 +407,7 @@ const removeImage = (index) => {
   padding: 20px;
   border-radius: 10px;
   height: auto;
+  
 }
 
 .row {
@@ -556,5 +726,176 @@ label[for="image"]:hover {
   background-color: #525151;
 }
 
+/* 음성 텍스트 변환 버튼 */
+.record-button {
+  padding: 10px 15px;
+  border: 1px solid #2196f3;
+  border-radius: 5px;
+  background-color: white;
+  color: #2196f3;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.record-button:hover {
+  background-color: #2196f3;
+  color: white;
+}
+
+/* 듣기 버튼 */
+.play-button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #2196f3;
+  border-radius: 5px;
+  background-color: white;
+  color: #2196f3;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.play-button:hover {
+  background-color: #2196f3;
+  color: white;
+}
+
+/* 언어 선택 버튼 */
+.language-options {
+  display: flex;
+  gap: 10px;
+}
+
+.language-options button {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #fff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.language-options button.active-lang {
+  background-color: #2196f3;
+  color: white;
+  font-weight: bold;
+}
+
+.language-options button:hover {
+  background-color: #f0f0f0;
+}
+
+/* 언어 선택 및 듣기 버튼 컨테이너 */
+.language-recording-container {
+  position: absolute;
+  top: 15%;
+  left: 500px;
+  width: 300px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-in-out;
+}
+.language-recording-container-memo {
+  position: absolute;
+  top: 140%;
+  left: 500px;
+  width: 300px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+
+/* 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.stop-recording-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.stop-recording-button:hover {
+  background-color: #d32f2f;
+}
+
+/* 슬라이드 애니메이션 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 페이드 인 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 닫기 버튼 */
+.language-recording-container .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.language-recording-container .close-button:hover {
+  color: #d32f2f;
+}
 
 </style>
