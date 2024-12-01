@@ -787,8 +787,8 @@ label[for="image"]:hover {
 /* 언어 선택 및 듣기 버튼 컨테이너 */
 .language-recording-container {
   position: absolute;
-  top: 15%;
-  left: 500px;
+  top: 0%;
+  left: 430px;
   width: 300px;
   background-color: white;
   border: 1px solid #ddd;
@@ -800,8 +800,8 @@ label[for="image"]:hover {
 }
 .language-recording-container-memo {
   position: absolute;
-  top: 140%;
-  left: 500px;
+  top: 115%;
+  left: 430px;
   width: 300px;
   background-color: white;
   border: 1px solid #ddd;
