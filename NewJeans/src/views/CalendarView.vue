@@ -45,26 +45,8 @@ const isYearlyView = ref(false); // 기본값: 일반 달력
 const selectedYear = ref(now.value.year());
 const selectedMonth = ref(now.value.month() + 1);
 
-const yearsRange = Array.from({ length: 20 }, (_, i) => dayjs().year() - 10 + i);
-const months = [
-  'January', 'February', 'March', 'April', 'May', 'June', 
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
-
-// 연도 변경 시
-const onYearChange = () => {
-  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-};
-
-// 월 변경 시
-const onMonthChange = () => {
-  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-};
-
+const yearsRange = Array.from({ length: 20 }, (_, i) => dayjs().year() - 10 + i); // 현재 연도를 기준으로 10년 전후
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // @<@ 일기 띄우기 @>@
 // 매달 다이어리 데이터를 불러오는 함수
@@ -186,6 +168,14 @@ const hexToRgba = (hex, opacity) => {
   return hex;
 };
 
+const onYearChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
+
+const onMonthChange = () => {
+  now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
+};
+
 function speakAllSchedules() {
   const parent = event.target.parentElement;
 
@@ -249,11 +239,14 @@ watch(
     deep: true,
   },
 );
-watchEffect(() => {
-  calendarIdx.value = authStore.calendarIdx;
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
-});
+watchEffect(
+  () => {
+    calendarIdx.value = authStore.calendarIdx;
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+  }
+);
+
 
 // 회원가입 후 여기로 바로 오면서 로그인 모달 열어줌
 const showModal = ref(false); // 모달 표시 상태
@@ -270,6 +263,8 @@ onMounted(() => {
 const closeModal = () => {
   showModal.value = false;
 };
+
+
 </script>
 
 <template>
@@ -277,13 +272,12 @@ const closeModal = () => {
     <YearlyCalendar @toMonthlyView="isYearlyView = false" :schedules="schedules" />
   </div>
   <div
-  v-else
-  class="calendar-wrapper"
-  :style="{
-    height: `calc(${weeksInMonth * 150}px, 100vh - 100px)` // 동적 높이 계산
-  }"
->
-
+    v-else
+    class="calendar-wrapper"
+    :style="{
+      height: weeksInMonth === 5 ? '700px' : Math.max(weeksInMonth * 150, 500) + 'px',
+    }"
+  >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
     <div class="calendar-container" :class="{ flipped: isFlipped }">
       <!-- 달력 앞면 영역 -->
@@ -296,18 +290,24 @@ const closeModal = () => {
             <font-awesome-icon :icon="['fas', 'angle-left']" />
           </button>
           <div class="YMYM">
-            <!-- 연도 및 월 표시 -->
+            <span class="year">{{ now.format('YYYY') }}</span>
+            <span class="month">{{ now.format('MMMM') }}</span>
+          </div>
+          <button @click="addMonth()" class="A-Month-button">
+            <font-awesome-icon :icon="['fas', 'angle-right']" />
+          </button>
+
+          <div class="YMselecter">
+            <!-- 연도 선택 드롭다운 -->
             <select v-model="selectedYear" @change="onYearChange">
               <option v-for="year in yearsRange" :key="year" :value="year">{{ year }}</option>
             </select>
+
+            <!-- 월 선택 드롭다운 -->
             <select v-model="selectedMonth" @change="onMonthChange">
               <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
             </select>
           </div>
-
-          <button @click="addMonth()" class="A-Month-button">
-            <font-awesome-icon :icon="['fas', 'angle-right']" />
-          </button>
         </h1>
         <div class="DOWgrid">
           <div class="Sun">Sun</div>
@@ -397,18 +397,17 @@ const closeModal = () => {
   perspective: 1000px;
   display: flex;
   align-items: flex-start;
-  padding: 30px 50px 90px 50px;
-  width: 85%;
-  height: auto;
-  min-height: 500px; /* 최소 높이 */
-  max-height: calc(100vh - 100px); /* 화면 높이의 100px을 뺀 높이로 제한 */
-  justify-content: center; /* 캘린더 내용 중앙 정렬 */
+  padding-bottom: 90px;
+  padding-left: 50px;
+  padding-right: 50px;
+  min-height: 500px;
+  width: 65%;
+  padding-top: 30px;
   margin-left: 50px;
   margin-right: 50px;
   margin-bottom: 50px;
   overflow: hidden;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
-  z-index: 100; /* 다른 UI 요소 위에 표시 */
 }
 
 /* 달력 제목과 관련된 스타일들  */
@@ -423,7 +422,7 @@ const closeModal = () => {
   position: relative; /* Today 버튼 고정을 위한 상대 위치 */
 }
 
-.Today-button,.Yealy-button{
+.Today-button {
   background-color: #333;
   color: white;
   border: none;
@@ -431,42 +430,53 @@ const closeModal = () => {
   border-radius: 20px;
   font-size: 0.9rem;
   cursor: pointer;
-  position: relative; /* 상대 위치 */
-  margin: 0 10px; /* 간격 추가 */
-  right: 39vh;
+  position: absolute; /* 절대 위치 설정 */
+  left: 10px; /* 왼쪽 정렬 */
 }
 
+.Yealy-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  position: absolute;
+  left: 100px;
+}
 
 .YMYM {
-  width: 150px; /* 더 넓은 드롭다운을 위한 너비 조정 */
+  width: 120px; /* 고정 너비를 설정하여 월 이름에 상관없이 동일한 너비 유지 */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* 간격을 약간 더 넓게 조정 */
-  justify-content: center; /* 수직 방향 중앙 정렬 */
-  padding: 10px 0; /* 위아래 여백 추가로 간격 확보 */
-  box-sizing: border-box; /* 패딩 포함하여 크기 계산 */
+  gap: 5px;
 }
 
+.YMselecter {
+  position: absolute;
+  right: 0%;
+  gap: 5px;
+}
 
+/* select {
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-right: 5px;
+} */
+/* select {
+  margin: 0 2px;
+} */
 
-.YMYM select {
-  border: none;
-  font-size: 1.3rem;
+select {
+  font-size: 1.05rem;
   border-radius: 5px;
   color: #333;
-  padding: 5px 0;
-  margin: 0 5px;
-  width: 170px; /* 드롭다운 너비 고정 */
-  text-align: center; /* 선택된 옵션 중앙 정렬 */
-  text-align-last: center; /* 드롭다운 목록 아이템 중앙 정렬 */
-  appearance: none; /* 브라우저 기본 스타일 제거 */
-  background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="gray" d="M0 0L5 6L10 0Z"/></svg>') no-repeat right 10px center;
-  background-size: 10px 6px;
-}
-
-.YMYM select option {
-  text-align: center; /* 드롭다운 옵션 목록 중앙 정렬 */
+  padding: 5px; /* 내부 패딩 */
+  margin: 0 2px; /* 외부 마진 초기화 */
+  width: 115px; /* 각 select의 가로 길이 조정 */
 }
 
 
@@ -487,14 +497,14 @@ const closeModal = () => {
 }
 .B-Month-button,
 .A-Month-button {
-  background-color: rgb(0 0 0 / 0%);
+  background-color: white;
   border: none;
+
   height: 2rem;
   cursor: pointer;
   font-size: 1.25rem;
   padding: 0 50px;
 }
-.A-Month-button{margin-left: 10px;}
 
 /* 플립 애니메이션 */
 .calendar-container {
@@ -742,26 +752,5 @@ const closeModal = () => {
 
 .icon:hover {
   opacity: 1;
-}
-
-/* 반응형 조정 */
-@media (max-width: 1024px) {
-  .calendar-wrapper {
-    width: 95%; /* 태블릿 이하에서 더 넓게 표시 */
-    top: 10%; /* 세로 위치를 약간 위로 조정 */
-    transform: translate(-50%, 0); /* 화면 위쪽에 더 가깝게 위치 */
-  }
-}
-
-@media (max-width: 768px) {
-  .calendar-wrapper {
-    width: 100%; /* 모바일에서는 전체 화면을 차지 */
-    height: 100%; /* 높이도 화면에 맞춤 */
-    top: 0;
-    left: 0;
-    transform: none; /* 화면의 중앙이 아닌 전체 화면에 고정 */
-    padding: 10px;
-    border-radius: 0; /* 둥근 모서리를 제거 */
-  }
 }
 </style>

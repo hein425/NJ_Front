@@ -4,17 +4,29 @@
       <div class="scrollbar" id="style-1">
         <ul>
           <!-- Home -->
-          <li :class="{ active: activeMenu === 'home' }" @click="setActiveMenu('home'); router.push('/');">
+          <li
+            :class="{ active: activeMenu === 'home' }"
+            @click="
+              setActiveMenu('home');
+              router.push('/');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'home']" class="fa" />
+              <i class="fa fa-home fa-lg"></i>
               <span class="nav-text">Home</span>
             </a>
           </li>
 
           <!-- Search -->
-          <li :class="{ active: activeMenu === 'search' }" @click="setActiveMenu('search'); router.push('/search');">
+          <li
+            :class="{ active: activeMenu === 'search' }"
+            @click="
+              setActiveMenu('search');
+              router.push('/search');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'search']" class="fa" />
+              <i class="fa fa-user fa-lg"></i>
               <span class="nav-text">Search</span>
             </a>
           </li>
@@ -22,7 +34,7 @@
           <!-- Calendar -->
           <li class="darkerlishadow" :class="{ active: activeMenu === 'calendar' }" @click="navigateToCalendar('calendar')">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'calendar-alt']" class="fa" />
+              <i class="fa fa-clock-o fa-lg"></i>
               <span class="nav-text">Calendar</span>
             </a>
           </li>
@@ -30,15 +42,22 @@
           <!-- Diary -->
           <li class="darkerli" :class="{ active: activeMenu === 'diary' }" @click="navigateToDiary('diary')">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'book']" class="fa" />
+              <i class="fa fa-flask fa-lg"></i>
               <span class="nav-text">Diary</span>
             </a>
           </li>
 
           <!-- Thread -->
-          <li class="darkerli" :class="{ active: activeMenu === 'thread' }" @click="setActiveMenu('thread'); router.push('/thread');">
+          <li
+            class="darkerli"
+            :class="{ active: activeMenu === 'thread' }"
+            @click="
+              setActiveMenu('thread');
+              router.push('/thread');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'share-alt']" class="fa" />
+              <i class="fa fa-desktop fa-lg"></i>
               <span class="nav-text">Thread</span>
             </a>
           </li>
@@ -46,39 +65,59 @@
           <!-- Friends -->
           <li class="darkerli" :class="{ active: activeMenu === 'friends' }" @click="navigateToTeams('friends')">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'user-friends']" class="fa" />
+              <i class="fa fa-plane fa-lg"></i>
               <span class="nav-text">Friends</span>
             </a>
           </li>
 
           <!-- Statistics -->
-          <li class="darkerli" :class="{ active: activeMenu === 'statistics' }" @click="setActiveMenu('statistics'); router.push('/statistics');">
+          <li
+            class="darkerli"
+            :class="{ active: activeMenu === 'statistics' }"
+            @click="
+              setActiveMenu('statistics');
+              router.push('/statistics');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'chart-bar']" class="fa" />
+              <i class="fa fa-align-left fa-lg"></i>
               <span class="nav-text">Statistics</span>
             </a>
           </li>
 
           <!-- Games -->
-          <li class="darkerli" :class="{ active: activeMenu === 'games' }" @click="setActiveMenu('games'); router.push('/games');">
+          <li
+            class="darkerli"
+            :class="{ active: activeMenu === 'games' }"
+            @click="
+              setActiveMenu('games');
+              router.push('/games');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'gamepad']" class="fa" />
+              <i class="fa fa-gamepad fa-lg"></i>
               <span class="nav-text">Games</span>
             </a>
           </li>
 
           <!-- My Page -->
-          <li class="darkerlishadowdown" :class="{ active: activeMenu === 'setting' }" @click="navigateToSetting('setting')">
+          <li class="darkerlishadowdown" :class="{ active: activeMenu === 'mypage' }" @click="navigateToSetting('mypage')">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'user']" class="fa" />
+              <i class="fa fa-user fa-lg"></i>
               <span class="nav-text">My Page</span>
             </a>
           </li>
 
           <!-- Help -->
-          <li :class="{ active: activeMenu === 'help' }" @click="setActiveMenu('help'); router.push('/help');">
+          <li
+            :class="{ active: activeMenu === 'help' }"
+            @click="
+              setActiveMenu('help');
+              router.push('/help');
+            "
+          >
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'question-circle']" class="fa" />
+              <i class="fa fa-question-circle fa-lg"></i>
               <span class="nav-text">Help</span>
             </a>
           </li>
@@ -88,13 +127,13 @@
         <ul class="login">
           <li v-if="!authStore.isLoggedIn" @click="showModal = true">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="fa" />
+              <i class="fa fa-lightbulb-o fa-lg"></i>
               <span class="nav-text">Login</span>
             </a>
           </li>
           <li v-else @click="handleLogout">
             <a href="#">
-              <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="fa" />
+              <i class="fa fa-sign-out fa-lg"></i>
               <span class="nav-text">Logout</span>
             </a>
           </li>
@@ -104,7 +143,6 @@
     </nav>
   </header>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -128,7 +166,7 @@ const setActiveMenu = menu => {
 // Navigate to different routes
 const navigateToCalendar = menu => {
   setActiveMenu(menu);
-  router.push('/');
+  router.push('/calendar');
 };
 
 const navigateToDiary = menu => {
@@ -177,35 +215,44 @@ onMounted(() => {
 </script>
 
 <style scoped>
-body,html{
-  height: 100%;
+body {
   margin: 0;
   padding: 0;
+  font-family: 'Open Sans', Arial, sans-serif;
+  background: url('https://static.tumblr.com/94eb957a00fd03c0c2f7d26decd71578/u1rhacw/osAmyyh1q/tumblr_static_tumblr_static_gaussian_blur_gradient_desktop_1680x943_wallpaper-393751.jpg');
+  color: #fff;
+  font-weight: 300;
 }
 
 .main-menu {
   background: #f7f7f7;
-  position: fixed;
+  position: absolute;
   top: 0;
-  left: 0;
+  bottom: 0;
   height: 100%;
-  width: 70px;
+  left: 0;
+  width: 55px;
   overflow: hidden;
   transition: width 0.2s linear;
   box-shadow: 1px 0 15px rgba(0, 0, 0, 0.07);
 }
 
 .main-menu:hover {
-  width: 200px;
+  width: 250px;
 }
 
 .scrollbar {
+  height: 90%;
+  overflow-y: hidden;
   margin-top: 25vh;
 }
 
+.scrollbar:hover {
+  /* overflow-y: scroll; */
+}
 
 ul {
-  margin: 0;
+  margin: 7px 0;
   padding: 0;
 }
 
@@ -215,34 +262,36 @@ li {
 }
 
 a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
+  display: table;
+  width: 255px;
   color: #8a8a8a;
   font-size: 13px;
+  text-decoration: none;
   font-family: 'Strait', sans-serif;
   border-top: 1px solid #f2f2f2;
   text-shadow: 1px 1px 1px #fff;
   transition: all 0.14s linear;
-  height: 36px;
-  padding-left: 2.3vh;
-}
-
-.fa {
-  font-size: 20px; /* 아이콘 크기 */
-  margin-right: 3vh; /* 텍스트와 간격 */
-  display: flex;
-  justify-content: center; /* 아이콘 수평 가운데 정렬 */
-  align-items: center; /* 아이콘 수직 가운데 정렬 */
-  width: 36px; /* 아이콘 고정 너비 */
 }
 
 .nav-text {
-  text-align: left; /* 텍스트 왼쪽 정렬 */
-  line-height: 1.5; /* 텍스트 간격 조절 */
+  display: table-cell;
+  vertical-align: middle;
+  width: 190px;
+  font-family: 'Titillium Web', sans-serif;
 }
 
+.fa-lg {
+  font-size: 1em;
+}
 
+.fa {
+  position: relative;
+  display: table-cell;
+  width: 55px;
+  height: 36px;
+  text-align: center;
+  font-size: 20px;
+}
 
 .login {
   position: absolute;
