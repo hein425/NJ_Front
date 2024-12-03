@@ -1,51 +1,44 @@
 <template>
   <div class="schedule-form">
     <form @submit.prevent="submitSchedule">
-          <!-- 녹음 상태 모달 -->
-    <div v-if="isRecording" class="modal-overlay">
-      <div class="modal">
-        <p> 마이크에 입력하고 싶은 음성을 녹음하세요</p>
-        <p> 녹음 중입니다...🎙️</p>
-        <button @click="stopRecording" class="stop-recording-button">녹음 중지</button>
+      <!-- 녹음 상태 모달 -->
+      <div v-if="isRecording" class="modal-overlay">
+        <div class="modal">
+          <p>마이크에 입력하고 싶은 음성을 녹음하세요</p>
+          <p>녹음 중입니다...🎙️</p>
+          <button @click="stopRecording" class="stop-recording-button">녹음 중지</button>
+        </div>
       </div>
-    </div>
       <!-- 제목 -->
       <div class="row">
-  <label for="title" style="width: 80px; margin-bottom: 5px;">제목</label>
-  <div class="input-with-buttons">
-    <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
-    <button type="button" @click="toggleRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
-  </div>
-</div>
+        <label for="title" style="width: 80px; margin-bottom: 5px">제목</label>
+        <div class="input-with-buttons">
+          <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
+          <button type="button" @click="toggleRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+        </div>
+      </div>
 
-<!-- 언어 선택 및 듣기 버튼 - 기본 숨김 -->
- 
-<div class="language-recording-container" v-if="isRecordingMenuVisible">
-  <!-- 닫기 버튼 -->
-  <button type="button" class="close-button" @click="closeLanguageRecordingContainer">X</button>
-  <!-- 언어 선택 -->
-  <div class="row">
-    <label style="width: 80px; margin-bottom: 5px;">언어 선택</label>
-    <div class="language-options">
-      <button
-        v-for="(lang, index) in languages"
-        :key="index"
-        :class="{ 'active-lang': selectedLanguage === lang.code }"
-        @click="changeLanguage(lang.code)"
-        type="button"
-      >
-        {{ lang.name }}
-      </button>
-    </div>
-  </div>
-  <button type="button" @click="startRecording('title')" class="play-button"> 시작하기⏺️</button>
-  <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
-</div>
+      <!-- 언어 선택 및 듣기 버튼 - 기본 숨김 -->
 
+      <div class="language-recording-container" v-if="isRecordingMenuVisible">
+        <!-- 닫기 버튼 -->
+        <button type="button" class="close-button" @click="closeLanguageRecordingContainer">X</button>
+        <!-- 언어 선택 -->
+        <div class="row">
+          <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
+          <div class="language-options">
+            <button v-for="(lang, index) in languages" :key="index" :class="{ 'active-lang': selectedLanguage === lang.code }" @click="changeLanguage(lang.code)" type="button">
+              {{ lang.name }}
+            </button>
+          </div>
+        </div>
+        <button type="button" @click="startRecording('title')" class="play-button">시작하기⏺️</button>
+        <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+      </div>
 
       <!-- 색깔 선택 -->
       <div class="row">
-        <label style="width: 80px; margin-bottom: 5px;">색깔 선택</label>
+        <label style="width: 80px; margin-bottom: 5px">색깔 선택</label>
         <div class="color-options">
           <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
             <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
@@ -56,17 +49,17 @@
 
       <!-- 시작 날짜, 종료 날짜 -->
       <div class="row">
-        <label for="startdate" style="width: 80px; margin-bottom: 5px;">시작 날짜</label>
+        <label for="startdate" style="width: 80px; margin-bottom: 5px">시작 날짜</label>
         <input id="startdate" v-model="startdate" type="datetime-local" class="input-field" />
       </div>
       <div class="row">
-        <label for="enddate" style="width: 80px; margin-bottom: 5px;">종료 날짜</label>
+        <label for="enddate" style="width: 80px; margin-bottom: 5px">종료 날짜</label>
         <input id="enddate" v-model="enddate" type="datetime-local" :min="startdate" class="input-field" />
       </div>
 
       <!-- 반복 설정 -->
       <div class="row">
-        <label style="width: 80px; margin-bottom: 5px;">반복</label>
+        <label style="width: 80px; margin-bottom: 5px">반복</label>
         <div class="repeat-options">
           <label for="yearly" class="radio-label">
             <input id="yearly" type="radio" v-model="repeatType" value="YEARLY" />
@@ -92,62 +85,56 @@
       </div>
 
       <div class="row" v-if="repeatType !== 'NONE'">
-        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px;">반복 종료</label>
+        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px">반복 종료</label>
         <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
       </div>
 
       <!-- 지도 -->
       <div class="row">
-        <label for="location" style="width: 80px; margin-bottom: 5px;">지도</label>
+        <label for="location" style="width: 80px; margin-bottom: 5px">지도</label>
         <div class="map-container">
-          <KakaoMap @updateLocation="updateLocation"/>
+          <KakaoMap @updateLocation="updateLocation" />
         </div>
       </div>
 
-           <!-- 내용입력 -->
-<div class="row">
-  <label for="content" style="width: 80px; margin-bottom: 5px;">메모</label>
-  <div class="input-with-buttons">
-    <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
-    <button type="button" @click="toggleMemoRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
-  </div>
-</div>
+      <!-- 내용입력 -->
+      <div class="row">
+        <label for="content" style="width: 80px; margin-bottom: 5px">메모</label>
+        <div class="input-with-buttons">
+          <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
+          <button type="button" @click="toggleMemoRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+        </div>
+      </div>
 
-<!-- 메모 언어 선택 및 듣기 버튼 - 기본 숨김 -->
-<div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
-  <!-- 닫기 버튼 -->
-  <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer">X</button>
-  <!-- 언어 선택 -->
-  <div class="row">
-    <label style="width: 80px; margin-bottom: 5px;">언어 선택</label>
-    <div class="language-options">
-      <button
-        v-for="(lang, index) in languages"
-        :key="index"
-        :class="{ 'active-lang': selectedLanguage === lang.code }"
-        @click="changeLanguage(lang.code)"
-        type="button"
-      >
-        {{ lang.name }}
-      </button>
-    </div>
-  </div>
-  <button type="button" @click="startRecording('description')" class="play-button"> 시작하기⏺️</button>
-  <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
-</div>
+      <!-- 메모 언어 선택 및 듣기 버튼 - 기본 숨김 -->
+      <div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
+        <!-- 닫기 버튼 -->
+        <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer">X</button>
+        <!-- 언어 선택 -->
+        <div class="row">
+          <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
+          <div class="language-options">
+            <button v-for="(lang, index) in languages" :key="index" :class="{ 'active-lang': selectedLanguage === lang.code }" @click="changeLanguage(lang.code)" type="button">
+              {{ lang.name }}
+            </button>
+          </div>
+        </div>
+        <button type="button" @click="startRecording('description')" class="play-button">시작하기⏺️</button>
+        <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
+      </div>
 
       <!-- 이미지 업로드 -->
       <div class="row">
-        <label for="image" style="width: 80px; margin-bottom: 5px;">이미지</label>
+        <label for="image" style="width: 80px; margin-bottom: 5px">이미지</label>
         <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
       </div>
 
       <div class="image-preview">
-  <div v-for="(image, index) in images" :key="index" class="image-container">
-    <img :src="image.url" alt="Preview" />
-    <button class="delete-btn" type="button" @click.stop.prevent="removeImage(index)">X</button>
-  </div>
-</div>
+        <div v-for="(image, index) in images" :key="index" class="image-container">
+          <img :src="image.url" alt="Preview" />
+          <button class="delete-btn" type="button" @click.stop.prevent="removeImage(index)">X</button>
+        </div>
+      </div>
 
       <!-- 버튼 -->
       <div class="button-row">
@@ -161,8 +148,6 @@
     </form>
   </div>
 </template>
-
-
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
@@ -197,7 +182,6 @@ const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
 const isRecordingMenuVisible = ref(false);
 const isMemoRecordingMenuVisible = ref(false); // 메모 녹음 메뉴 상태
 
-
 // 메모 메뉴 토글
 const toggleMemoRecordingMenu = () => {
   isMemoRecordingMenuVisible.value = !isMemoRecordingMenuVisible.value;
@@ -207,7 +191,6 @@ const toggleMemoRecordingMenu = () => {
 const closeMemoLanguageRecordingContainer = () => {
   isMemoRecordingMenuVisible.value = false;
 };
-
 
 const closeLanguageRecordingContainer = () => {
   isRecordingMenuVisible.value = false; // 메뉴 닫기
@@ -227,7 +210,7 @@ const languages = ref([
 ]);
 
 // 녹음 시작
-const startRecording = (field) => {
+const startRecording = field => {
   if (isRecording.value) {
     alert('이미 녹음 중입니다.');
     return;
@@ -244,9 +227,9 @@ const startRecording = (field) => {
   isRecording.value = true;
   recordingField.value = field;
 
-  recognition.onresult = (event) => {
+  recognition.onresult = event => {
     const transcript = Array.from(event.results)
-      .map((result) => result[0].transcript)
+      .map(result => result[0].transcript)
       .join('');
     if (field === 'title') {
       title.value += transcript;
@@ -260,7 +243,7 @@ const startRecording = (field) => {
     recordingField.value = null;
   };
 
-  recognition.onerror = (error) => {
+  recognition.onerror = error => {
     console.error('SpeechRecognition Error:', error);
     isRecording.value = false;
     recordingField.value = null;
@@ -282,7 +265,7 @@ const stopRecording = () => {
 };
 
 // 텍스트 읽기
-const playText = (field) => {
+const playText = field => {
   const synth = window.speechSynthesis;
   const utterance = new SpeechSynthesisUtterance();
 
@@ -293,7 +276,7 @@ const playText = (field) => {
 };
 
 // 언어 변경
-const changeLanguage = (langCode) => {
+const changeLanguage = langCode => {
   selectedLanguage.value = langCode;
 };
 
@@ -395,10 +378,9 @@ watch(startdate, newStartDate => {
   }
 });
 
-const removeImage = (index) => {
+const removeImage = index => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
-
 </script>
 <style scoped>
 .schedule-form {
@@ -407,7 +389,6 @@ const removeImage = (index) => {
   padding: 20px;
   border-radius: 10px;
   height: auto;
-  
 }
 
 .row {
@@ -439,14 +420,18 @@ const removeImage = (index) => {
   display: inline-block;
   cursor: pointer;
   box-sizing: border-box; /* 테두리가 요소의 크기를 변경하지 않도록 */
-  transition: border 0.3s ease, box-shadow 0.3s ease; /* 애니메이션 추가 */
+  transition:
+    border 0.3s ease,
+    box-shadow 0.3s ease; /* 애니메이션 추가 */
 }
 
 .color-radio {
   display: none;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   border: none;
   width: 100%;
   padding: 10px;
@@ -465,7 +450,6 @@ input, select, textarea {
   flex-direction: row;
   gap: 20px;
   flex-wrap: nowrap; /* 줄바꿈 방지 */
-
 }
 
 .radio-label {
@@ -501,7 +485,8 @@ input, select, textarea {
   margin-bottom: 10px;
 }
 
-.submit-button, .cancel-button {
+.submit-button,
+.cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -583,14 +568,18 @@ input, select, textarea {
   display: inline-block;
   cursor: pointer;
   box-sizing: border-box;
-  transition: border 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .color-radio {
   display: none;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   border: 1px solid #ccc;
   padding: 12px;
   border-radius: 6px;
@@ -599,7 +588,9 @@ input, select, textarea {
   transition: border-color 0.3s ease;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: #2196f3;
 }
 
@@ -623,7 +614,7 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
 }
 
-input[type="radio"] {
+input[type='radio'] {
   appearance: none;
   width: px;
   height: 18px;
@@ -634,7 +625,7 @@ input[type="radio"] {
   transition: all 0.3s ease;
 }
 
-input[type="radio"]:checked {
+input[type='radio']:checked {
   border-color: #2196f3;
   background-color: #2196f3;
 }
@@ -672,7 +663,8 @@ input[type="radio"]:checked {
   margin-top: 20px;
 }
 
-.submit-button, .cancel-button {
+.submit-button,
+.cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -706,11 +698,11 @@ input[type="radio"]:checked {
 }
 
 /* 파일 선택 버튼 스타일 */
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 
-label[for="image"] {
+label[for='image'] {
   display: inline-block;
   padding: 10px 20px;
   background-color: #222222;
@@ -722,7 +714,7 @@ label[for="image"] {
   text-align: center;
 }
 
-label[for="image"]:hover {
+label[for='image']:hover {
   background-color: #525151;
 }
 
@@ -734,7 +726,9 @@ label[for="image"]:hover {
   background-color: white;
   color: #2196f3;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .record-button:hover {
@@ -751,7 +745,9 @@ label[for="image"]:hover {
   background-color: white;
   color: #2196f3;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .play-button:hover {
@@ -771,7 +767,9 @@ label[for="image"]:hover {
   border-radius: 5px;
   cursor: pointer;
   background-color: #fff;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .language-options button.active-lang {
@@ -811,7 +809,6 @@ label[for="image"]:hover {
   z-index: 1000;
   animation: slideIn 0.3s ease-in-out;
 }
-
 
 /* 모달 */
 .modal-overlay {
@@ -897,5 +894,4 @@ label[for="image"]:hover {
 .language-recording-container .close-button:hover {
   color: #d32f2f;
 }
-
 </style>

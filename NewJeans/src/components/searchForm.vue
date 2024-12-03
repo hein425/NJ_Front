@@ -5,12 +5,16 @@
     <p v-if="loading">Loading...</p>
     <p v-if="error">{{ error }}</p>
 
-    <p v-if="searchQuery">검색어: "{{ searchQuery }}"</p> <!-- 입력했던 검색어 표시 -->
+    <p v-if="searchQuery">검색어: "{{ searchQuery }}"</p>
+    <!-- 입력했던 검색어 표시 -->
 
     <div v-if="results.length > 0 && !loading && !error" class="results-container">
-      <div v-for="item in results" :key="item.idx" class="result-item" :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }"
-      @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)"
-
+      <div
+        v-for="item in results"
+        :key="item.idx"
+        class="result-item"
+        :class="{ schedule: item.type === 'SCHEDULE', diary: item.type === 'DIARY' }"
+        @click="item.type === 'DIARY' ? goToDiaryDetail(item.idx) : goToScheduleDetail(item.idx)"
       >
         <h3>{{ item.type === 'SCHEDULE' ? '일정' : '일기' }}: {{ item.title }}</h3>
 
@@ -32,7 +36,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, onBeforeRouteLeave, useRouter } from 'vue-router'; // vue-router에서 onBeforeRouteLeave 임포트
@@ -46,8 +49,6 @@ const error = ref(null);
 const searchQuery = ref(route.query.query || '');
 const router = useRouter();
 const selectedOption = ref(route.query.filterType || 'ALL');
-
-
 
 // 날짜 포맷 함수
 const formatDate = date => {
@@ -96,10 +97,7 @@ const goToDiaryDetail = idx => {
 const goToScheduleDetail = idx => {
   router.push({ name: 'ScheduleDetail', params: { idx } });
 };
-
 </script>
-
-
 
 <style scoped>
 .wrapper {
@@ -126,7 +124,9 @@ const goToScheduleDetail = idx => {
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, background-color 0.3s;
+  transition:
+    transform 0.2s,
+    background-color 0.3s;
   cursor: pointer;
 }
 
@@ -173,5 +173,4 @@ const goToScheduleDetail = idx => {
   letter-spacing: 0.5px;
   text-transform: uppercase; /* 대문자로 강조 */
 }
-
 </style>

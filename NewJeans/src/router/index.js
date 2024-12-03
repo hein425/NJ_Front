@@ -41,6 +41,7 @@ const router = createRouter({
       path: '/setting',
       name: 'setting',
       component: Setting,
+      props: true,
     },
     {
       path: '/signUpp',
@@ -73,12 +74,12 @@ const router = createRouter({
       path: '/graphView',
       name: 'GraphView',
       component: GraphView,
-    }
-    ,
+      props: true,
+    },
     {
-      path:"/kakaologin",
-      name:"KakaoLogin",
-      component: KakaoLoginView
+      path: '/kakaologin',
+      name: 'KakaoLogin',
+      component: KakaoLoginView,
     },
     {
       path: '/schedule/:idx',
@@ -86,7 +87,6 @@ const router = createRouter({
       component: ScheduleDetail,
       props: true,
     },
-
   ],
 });
 

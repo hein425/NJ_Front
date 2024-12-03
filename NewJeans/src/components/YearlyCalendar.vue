@@ -1,8 +1,8 @@
 <template>
   <div class="calendar-wrapper">
     <div class="year-selector">
-      <button class="this-year-button" @click="resetToCurrentYear">This year</button>
-      <button @click="$emit('toMonthlyView')" class="monthly-button">Monthly</button>
+      <button class="this-year-button" @click="resetToCurrentYear">올해</button>
+      <button @click="$emit('toMonthlyView')" class="monthly-button">월</button>
       <div class="yearCha">
         <button @click="changeYear(-1)">
           <font-awesome-icon :icon="['fas', 'angle-left']" />
@@ -72,7 +72,7 @@ const MonthlySchedules = async () => {
   //   schedules.value = response.data;
   // } catch (error) {
   //   console.error('Failed to show monthly schedules:', error);
-  // } 
+  // }
 
   try {
     const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}`);

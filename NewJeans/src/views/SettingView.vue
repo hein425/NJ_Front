@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import axios from 'axios';
 import defaultProfileImage from '@/assets/profile2.jpg';
@@ -100,7 +100,7 @@ const fetchProfileImage = async () => {
     const response = await axios.get(`${BASE_URL}/user/profileImage/${authStore.idx}`);
     // BASE_URL을 사용해 전체 URL 생성
     authStore.profileImageUrl = `${BASE_URL}${response.data}?timestamp=${new Date().getTime()}`; // 캐시 방지
-    localStorage.setItem('profileImageUrl',authStore.profileImageUrl);
+    localStorage.setItem('profileImageUrl', authStore.profileImageUrl);
   } catch (error) {
     console.error('프로필 이미지 가져오기 실패:', error);
   }
@@ -158,10 +158,21 @@ const applyTheme = () => {
   }
 
   // MenuBar에도 테마 적용
-  document.querySelector('.nav_wrapper').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
-  document.querySelectorAll('.menu-item').forEach(item => {
-    item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
-  });
+  const navWrapper = document.querySelector('.nav_wrapper');
+  if (navWrapper) {
+    navWrapper.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--menu-background-color');
+  } else {
+    console.warn('.nav_wrapper 요소를 찾을 수 없습니다.');
+  }
+
+  const menuItems = document.querySelectorAll('.menu-item');
+  if (menuItems) {
+    menuItems.forEach(item => {
+      item.style.color = getComputedStyle(document.documentElement).getPropertyValue('--menu-text-color');
+    });
+  } else {
+    console.warn('.menu-item 요소를 찾을 수 없습니다.');
+  }
 
   // 로고 이미지도 테마에 따라 변경
   const logoElement = document.querySelector('.logo img');
@@ -174,10 +185,11 @@ const applyTheme = () => {
 };
 
 // 페이지 로드 시 테마 초기화 및 프로필 이미지 불러오기
-onMounted(() => {
+onMounted(async () => {
   const savedTheme = localStorage.getItem('selectedTheme');
   if (savedTheme) {
     selectedTheme.value = savedTheme;
+    await nextTick(); // DOM 렌더링 이후 호출 보장
     applyTheme();
   }
   fetchProfileImage();
@@ -203,7 +215,6 @@ const showStatistics = () => {
 };
 </script>
 
-
 <style scoped>
 .settings-container {
   display: flex;
@@ -214,9 +225,10 @@ const showStatistics = () => {
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 70%;
+  width: 87.5%;
   height: 75vh;
-  margin-left: 5vh;
+  margin-left: 8.5vh;
+  margin-top: 5.5vh;
 }
 
 .profile-section {
@@ -340,7 +352,7 @@ const showStatistics = () => {
 .theme-section {
   width: 23vh;
   position: relative;
-  right: 35.5%;
+  right: 22.5%;
 }
 
 .theme-header {

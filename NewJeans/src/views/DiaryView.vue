@@ -2,8 +2,7 @@
   <div class="diary-view-container">
     <div class="toolbar">
       <div class="category-buttons">
-        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)"
-          :class="{ selected: selectedCategory === category.value }">
+        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
           {{ category.label }}
         </button>
       </div>
@@ -14,8 +13,7 @@
     </div>
 
     <div v-if="paginatedDiaries.length > 0" class="diary-list">
-      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item"
-        @click="goToDiaryDetail(diary.idx)">
+      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
         <h3>{{ diary.title }}</h3>
         <p>{{ getCategoryLabel(diary.category) }}</p>
         <p>{{ diary.date }}</p>
@@ -122,11 +120,11 @@ onMounted(() => {
 }
 
 .diary-view-container {
-  width: 70%;
-  /* height: 100%; */
+  width: 87.5%;
+  height: 100%;
   padding: 20px;
   border-radius: 10px;
-  margin: 2vh 5vh;
+  margin: 5.5vh 8.5vh;
   background-color: white;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);

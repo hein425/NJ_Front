@@ -1,33 +1,60 @@
 <template>
   <header class="header">
-    <div class="search-container">
-      <div class="toggle-list custom-toggle-buttons">
-        <button v-for="option in toggleOptions" :key="option.value" :class="{ active: selectedOption === option.value }" @click="selectOption(option.value)">
-          {{ option.label }}
-        </button>
-      </div>
-
-      <input type="text" v-model="searchQuery" placeholder="Search" class="search-input" @keyup.enter="goToSearchForm" />
-      <button class="search-btn" @click="goToSearchForm">
-        <font-awesome-icon :icon="['fas', 'search']" />
-      </button>
-    </div>
+    <!-- 로고 -->
     <div class="logo">
       <RouterLink to="/">
         <img :src="logoSrc" alt="Logo" />
       </RouterLink>
     </div>
+    <!-- 검색창 -->
+    <div class="search-container">
+      <div class="search-wrapper">
+        <!-- 돋보기 아이콘 -->
+        <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
+        <div class="search-content">
+          <div v-if="selectedOption !== 'ALL'" class="filter-tag">
+            <span>{{ selectedLabel }}</span>
+            <button @click="clearFilter" class="clear-btn">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
+          </div>
+          <input type="text" v-model="searchQuery" placeholder="검색" class="search-input" @keyup.enter="goToSearchForm" />
+        </div>
+        <div class="filter-btn-container" ref="filterBtn">
+          <!-- 필터 아이콘 -->
+          <button class="filter-btn" @click="toggleDropdown">
+            <font-awesome-icon :icon="['fas', 'sliders']" />
+          </button>
+          <!-- 필터 드롭다운 -->
+          <ul v-if="dropdownVisible" class="dropdown-options" :style="dropdownStyles">
+            <li v-for="option in toggleOptions" :key="option.value" :class="{ active: selectedOption === option.value }" @click.stop="selectOption(option.value)">
+              {{ option.label }}
+              <span v-if="selectedOption === option.value" class="check-mark">✔</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </header>
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faMagnifyingGlass, faTimes, faSliders } from '@fortawesome/free-solid-svg-icons';
 
-const logoSrc = getComputedStyle(document.documentElement).getPropertyValue('--logo-image');
-const router = useRouter();
+// Font Awesome 아이콘 등록
+library.add(faMagnifyingGlass, faTimes, faSliders);
+
+const logoSrc = 'src/assets/logo2.png'; // 기존 로고 경로 유지
 const searchQuery = ref('');
 const selectedOption = ref('ALL');
+const dropdownVisible = ref(false);
+const dropdownStyles = ref({});
+const router = useRouter();
+const filterBtn = ref(null);
 
 const toggleOptions = [
   { label: '전체', value: 'ALL' },
@@ -35,144 +62,179 @@ const toggleOptions = [
   { label: '일기', value: 'DIARY' },
 ];
 
-// 탭 전환 시 검색어 유지하는 함수
-const selectOption = value => {
-  selectedOption.value = value;
-  
-  // localStorage에서 검색어 불러오기
-  const savedQuery = localStorage.getItem('lastSearchQuery');
-  if (savedQuery) {
-    searchQuery.value = savedQuery;
-    goToSearchForm(); // 저장된 검색어로 검색 실행
+const selectedLabel = computed(() => {
+  const selected = toggleOptions.find(option => option.value === selectedOption.value);
+  return selected ? selected.label : '전체';
+});
+
+const toggleDropdown = () => {
+  dropdownVisible.value = !dropdownVisible.value;
+
+  if (dropdownVisible.value && filterBtn.value) {
+    const rect = filterBtn.value.getBoundingClientRect();
+    dropdownStyles.value = {
+      position: 'absolute',
+      top: `${rect.height + 10}px`,
+      right: '0px',
+      width: '150px',
+    };
   }
 };
 
-// 검색 실행 함수
+const selectOption = value => {
+  selectedOption.value = value;
+  dropdownVisible.value = false;
+};
+
+const clearFilter = () => {
+  selectedOption.value = 'ALL';
+};
+
 const goToSearchForm = () => {
-  if (!searchQuery.value.trim()) {
-    return;
-  }
-  // 검색어를 localStorage에 저장
-  localStorage.setItem('lastSearchQuery', searchQuery.value);
-  
+  if (!searchQuery.value.trim()) return;
   router.push({
     path: '/searchForm',
     query: { query: searchQuery.value, filterType: selectedOption.value },
   });
-  
-  searchQuery.value = ''; // 검색창 초기화 (필요 시 유지 가능)
 };
 
-// 컴포넌트가 마운트될 때, 이전 검색어를 유지하여 입력 필드에 표시
+const handleClickOutside = event => {
+  if (!filterBtn.value.contains(event.target)) {
+    dropdownVisible.value = false;
+  }
+};
+
 onMounted(() => {
-  localStorage.removeItem('lastSearchQuery');
-  searchQuery.value = '';
+  document.addEventListener('click', handleClickOutside);
 });
 
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
-
 <style scoped>
-.toggle-list {
-  display: flex;
-  margin-right: 1rem;
-}
-.custom-toggle-buttons button {
-  background-color: var(--custom-button-background-color);
-  color: var(--custom-button-text-color);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  margin-right: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.custom-toggle-buttons button.active {
-  background-color: var(--custom-button-active-background-color);
-  color: var(--custom-button-active-text-color);
-}
-
 .header {
   display: flex;
-  justify-content: center; /* 요소를 수평 중앙에 배치 */
+  justify-content: flex-start; /* 로고와 검색창 정렬 */
   align-items: center;
-  padding: 2rem; /* rem 단위로 패딩 설정 */
-  position: relative;
+  padding: 2rem 2rem;
+  margin-left: 25vh;
 }
 
 .logo {
-  position: absolute;
-  right: 17vw; /* 화면 너비의 10% 오른쪽에 배치 */
+  display: flex;
+  align-items: center;
 }
 
 .logo img {
-  content: var(--logo-image); /* 로고 이미지에 변수 적용 */
-  height: var(--logo-height);
-  width: auto; /* 비율 유지 */
+  height: 50px;
+  width: auto;
 }
 
 .search-container {
+  flex-grow: 1; /* 검색창이 로고 옆에서 공간을 적절히 차지하도록 설정 */
+  margin-left: 2rem; /* 로고와 검색창 간격 */
+  max-width: 19.5vw; /* 검색창의 최대 너비 설정 */
+}
+
+.search-wrapper {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  max-width: 30vw; /* 화면 너비의 40%로 설정 */
-  position: relative;
-  right: 6.5vw; /* 화면 왼쪽으로 5vw 만큼 이동 */
+  background-color: #f9f9f9;
+  border-radius: 2rem;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+  font-size: 1.2rem;
+  color: #888;
+  margin-right: 0.5rem;
+}
+
+.search-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 텍스트와 아이콘을 중앙 정렬 */
+  background-color: #fff;
+  border-radius: 1rem;
+  padding: 0.3rem 0.6rem;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.2; /* 텍스트와 아이콘 수직 정렬 */
+  min-width: 50px; /* 태그의 최소 너비 설정 */
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.8rem;
+  margin-left: 0.3rem;
+  cursor: pointer;
+  line-height: 1; /* 아이콘 수직 정렬 */
 }
 
 .search-input {
-  width: 35%; /* 검색창의 너비를 60%로 설정 */
-  border: 1px solid #ccc;
-  border-radius: 1.5rem; /* 둥근 모서리 크기를 rem 단위로 설정 */
-  font-size: 1rem; /* 폰트 크기 설정 */
-  padding: 0.5rem 1rem; /* 패딩을 줄여 검색창 높이를 줄임 */
-  height: 1.5rem; /* 검색창의 높이를 줄임 */
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.5; /* 입력 텍스트 수직 정렬 */
 }
 
-.search-btn {
+.filter-btn-container {
+  position: relative;
+  overflow: visible;
+}
+
+.filter-btn {
   background: none;
   border: none;
-  margin-left: -3rem; /* 버튼이 입력창 내부로 겹치도록 마진을 음수로 설정 */
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.search-btn i {
-  font-size: 1.2rem; /* 아이콘 크기 */
+  font-size: 1.2rem;
   color: #555;
+  cursor: pointer;
 }
 
-/* 반응형 디자인을 위한 미디어 쿼리 */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column; /* 작은 화면에서는 세로로 정렬 */
-    padding: 1.5rem;
-  }
+.dropdown-options {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
 
-  .logo {
-    position: static; /* 작은 화면에서는 절대 위치를 제거하고 일반 정렬로 변경 */
-    margin-bottom: 1rem;
-  }
+.dropdown-options li {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  .logo img {
-    height: 4vh; /* 작은 화면에서 로고 크기를 줄임 */
-  }
+.dropdown-options li:hover {
+  background-color: #f0f0f0;
+}
 
-  .search-container {
-    left: 0;
-    max-width: 90vw; /* 검색창의 너비를 화면의 90%로 설정 */
-  }
+.dropdown-options li.active {
+  background-color: #e6f7ff;
+  color: #007aff;
+}
 
-  .search-input {
-    width: 80%; /* 검색창 너비를 조금 더 크게 설정 */
-    font-size: 0.9rem; /* 작은 화면에서는 폰트 크기를 줄임 */
-  }
-
-  .search-btn {
-    font-size: 1rem; /* 버튼 크기를 조금 줄임 */
-    margin-left: -2rem;
-  }
+.check-mark {
+  font-size: 0.9rem;
 }
 </style>

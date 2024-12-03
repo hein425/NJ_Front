@@ -12,38 +12,32 @@
             "
           >
             <a href="#">
-              <i class="fa fa-home fa-lg"></i>
-              <span class="nav-text">Home</span>
+              <font-awesome-icon :icon="['fas', 'home']" class="fa" />
+              <span class="nav-text">홈</span>
             </a>
           </li>
 
-          <!-- Search -->
-          <li
-            :class="{ active: activeMenu === 'search' }"
-            @click="
-              setActiveMenu('search');
-              router.push('/search');
-            "
-          >
+          <!-- My Page -->
+          <li :class="{ active: activeMenu === 'setting' }" @click="navigateToSetting('setting')">
             <a href="#">
-              <i class="fa fa-user fa-lg"></i>
-              <span class="nav-text">Search</span>
+              <font-awesome-icon :icon="['fas', 'user']" class="fa" />
+              <span class="nav-text">내 정보</span>
             </a>
           </li>
 
           <!-- Calendar -->
           <li class="darkerlishadow" :class="{ active: activeMenu === 'calendar' }" @click="navigateToCalendar('calendar')">
             <a href="#">
-              <i class="fa fa-clock-o fa-lg"></i>
-              <span class="nav-text">Calendar</span>
+              <font-awesome-icon :icon="['fas', 'calendar-alt']" class="fa" />
+              <span class="nav-text">달력</span>
             </a>
           </li>
 
           <!-- Diary -->
           <li class="darkerli" :class="{ active: activeMenu === 'diary' }" @click="navigateToDiary('diary')">
             <a href="#">
-              <i class="fa fa-flask fa-lg"></i>
-              <span class="nav-text">Diary</span>
+              <font-awesome-icon :icon="['fas', 'book']" class="fa" />
+              <span class="nav-text">일기</span>
             </a>
           </li>
 
@@ -57,16 +51,16 @@
             "
           >
             <a href="#">
-              <i class="fa fa-desktop fa-lg"></i>
-              <span class="nav-text">Thread</span>
+              <font-awesome-icon :icon="['fas', 'share-alt']" class="fa" />
+              <span class="nav-text">스레드</span>
             </a>
           </li>
 
           <!-- Friends -->
           <li class="darkerli" :class="{ active: activeMenu === 'friends' }" @click="navigateToTeams('friends')">
             <a href="#">
-              <i class="fa fa-plane fa-lg"></i>
-              <span class="nav-text">Friends</span>
+              <font-awesome-icon :icon="['fas', 'user-friends']" class="fa" />
+              <span class="nav-text">친구</span>
             </a>
           </li>
 
@@ -80,14 +74,14 @@
             "
           >
             <a href="#">
-              <i class="fa fa-align-left fa-lg"></i>
-              <span class="nav-text">Statistics</span>
+              <font-awesome-icon :icon="['fas', 'chart-bar']" class="fa" />
+              <span class="nav-text">통계</span>
             </a>
           </li>
 
           <!-- Games -->
           <li
-            class="darkerli"
+            class="darkerlishadowdown"
             :class="{ active: activeMenu === 'games' }"
             @click="
               setActiveMenu('games');
@@ -95,16 +89,8 @@
             "
           >
             <a href="#">
-              <i class="fa fa-gamepad fa-lg"></i>
-              <span class="nav-text">Games</span>
-            </a>
-          </li>
-
-          <!-- My Page -->
-          <li class="darkerlishadowdown" :class="{ active: activeMenu === 'mypage' }" @click="navigateToSetting('mypage')">
-            <a href="#">
-              <i class="fa fa-user fa-lg"></i>
-              <span class="nav-text">My Page</span>
+              <font-awesome-icon :icon="['fas', 'gamepad']" class="fa" />
+              <span class="nav-text">게임</span>
             </a>
           </li>
 
@@ -117,8 +103,8 @@
             "
           >
             <a href="#">
-              <i class="fa fa-question-circle fa-lg"></i>
-              <span class="nav-text">Help</span>
+              <font-awesome-icon :icon="['fas', 'question-circle']" class="fa" />
+              <span class="nav-text">도움말</span>
             </a>
           </li>
         </ul>
@@ -127,14 +113,14 @@
         <ul class="login">
           <li v-if="!authStore.isLoggedIn" @click="showModal = true">
             <a href="#">
-              <i class="fa fa-lightbulb-o fa-lg"></i>
-              <span class="nav-text">Login</span>
+              <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="fa" />
+              <span class="nav-text">로그인</span>
             </a>
           </li>
           <li v-else @click="handleLogout">
             <a href="#">
-              <i class="fa fa-sign-out fa-lg"></i>
-              <span class="nav-text">Logout</span>
+              <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="fa" />
+              <span class="nav-text">로그아웃</span>
             </a>
           </li>
         </ul>
@@ -166,7 +152,7 @@ const setActiveMenu = menu => {
 // Navigate to different routes
 const navigateToCalendar = menu => {
   setActiveMenu(menu);
-  router.push('/calendar');
+  router.push('/');
 };
 
 const navigateToDiary = menu => {
@@ -215,44 +201,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
-body {
+body,
+html {
+  height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Open Sans', Arial, sans-serif;
-  background: url('https://static.tumblr.com/94eb957a00fd03c0c2f7d26decd71578/u1rhacw/osAmyyh1q/tumblr_static_tumblr_static_gaussian_blur_gradient_desktop_1680x943_wallpaper-393751.jpg');
-  color: #fff;
-  font-weight: 300;
 }
 
 .main-menu {
   background: #f7f7f7;
-  position: absolute;
+  position: fixed;
   top: 0;
-  bottom: 0;
-  height: 100%;
   left: 0;
-  width: 55px;
+  height: 100%;
+  width: 70px;
   overflow: hidden;
   transition: width 0.2s linear;
   box-shadow: 1px 0 15px rgba(0, 0, 0, 0.07);
 }
 
 .main-menu:hover {
-  width: 250px;
+  width: 200px;
 }
 
 .scrollbar {
-  height: 90%;
-  overflow-y: hidden;
-  margin-top: 25vh;
-}
-
-.scrollbar:hover {
-  /* overflow-y: scroll; */
+  margin-top: 20vh;
 }
 
 ul {
-  margin: 7px 0;
+  margin: 0;
   padding: 0;
 }
 
@@ -262,35 +239,31 @@ li {
 }
 
 a {
-  display: table;
-  width: 255px;
-  color: #8a8a8a;
-  font-size: 13px;
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  font-family: 'Strait', sans-serif;
+  color: #333;
+  font-size: 17px;
   border-top: 1px solid #f2f2f2;
   text-shadow: 1px 1px 1px #fff;
   transition: all 0.14s linear;
-}
-
-.nav-text {
-  display: table-cell;
-  vertical-align: middle;
-  width: 190px;
-  font-family: 'Titillium Web', sans-serif;
-}
-
-.fa-lg {
-  font-size: 1em;
+  height: 50px;
+  padding-left: 2.3vh;
+  font-weight: 550;
 }
 
 .fa {
-  position: relative;
-  display: table-cell;
-  width: 55px;
-  height: 36px;
-  text-align: center;
-  font-size: 20px;
+  font-size: 30px; /* 아이콘 크기 */
+  margin-right: 3vh; /* 텍스트와 간격 */
+  display: flex;
+  justify-content: center; /* 아이콘 수평 가운데 정렬 */
+  align-items: center; /* 아이콘 수직 가운데 정렬 */
+  width: 36px; /* 아이콘 고정 너비 */
+}
+
+.nav-text {
+  text-align: left; /* 텍스트 왼쪽 정렬 */
+  line-height: 1.5; /* 텍스트 간격 조절 */
 }
 
 .login {
@@ -318,7 +291,7 @@ a {
 
 a:hover {
   text-decoration: none;
-  background-color: #00bbbb;
+  background-color: #ddd;
   color: #fff;
 }
 </style>
