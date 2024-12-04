@@ -17,7 +17,7 @@
       <div v-for="month in calendar" :key="month.month" class="month">
         <h2>{{ month.name }}</h2>
         <div class="grid">
-          <div v-for="day in weekDays" :key="day" :class="['day', day === 'Sun' ? 'sunday' : day === 'Sat' ? 'saturday' : '']">{{ day }}</div>
+          <div v-for="day in weekDays" :key="day" :style="getDayStyle(day)" :class="['day', day === 'Sun' ? 'sunday' : day === 'Sat' ? 'saturday' : '']">{{ day }}</div>
           <div v-for="blank in month.firstDay" :key="'blank-' + blank" class="blank"></div>
           <div v-for="date in month.days" :key="date" class="date">
             <span class="date-type">{{ date }}</span>
@@ -56,7 +56,19 @@ import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+
+const getDayStyle = day => {
+  if (day === '일') {
+    return { color: 'red' }; // 일요일 빨간색
+  }
+  if (day === '토') {
+    return { color: 'blue' }; // 토요일 파란색
+  }
+  return { color: 'black' }; // 평일 검정색
+};
+
 const calendar = ref([]);
 const currentYear = ref(dayjs().year());
 
@@ -67,30 +79,12 @@ const authStore = useAuthStore();
 const MonthlySchedules = async () => {
   const calendarIdx = authStore.calendarIdx;
 
-  // try {
-  //   const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}/${now.value.format('MM')}`);
-  //   schedules.value = response.data;
-  // } catch (error) {
-  //   console.error('Failed to show monthly schedules:', error);
-  // }
-
   try {
     const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}`);
     schedules.value = response.data;
   } catch (error) {
     console.error('Failed to show monthly schedules:', error);
   }
-
-  // try {
-  //   const response = await axios.get(`${BASE_URL}/schedule/${calendarIdx}/${now.value.format('YYYY')}`, {
-  //     headers: {
-  //       Authorization: `Bearer ${authStore.token}`, // 인증 토큰을 추가
-  //     },
-  //   });
-  //   schedules.value = response.data;
-  // } catch (error) {
-  //   console.error('asdf', error);
-  // }
 };
 
 // 컴포넌트가 로드될 때 일정 데이터를 가져옴
@@ -130,7 +124,7 @@ const generateCalendar = () => {
     const lastDay = firstDay.endOf('month').date();
     calendar.value.push({
       month,
-      name: firstDay.format('MMMM'),
+      name: firstDay.format('M' + '월'),
       firstDay: firstDay.day(),
       days: Array.from({ length: lastDay }, (_, i) => i + 1),
     });

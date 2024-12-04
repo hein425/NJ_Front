@@ -39,22 +39,46 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
+import lightLogo from '@/assets/logo2.png';
+import darkLogo from '@/assets/logo_white.png';
 import { faMagnifyingGlass, faTimes, faSliders } from '@fortawesome/free-solid-svg-icons';
 
 // Font Awesome 아이콘 등록
 library.add(faMagnifyingGlass, faTimes, faSliders);
 
-const logoSrc = 'src/assets/logo2.png'; // 기존 로고 경로 유지
+const logoSrc = ref('');
 const searchQuery = ref('');
 const selectedOption = ref('ALL');
 const dropdownVisible = ref(false);
 const dropdownStyles = ref({});
 const router = useRouter();
 const filterBtn = ref(null);
+
+// 테마에 따른 로고 업데이트
+const applyTheme = () => {
+  const rootStyle = getComputedStyle(document.documentElement);
+  const currentTheme = rootStyle.getPropertyValue('--theme').trim(); // 테마 확인
+
+  // 테마에 따라 로고 경로 설정
+  if (currentTheme === 'Dark' || currentTheme === 'Pink' || currentTheme === 'Sky') {
+    logoSrc.value = darkLogo; // Dark, Pink, Sky 테마일 때 다크 로고 사용
+  } else {
+    logoSrc.value = lightLogo; // Light 테마일 때 라이트 로고 사용
+  }
+};
+
+// 페이지 로드 및 라우트 변경 시 로고 업데이트
+onMounted(() => {
+  applyTheme();
+});
+
+watch(router.currentRoute, () => {
+  applyTheme();
+});
 
 const toggleOptions = [
   { label: '전체', value: 'ALL' },

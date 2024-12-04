@@ -70,7 +70,7 @@
             :class="{ active: activeMenu === 'statistics' }"
             @click="
               setActiveMenu('statistics');
-              router.push('/statistics');
+              router.push('/graphView');
             "
           >
             <a href="#">

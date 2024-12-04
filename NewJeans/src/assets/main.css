@@ -18,7 +18,7 @@ body {
   --menu-item-active-border-color: transparent;
   --menu-item-text-color: #5c5c5c; /* 기본 글자색 */
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --logo-image: url('src/assets/logo2.png');
+  --logo-image: url('@/assets/logo2.png');
   --custom-button-background-color: #ddd;
   --custom-button-text-color: #000;
   --custom-button-active-background-color: #333;
@@ -37,7 +37,7 @@ body {
   --menu-item-active-background-color: #ffffff;
   --menu-item-active-text-color: #000000;
   --menu-item-active-border-color: transparent;
-  --logo-image: url('src/assets/logo2.png');
+  --logo-image: url('@/assets/logo2.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --custom-button-background-color: #ddd;
   --custom-button-text-color: #000;
@@ -60,12 +60,12 @@ body {
   --menu-item-active-border-color: #555555;
   --menu-item-text-color: #ffffff;
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
-  --logo-image: url('src/assets/logo_white.png');
+  --logo-image: url('@/assets/logo_white.png');
   --custom-button-background-color: #444;
   --custom-button-text-color: #ccc;
   --custom-button-active-background-color: #fff;
   --custom-button-active-text-color: #000;
-  --ptext-text-color:white;
+  --ptext-text-color: white;
 }
 
 .Pink-theme {
@@ -77,6 +77,7 @@ body {
   --background-repeat: no-repeat; /* 배경 이미지 */
   --background-size: contain; /* 이미지 크기 */
   --background-position: 300px bottom; /* 이미지 위치 */
+  --background-image: url('@/assets/flowers-3435886_1920.jpg');
   --menu-item-background-color: #ffadc1;
   --menu-text-color: white;
   --menu-active-color: #ff6384;
@@ -84,13 +85,13 @@ body {
   --menu-item-active-text-color: #4a4a4a;
   --menu-item-active-border-color: #ffb6c1;
   --menu-item-text-color: #4a4a4a;
-  --logo-image: url('src/assets/logo_white.png');
+  --logo-image: url('@/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --custom-button-background-color: #ffadc1;
   --custom-button-text-color: #4a4a4a;
   --custom-button-active-background-color: #e75480;
   --custom-button-active-text-color: #fff;
-  --ptext-text-color:white;
+  --ptext-text-color: white;
 }
 
 .Sky-theme {
@@ -102,6 +103,7 @@ body {
   --background-repeat: no-repeat; /* 배경 이미지 */
   --background-size: cover; /* 이미지 크기 */
   --background-position: center; /* 이미지 위치 */
+  --background-image: url('@/assets/sky-5534319_1920.jpg');
   --menu-text-color: white;
   --menu-active-color: #00acc1;
   --menu-item-background-color: #00acc1;
@@ -109,12 +111,11 @@ body {
   --menu-item-active-text-color: #007bb2;
   --menu-item-active-border-color: #00acc1;
   --menu-item-text-color: #007bb2;
-  --logo-image: url('src/assets/logo_white.png');
+  --logo-image: url('@/assets/logo_white.png');
   --logo-height: 5vh; /* 로고 크기 조절 변수 */
   --custom-button-background-color: #4dd0e1;
   --custom-button-text-color: #007bb2;
   --custom-button-active-background-color: #007bb2;
   --custom-button-active-text-color: #fff;
-  --ptext-text-color:white;
+  --ptext-text-color: white;
 }
-
