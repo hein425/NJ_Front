@@ -35,6 +35,24 @@
         </div>
       </div>
     </div>
+    <div class="notifi">
+      <!-- 메시지 아이콘 -->
+      <div class="message-icon">
+        <button>
+          <font-awesome-icon :icon="['fas', 'envelope']" />
+        </button>
+      </div>
+
+      <!-- 알림 아이콘 -->
+      <div class="notification-icon">
+        <button @click="toggleNotifications">
+          <font-awesome-icon :icon="['fas', 'bell']" />
+          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+        </button>
+        <!-- 알림 컴포넌트 -->
+        <Notifications v-if="showNotifications" @close="showNotifications = false" />
+      </div>
+    </div>
   </header>
 </template>
 
@@ -45,10 +63,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import lightLogo from '@/assets/logo2.png';
 import darkLogo from '@/assets/logo_white.png';
-import { faMagnifyingGlass, faTimes, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import Notifications from '@/components/NotiFication.vue';
 
 // Font Awesome 아이콘 등록
-library.add(faMagnifyingGlass, faTimes, faSliders);
+library.add(faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope);
 
 const logoSrc = ref('');
 const searchQuery = ref('');
@@ -57,6 +76,14 @@ const dropdownVisible = ref(false);
 const dropdownStyles = ref({});
 const router = useRouter();
 const filterBtn = ref(null);
+
+const showNotifications = ref(false);
+const unreadCount = ref(3); // 예제: 알림 개수 (API 연동 필요)
+
+// 알림 창 표시/숨기기
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value;
+};
 
 // 테마에 따른 로고 업데이트
 const applyTheme = () => {
@@ -142,7 +169,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-start; /* 로고와 검색창 정렬 */
   align-items: center;
-  padding: 2rem 2rem;
+  padding: 2rem 2rem 0 2rem;
   margin-left: 25vh;
 }
 
@@ -260,5 +287,32 @@ onBeforeUnmount(() => {
 
 .check-mark {
   font-size: 0.9rem;
+}
+
+.notifi {
+  display: flex;
+}
+
+.notification-icon {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: red;
+  color: white;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  padding: 0.2rem 0.4rem;
+}
+
+.message-icon button,
+.notification-icon button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 </style>

@@ -53,7 +53,7 @@ import axios from 'axios';
 import lightLogo from '@/assets/logo2.png'; // Light 테마 로고
 import darkLogo from '@/assets/logo_white.png'; // Dark 테마 로고
 import { BASE_URL } from '@/config';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 
 // 테마 관련 이미지 가져오기
 import whiteIcon from '@/assets/white_icon.jpg';
@@ -71,7 +71,7 @@ const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 const fileInput = ref(null);
 const selectedTheme = ref('Light'); // 기본 테마
-const router = useRouter();
+// const router = useRouter();/
 
 const startEditingName = () => {
   isEditingName.value = true;
