@@ -108,7 +108,11 @@ const MonthlySchedules = async () => {
 
 // 날짜에 해당하는 일정을 필터링하는 함수
 const getSchedulesForDate = date => {
-  return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 3);
+  return schedules.value.filter(schedule => {
+    const start = dayjs(schedule.start);
+    const end = dayjs(schedule.end);
+    return start.isSame(date, 'day') || (start.isBefore(date) && end.isAfter(date));
+  });
 };
 
 const flipBack = () => {
@@ -352,6 +356,7 @@ const closeModal = () => {
               :style="{
                 backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
+                gridColumn: `span ${dayjs(schedule.end).diff(dayjs(schedule.start), 'day') + 1}`, // 일정 길이
               }"
               class="schedule-title"
             >
@@ -532,13 +537,17 @@ const closeModal = () => {
 }
 
 /* 달력 그리드와 날짜 셀 스타일 */
-.DOWgrid,
-.CALgrid {
+.DOWgrid{
   display: grid;
   grid-template-columns: repeat(7, 1fr); /* 7열 그리드 */
   gap: 15px;
   text-align: center;
   margin-bottom: 1rem;
+}
+.CALgrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7열 그리드 */
+  text-align: center;
 }
 
 .Datecell {
@@ -558,9 +567,9 @@ const closeModal = () => {
   aspect-ratio: 1 / 1; /* 정사각형 유지 */
   flex-direction: column; /* 세로 배치 */
   align-items: flex-start;
-  padding: 5px;
   cursor: pointer;
   overflow: hidden;
+  border: #b4b4b4 solid 1px;
 }
 
 .date-number {
