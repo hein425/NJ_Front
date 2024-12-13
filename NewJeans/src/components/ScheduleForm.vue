@@ -13,8 +13,32 @@
       <div class="row">
         <label for="title" style="width: 80px; margin-bottom: 5px">제목</label>
         <div class="input-with-buttons">
-          <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
+          <input id="title" v-model="title" placeholder="Enter Title" class="input-field" @input="checkTitleLength" />
           <button type="button" @click="toggleRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+        </div>
+      </div>
+
+      <!-- 제목 비어있음 경고 모달 -->
+      <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
+        <div class="modal">
+          <p>제목을 입력해주세요.</p>
+          <button @click="closeEmptyTitleModal" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 제목 비어있 경고 모달 -->
+      <div v-if="showTitleLimitModal" class="modal-overlay modal-title-limit">
+        <div class="modal">
+          <p>제목은 최대 50자까지 입력할 수 있습니다.</p>
+          <button @click="closeTitleLimitModal" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 일정 저장 성공 모달 -->
+      <div v-if="showSuccessModal" class="modal-overlay modal-title-success">
+        <div class="modal">
+          <p>일정이 저장되었습니다.</p>
+          <button @click="closeTitleSuccessModal" class="close-modal-btn">확인</button>
         </div>
       </div>
 
@@ -165,6 +189,10 @@ const emit = defineEmits(['closeForm']);
 const authStore = useAuthStore();
 
 const title = ref('');
+const showTitleLimitModal = ref(false);
+const showEmptyTitleModal = ref(false);
+const showSuccessModal = ref(false);
+
 const color = ref('ORANGE');
 const startdate = ref('');
 const enddate = ref('');
@@ -315,10 +343,31 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
+const closeEmptyTitleModal = () => {
+  showEmptyTitleModal.value = false;
+};
+
+// 제목 길이 확인 함수
+const checkTitleLength = () => {
+  if (title.value.length > 50) {
+    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
+    showTitleLimitModal.value = true; // 모달 표시
+  }
+};
+
+// 모달 닫기 함수
+const closeTitleLimitModal = () => {
+  showTitleLimitModal.value = false;
+};
+
+const closeTitleSuccessModal = () => {
+  showSuccessModal.value = true;
+};
+
 const submitSchedule = async () => {
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
-    alert('제목을 입력해주세요.');
+    showEmptyTitleModal.value = true;
     return;
   }
 
@@ -358,6 +407,9 @@ const submitSchedule = async () => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Schedule Submitted Successfully', response.data);
+
+    // 일정 저장 성공 모달 표시
+    showSuccessModal.value = true;
 
     emit('closeForm');
   } catch (error) {
@@ -787,7 +839,7 @@ label[for='image']:hover {
   position: absolute;
   top: 0%;
   left: 430px;
-  width: 300px;
+  width: 310px;
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -837,6 +889,30 @@ label[for='image']:hover {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 20px;
+}
+
+.close-modal-btn {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background-color: #5c5c5c;
+}
+
+/* 개별 모달 위치 */
+.modal-empty-title {
+  top: 35%;
+}
+
+.modal-title-limit {
+  top: -20%;
 }
 
 .stop-recording-button {

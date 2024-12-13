@@ -171,6 +171,8 @@ onBeforeUnmount(() => {
   align-items: center;
   padding: 2rem 2rem 0 2rem;
   margin-left: 25vh;
+  position: relative;
+  width: 80vw;
 }
 
 .logo {
@@ -291,6 +293,13 @@ onBeforeUnmount(() => {
 
 .notifi {
   display: flex;
+  align-items: center;
+  gap: 2vh;
+  position: absolute; /* 고정 위치 지정 */
+  right: 2rem; /* 오른쪽에서 2rem 떨어짐 */
+  top: 65%; /* 수직 중앙 정렬 */
+  transform: translateY(-60%); /* 정확한 수직 중앙 정렬 */
+  z-index: 1000;
 }
 
 .notification-icon {

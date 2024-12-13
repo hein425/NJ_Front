@@ -607,7 +607,7 @@ const closeModal = () => {
 }
 
 .today {
-  border: 2px solid black;
+  background-color: #fffae9;
 }
 
 /* flipped-content 스타일 */
