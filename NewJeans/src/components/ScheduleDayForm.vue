@@ -205,16 +205,6 @@ const props = defineProps({
   selectedDate: String,
 });
 
-watch(
-  () => props.selectedDate,
-  async newDate => {
-    if (newDate) {
-      await fetchDayData(newDate);
-    }
-  },
-  { immediate: true },
-);
-
 const schedules = ref([]);
 const diaries = ref([]);
 const isScheduleExpanded = ref([]);
@@ -225,7 +215,7 @@ const showDayView = ref(true);
 const scheduleEditIndex = ref(null); // 일정 편집 상태 인덱스
 const diaryEditIndex = ref(null); // 일기 편집 상태 인덱스
 
-let pollingInterval = null;
+// let pollingInterval = null;
 
 const authStore = useAuthStore();
 
@@ -316,39 +306,40 @@ const fetchDayData = async selectedDate => {
   }
 };
 
-const startPolling = selectedDate => {
-  fetchDayData(selectedDate);
-  pollingInterval = setInterval(() => {
-    fetchDayData(selectedDate);
-  }, 1100);
+const startPolling = async (selectedDate) => {
+  const res = await fetchDayData(selectedDate);
+  console.log(res);
+  // pollingInterval = setInterval(() => {
+  //   fetchDayData(selectedDate);
+  // }, 1100);
 };
 
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-  }
-};
+// const stopPolling = () => {
+//   if (pollingInterval) {
+//     clearInterval(pollingInterval);
+//   }
+// };
 
-onMounted(() => {
-  if (props.selectedDate) {
-    startPolling(props.selectedDate);
-  }
-});
+// onMounted(() => {
+//   if (props.selectedDate) {
+//     startPolling(props.selectedDate);
+//   }
+// });
 
-onUnmounted(() => {
-  stopPolling();
-});
+// onUnmounted(() => {
+//   stopPolling();
+// });
 
-watch(
-  () => props.selectedDate,
-  newDate => {
-    stopPolling();
-    if (newDate) {
-      startPolling(newDate);
-    }
-  },
-  { immediate: true },
-);
+// watch(
+//   () => props.selectedDate,
+//   newDate => {
+//     stopPolling();
+//     if (newDate) {
+//       startPolling(newDate);
+//     }
+//   },
+//   { immediate: true },
+// );
 
 const toggleScheduleExpand = index => {
   if (scheduleEditIndex.value === index) return;
@@ -662,6 +653,18 @@ const removeScheduleImage = index => {
 
   editData.value.images.splice(index, 1);
 };
+
+watch(
+  () => props.selectedDate,
+  async newDate => {
+    console.log("와치 하고 있음");
+    if (newDate) {
+      await fetchDayData(newDate);
+    }
+  },
+  { immediate: true },
+);
+console.log("재 랜더링");
 </script>
 
 <style scoped>

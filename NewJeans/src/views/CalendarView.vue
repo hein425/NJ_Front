@@ -26,6 +26,7 @@ const colorList = [
 const router = useRouter();
 const authStore = useAuthStore();
 const calendarIdx = ref(authStore.calendarIdx);
+const forceKey = ref(0);
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -165,6 +166,7 @@ const showDiaryForm = () => {
 
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
+  forceKey.value++;
   isScheduleFormVisible.value = false;
   isDiaryFormVisible.value = false;
 };
@@ -385,11 +387,14 @@ const closeModal = () => {
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
+          <DiaryForm :selectedDate="selectDate"  @closeForm="closeScheduleForm" />
         </div>
 
         <div v-show="!isScheduleFormVisible && !isDiaryFormVisible">
-          <ScheduleDayForm :selectedDate="selectDate" />
+          <ScheduleDayForm
+          :key="forceKey"
+          :selectedDate="selectDate" 
+          />
         </div>
       </div>
     </div>
