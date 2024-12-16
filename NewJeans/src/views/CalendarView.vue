@@ -90,7 +90,14 @@ const fetchHolidays = async () => {
   const year = now.value.format('YYYY');
   try {
     const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`);
-    holidays.value = response.data;
+
+    // 날짜별로 공휴일 그룹화
+    holidays.value = response.data.reduce((acc, holiday) => {
+      if (!acc[holiday.date]) acc[holiday.date] = [];
+      acc[holiday.date].push(holiday.localName);
+      return acc;
+    }, {});
+
     console.log(`공휴일 (${year}): `, holidays.value);
   } catch (error) {
     console.error('Failed to fetch holidays:', error);
@@ -343,11 +350,16 @@ const closeModal = () => {
             <!-- 일기북마크 -->
             <font-awesome-icon v-if="isDiaryEntry(column)" icon="bookmark" class="bookmark-icon" />
 
-            <template v-for="holiday in holidays" :key="holiday">
-              <div v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
-                {{ holiday.localName }}
+            <!-- 공휴일 -->
+            <div v-if="holidays[column.format('YYYY-MM-DD')]">
+              <div class="holiday-container">
+                <div v-for="(holiday, index) in holidays[column.format('YYYY-MM-DD')]" :key="index" class="holiday-name">
+                  {{ holiday }}
+                </div>
               </div>
-            </template>
+            </div>
+
+            <!-- 날짜 숫자 -->
             <div class="date-number">{{ column.get('date') }}</div>
 
             <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" class="icon" @click.stop="speakAllSchedules">🔊</div>
@@ -387,14 +399,11 @@ const closeModal = () => {
 
         <!-- DiaryForm 컴포넌트 렌더링 -->
         <div v-if="isDiaryFormVisible" class="form-container">
-          <DiaryForm :selectedDate="selectDate"  @closeForm="closeScheduleForm" />
+          <DiaryForm :selectedDate="selectDate" @closeForm="closeScheduleForm" />
         </div>
 
         <div v-show="!isScheduleFormVisible && !isDiaryFormVisible">
-          <ScheduleDayForm
-          :key="forceKey"
-          :selectedDate="selectDate" 
-          />
+          <ScheduleDayForm :key="forceKey" :selectedDate="selectDate" />
         </div>
       </div>
     </div>
@@ -542,7 +551,7 @@ const closeModal = () => {
 }
 
 /* 달력 그리드와 날짜 셀 스타일 */
-.DOWgrid{
+.DOWgrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr); /* 7열 그리드 */
   gap: 15px;
@@ -722,14 +731,24 @@ const closeModal = () => {
   line-height: 0px;
 }
 
-.holiday-name {
-  font-size: 0.7rem; /* 원하는 폰트 크기 */
-  color: red; /* 원하는 글자 색상 */
-  font-weight: lighter; /* 글자를 굵게 설정 */
+.holiday-container {
   position: absolute;
-  display: block; /* 블록 형식으로 배치 (필요 시) */
-  top: 14px;
-  left: 45px;
+  top: 15px; /* 상단 여백 */
+  left: 5px; /* 왼쪽 여백 */
+  display: flex;
+  flex-wrap: wrap; /* 줄바꿈 허용 */
+  gap: 4px; /* 공휴일 간격 */
+  margin: 0; /* 상단 여백 제거 */
+  align-items: flex-start; /* 항목 상단 정렬 */
+}
+
+.holiday-name {
+  font-size: 0.7rem;
+  color: red;
+  font-weight: bold;
+  background-color: rgba(255, 0, 0, 0.1); /* 연한 배경색 */
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
 /* 북마크 아이콘 스타일 추가 */
