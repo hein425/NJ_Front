@@ -35,7 +35,6 @@ const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
 
-
 const selectDate = ref(null);
 const isFlipped = ref(false);
 
@@ -285,7 +284,8 @@ const closeModal = () => {
 //드래그 앤 드랍 관련
 const onDragStart = (event, schedule) => {
   const rawSchedule = JSON.parse(JSON.stringify(schedule)); // Proxy 제거
-  if (!rawSchedule || !rawSchedule.idx) { // idx 확인
+  if (!rawSchedule || !rawSchedule.idx) {
+    // idx 확인
     console.error('Invalid schedule:', rawSchedule);
     return;
   }
@@ -294,9 +294,7 @@ const onDragStart = (event, schedule) => {
   console.log('Drag started with schedule:', rawSchedule);
 };
 
-
-
-const onScheduleClick = (schedule) => {
+const onScheduleClick = schedule => {
   console.log('Schedule clicked:', schedule);
   // 원하는 작업 추가 (예: 상세보기 모달 열기)
 };
@@ -327,7 +325,7 @@ const onDrop = async (event, targetDate) => {
 
   // 기존 start와 end 시간 추출
   const startTime = dayjs(parsedSchedule.start).format('HH:mm:ss'); // 기존 시작 시간
-  const endTime = dayjs(parsedSchedule.end).format('HH:mm:ss');     // 기존 종료 시간
+  const endTime = dayjs(parsedSchedule.end).format('HH:mm:ss'); // 기존 종료 시간
 
   // 기존 start와 end의 차이 계산
   const startDate = dayjs(parsedSchedule.start);
@@ -336,7 +334,7 @@ const onDrop = async (event, targetDate) => {
 
   // 새 start와 end 계산
   const newStart = dayjs(targetDate.format('YYYY-MM-DD') + `T${startTime}`); // 기존 시간 유지
-  const newEnd = newStart.add(duration, 'day').add(1, 'second');             // 기존 기간 유지 (초 단위 조정)
+  const newEnd = newStart.add(duration, 'day').add(1, 'second'); // 기존 기간 유지 (초 단위 조정)
 
   try {
     // 서버로 PUT 요청
@@ -358,19 +356,13 @@ const onDrop = async (event, targetDate) => {
   }
 };
 
-
-
-
-
-
-const onDragOver = (event) => {
+const onDragOver = event => {
   event.currentTarget.classList.add('drag-over');
 };
 
-const onDragLeave = (event) => {
+const onDragLeave = event => {
   event.currentTarget.classList.remove('drag-over');
 };
-
 </script>
 
 <template>
@@ -437,9 +429,8 @@ const onDragLeave = (event) => {
               notthisMdays: !column.isSame(now, 'month'),
               today: column.isSame(dayjs(), 'day'),
             }"
-              @dragover.prevent
-              @drop="onDrop($event, column)"
-              
+            @dragover.prevent
+            @drop="onDrop($event, column)"
           >
             <!-- 일기북마크 -->
             <font-awesome-icon v-if="isDiaryEntry(column)" icon="bookmark" class="bookmark-icon" />
@@ -465,7 +456,6 @@ const onDragLeave = (event) => {
                 backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
                 gridColumn: `span ${dayjs(schedule.end).diff(dayjs(schedule.start), 'day') + 1}`,
-
               }"
               class="schedule-title"
               draggable="true"
@@ -691,7 +681,6 @@ const onDragLeave = (event) => {
   border: 2px dashed #ccc; /* 드래그 시 테두리 변경 */
 }
 
-
 .date-number {
   position: absolute;
   top: 10px;
@@ -838,19 +827,15 @@ const onDragLeave = (event) => {
   line-height: 0px;
   cursor: grab; /* 드래그 가능 표시 */
   height: auto;
-  
-  
 }
 .schedule-title:active {
   opacity: 0.7;
 }
 
-
-
 .holiday-container {
   position: absolute;
-  top: 15px; /* 상단 여백 */
-  left: 5px; /* 왼쪽 여백 */
+  top: 32px; /* 상단 여백 */
+  right: 8px;
   display: flex;
   flex-wrap: wrap; /* 줄바꿈 허용 */
   gap: 4px; /* 공휴일 간격 */
@@ -879,7 +864,8 @@ const onDragLeave = (event) => {
 
 .icon {
   position: absolute;
-  top: 0.5rem;
+  top: 1.8rem;
+  left: 5px;
   opacity: 0.5;
   transition: opacity 0.3s ease;
 }
