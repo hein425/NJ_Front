@@ -95,10 +95,6 @@ const handleLogout = async () => {
   setActiveMenu('');
 };
 
-<<<<<<< HEAD
-=======
-// Pinia store의 상태가 복원되었는지 확인
->>>>>>> lsy
 onMounted(() => {
   if (!authStore.isLoggedIn) {
     authStore.restoreLogin();

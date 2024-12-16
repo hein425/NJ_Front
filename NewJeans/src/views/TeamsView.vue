@@ -1,9 +1,5 @@
 <template>
-<<<<<<< HEAD
   <div class="team-view">
-=======
-   <div class="team-view">
->>>>>>> lsy
     <!-- 상단: 친구 검색, 친구 요청, 교환일기 요청 -->
     <div class="top-section">
       <!-- 친구 검색 섹션 -->
@@ -27,11 +23,7 @@
         <h3>친구 요청</h3>
         <div class="notification-section">
           <div class="request-notification" @click="toggleRequestList">
-<<<<<<< HEAD
             <span class="notification-message">새로운 친구 요청 확인</span>
-=======
-            <span class="notification-message">새로운 친구 요청 확인하기</span>
->>>>>>> lsy
             <div v-if="friendRequests.length > 0" class="notification-badge">
               {{ friendRequests.length }}
             </div>
@@ -39,11 +31,7 @@
           <transition name="fade">
             <ul v-if="showRequestList" class="request-list">
               <li v-for="request in friendRequests" :key="request.userId" class="search-result-item">
-<<<<<<< HEAD
                 <img :src="request.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
-=======
-                <img :src="request.profileImageUrl || defaultProfileImage " alt="프로필 이미지" class="profile-icon" />
->>>>>>> lsy
                 <span class="user-click">{{ request.userName }}</span>
                 <span class="friend-email">{{ request.email }}</span>
                 <button @click="acceptFriendRequest(request.userId)">수락</button>
@@ -59,34 +47,6 @@
         <h3>교환일기 요청</h3>
         <div class="notification-section">
           <div class="request-notification" @click="toggleExchangeDiaryRequestList">
-<<<<<<< HEAD
-=======
-            <span class="notification-message">새로운 교환일기 요청 확인하기</span>
-            <div v-if="exchangeDiaryRequests.length > 0" class="notification-badge">
-              {{ exchangeDiaryRequests.length }}
-            </div>
-          </div>
-          <transition name="fade">
-            <ul v-if="showExchangeDiaryRequestList" class="request-list">
-              <li v-for="request in exchangeDiaryRequests" :key="request.diaryId" class="search-result-item">
-                <img :src="request.profileImageUrl" alt="프로필 이미지" class="profile-icon" />
-                <span class="user-click">{{ request.userName }}</span>
-                <span class="friend-email">{{ request.email }}</span>
-                <button @click="acceptExchangeDiaryRequest(request.diaryId, request.userId, userId)">수락</button>
-                <button class="delete-button-ex" @click="rejectExchangeDiaryRequest(request.diaryId)">거절</button>
-              </li>
-            </ul>
-          </transition>
-        </div>
-      </div>
-    </div>
-
-      <!-- 교환일기 요청 섹션 -->
-      <div class="exchange-diary-request-container">
-        <h3>교환일기 요청</h3>
-        <div class="notification-section">
-          <div class="request-notification" @click="toggleExchangeDiaryRequestList">
->>>>>>> lsy
             <span class="notification-message">새로운 교환일기 요청 확인</span>
             <div v-if="exchangeDiaryRequests.length > 0" class="notification-badge">
               {{ exchangeDiaryRequests.length }}
@@ -118,11 +78,7 @@
               <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
               <span class="user-click">{{ friend.userName }}</span>
               <span class="friend-email">{{ friend.email }}</span>
-<<<<<<< HEAD
               <button class="delete-button-4" @click="deleteFriend(friend.idx)">친구 삭제</button>
-=======
-              <button class="delete-button-4">친구 삭제</button>
->>>>>>> lsy
             </li>
           </ul>
         </div>
@@ -215,10 +171,7 @@
         </div>
       </div>
     </transition>
-<<<<<<< HEAD
   </div>
-=======
->>>>>>> lsy
 </template>
 
 <script setup>
@@ -252,7 +205,6 @@ const entryTitle = ref(''); // 일기 제목
 const entryContent = ref(''); // 일기 내용
 const selectedDiaryId = ref(null); // 선택한 다이어리 ID
 const entryId = ref(null); // 수정할 일기 ID
-<<<<<<< HEAD
 
 //친구 삭제
 const deleteFriend = async friendId => {
@@ -274,8 +226,6 @@ const deleteFriend = async friendId => {
     alert('친구 삭제에 실패했습니다.');
   }
 };
-=======
->>>>>>> lsy
 
 // 일기 쓰기 모달 열기
 const openEntryModal = diaryId => {
