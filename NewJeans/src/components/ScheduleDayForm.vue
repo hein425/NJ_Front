@@ -401,6 +401,13 @@ const saveDiaryEdit = async (type, index) => {
 const saveScheduleEdit = async (type, index) => {
   if (type !== 'schedule') return;
 
+  if (editData.value.repeatType !== schedules.value[index].repeatType) {
+    const confirmEdit = window.confirm('현재 날짜 이후의 기존 일정이 삭제됩니다. 그래도 수정 하시겠습니까?');
+    if (!confirmEdit) {
+      return; // 사용자가 취소 버튼을 누르면 함수 종료
+    }
+  }
+
   // 스케줄 수정
   const scheduleToUpdate = schedules.value[index];
 
