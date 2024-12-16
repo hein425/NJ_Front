@@ -52,15 +52,19 @@ const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', 
 // 연도 변경 시
 const onYearChange = () => {
   now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
+  if (calendarIdx.value != null) {
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+  }
 };
 
 // 월 변경 시
 const onMonthChange = () => {
   now.value = dayjs(`${selectedYear.value}-${selectedMonth.value}-01`);
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
+  if (calendarIdx.value != null) {
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+  }
 };
 
 // @<@ 일기 띄우기 @>@
@@ -90,7 +94,7 @@ const fetchHolidays = async () => {
   try {
     const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`);
     holidays.value = response.data;
-    console.log(`공휴일 (${year}): `, holidays.value);
+    // console.log(`공휴일 (${year}): `, holidays.value);
   } catch (error) {
     console.error('Failed to fetch holidays:', error);
   }
@@ -237,8 +241,10 @@ watch(
     for (let i = 0; i < columns.value.length; i += 7) {
       groupColumns.value.push(columns.value.slice(i, i + 7));
     }
-    MonthlySchedules();
-    fetchDiaryEntriesForMonth();
+    if (calendarIdx.value != null) {
+      MonthlySchedules();
+      fetchDiaryEntriesForMonth();
+    }
     fetchHolidays();
   },
   {
@@ -248,8 +254,10 @@ watch(
 );
 watchEffect(() => {
   calendarIdx.value = authStore.calendarIdx;
-  MonthlySchedules();
-  fetchDiaryEntriesForMonth();
+  if (calendarIdx.value != null) {
+    MonthlySchedules();
+    fetchDiaryEntriesForMonth();
+  }
 });
 
 // 회원가입 후 여기로 바로 오면서 로그인 모달 열어줌

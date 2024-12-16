@@ -1,6 +1,6 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
-import { computed, ref } from 'vue';
+import { RouterView } from 'vue-router';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import MenuBar2 from './components/MenuBar2.vue';
 import HeaderTop from './components/HeaderTop.vue';
@@ -18,15 +18,14 @@ const themes = [
 const authStore = useAuthStore();
 
 onMounted(async () => {
-  console.log('App.vue onMounted 실행');
   await authStore.restoreLogin();
-  console.log('restoreLogin 실행 후 상태:', {
-    isLoggedIn: authStore.isLoggedIn,
-    userName: authStore.userName,
-    profile: authStore.profile,
-    email: authStore.email,
-    idx: authStore.idx,
-  });
+  // console.log('restoreLogin 실행 후 상태:', {
+  //   isLoggedIn: authStore.isLoggedIn,
+  //   userName: authStore.userName,
+  //   profile: authStore.profile,
+  //   email: authStore.email,
+  //   idx: authStore.idx,
+  // });
 
   // 저장된 테마를 localStorage에서 불러와 적용
   const savedTheme = localStorage.getItem('selectedTheme');
@@ -53,7 +52,8 @@ onMounted(async () => {
       });
 
       // MenuBar 배경색 적용
-      document.querySelector('.nav_wrapper').style.backgroundColor = themeProperties.getPropertyValue('--menu-background-color');
+      // document.querySelector('.nav_wrapper').style.backgroundColor 
+      //   = themeProperties.getPropertyValue('--menu-background-color');
     }
   }
 });

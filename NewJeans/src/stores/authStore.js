@@ -69,7 +69,7 @@ export const useAuthStore = defineStore('auth', {
       const idx = localStorage.getItem('idx');
       const calendarIdx = localStorage.getItem('calendarIdx');
 
-      console.log('restoreLogin 호출됨 - 가져온 데이터:', { accessToken, userName, profileImageUrl, email, idx, calendarIdx });
+      // console.log('restoreLogin 호출됨 - 가져온 데이터:', { accessToken, userName, profileImageUrl, email, idx, calendarIdx });
 
       if (accessToken && userName) {
         this.accessToken = accessToken;
@@ -82,9 +82,9 @@ export const useAuthStore = defineStore('auth', {
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-        console.log('restoreLogin 실행 후 상태:', this.$state); // 최종 상태 확인
+        // console.log('restoreLogin 실행 후 상태:', this.$state); // 최종 상태 확인
       } else {
-        console.warn('localStorage에 저장된 로그인 정보가 없습니다.');
+        // console.warn('localStorage에 저장된 로그인 정보가 없습니다.');
       }
     },
     changeProfileImage(newprofileImageUrl) {
