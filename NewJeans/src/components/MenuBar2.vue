@@ -209,6 +209,7 @@ html {
 }
 
 .main-menu {
+  z-index: 999;
   background: #f7f7f7;
   position: fixed;
   top: 0;

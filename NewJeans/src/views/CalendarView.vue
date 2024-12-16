@@ -373,7 +373,7 @@ const onDragLeave = event => {
     v-else
     class="calendar-wrapper"
     :style="{
-      height: `${weeksInMonth * 240}px`, // 주차 수에 따라 높이 동적으로 설정
+      height: `${weeksInMonth * 250}px`, // 주차 수에 따라 높이 동적으로 설정
     }"
   >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
