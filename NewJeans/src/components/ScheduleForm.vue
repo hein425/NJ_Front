@@ -22,15 +22,15 @@
       <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
         <div class="modal">
           <p>제목을 입력해주세요.</p>
-          <button @click="closeEmptyTitleModal" class="close-modal-btn">확인</button>
+          <button @click="closeModal('emptyTitle')" class="close-modal-btn">확인</button>
         </div>
       </div>
 
-      <!-- 제목 비어있 경고 모달 -->
+      <!-- 제목 글자수 경고 모달 -->
       <div v-if="showTitleLimitModal" class="modal-overlay modal-title-limit">
         <div class="modal">
           <p>제목은 최대 50자까지 입력할 수 있습니다.</p>
-          <button @click="closeTitleLimitModal" class="close-modal-btn">확인</button>
+          <button @click="closeModal('titleLimit')" class="close-modal-btn">확인</button>
         </div>
       </div>
 
@@ -38,7 +38,7 @@
       <div v-if="showSuccessModal" class="modal-overlay modal-title-success">
         <div class="modal">
           <p>일정이 저장되었습니다.</p>
-          <button @click="closeTitleSuccessModal" class="close-modal-btn">확인</button>
+          <button @click="closeModal('success')" class="close-modal-btn">확인</button>
         </div>
       </div>
 
@@ -343,10 +343,6 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
-const closeEmptyTitleModal = () => {
-  showEmptyTitleModal.value = false;
-};
-
 // 제목 길이 확인 함수
 const checkTitleLength = () => {
   if (title.value.length > 50) {
@@ -356,14 +352,15 @@ const checkTitleLength = () => {
 };
 
 // 모달 닫기 함수
-const closeTitleLimitModal = () => {
-  showTitleLimitModal.value = false;
+// 모달 닫기 함수
+const closeModal = modalName => {
+  if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
+  if (modalName === 'titleLimit') showTitleLimitModal.value = false;
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+    emit('closeForm');
+  }
 };
-
-const closeTitleSuccessModal = () => {
-  showSuccessModal.value = true;
-};
-
 const submitSchedule = async () => {
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
@@ -410,8 +407,6 @@ const submitSchedule = async () => {
 
     // 일정 저장 성공 모달 표시
     showSuccessModal.value = true;
-
-    emit('closeForm');
   } catch (error) {
     console.error('Failed to submit Schedule:', error);
     emit('closeForm');
@@ -869,7 +864,7 @@ label[for='image']:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* background-color: rgba(0, 0, 0, 0.5); */
   display: flex;
   justify-content: center;
   align-items: center;

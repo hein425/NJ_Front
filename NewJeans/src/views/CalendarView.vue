@@ -814,7 +814,7 @@ const onDragLeave = event => {
   box-sizing: border-box; /* padding 포함하여 너비를 계산 */
   font-size: 0.8rem;
   color: #3a3a3a;
-  padding: 9px 5px; /* 내부 여백 */
+  padding: 15px 5px; /* 내부 여백 */
   border-radius: 3px;
   margin-top: 4px;
   text-align: left;
@@ -822,7 +822,7 @@ const onDragLeave = event => {
   white-space: nowrap;
   text-overflow: ellipsis;
   position: relative;
-  top: 10px;
+  top: 30px;
   /* height: 15px; */
   line-height: 0px;
   cursor: grab; /* 드래그 가능 표시 */
@@ -855,7 +855,7 @@ const onDragLeave = event => {
 /* 북마크 아이콘 스타일 추가 */
 .bookmark-icon {
   position: absolute;
-  top: 2px;
+  top: 0;
   left: 5px;
   font-size: 0.8rem;
   color: #dfc38c;

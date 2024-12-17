@@ -6,7 +6,7 @@
         <div class="title-category-row">
           <div class="title-section">
             <label for="title" style="width: 50px">제목</label>
-            <input id="title" v-model="title" class="input-field" />
+            <input id="title" v-model="title" class="input-field" @input="checkTitleLength" />
           </div>
 
           <div class="category-section">
@@ -18,6 +18,30 @@
               <option value="ETC">#기타</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <!-- 제목 비어있음 경고 모달 -->
+      <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
+        <div class="modal">
+          <p>제목을 입력해주세요.</p>
+          <button @click="closeModal('emptyTitle')" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 제목 글자수 경고 모달 -->
+      <div v-if="showTitleLimitModal" class="modal-overlay modal-title-limit">
+        <div class="modal">
+          <p>제목은 최대 50자까지 입력할 수 있습니다.</p>
+          <button @click="closeModal('titleLimit')" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 일정 저장 성공 모달 -->
+      <div v-if="showSuccessModal" class="modal-overlay modal-title-success">
+        <div class="modal">
+          <p>일기가 저장되었습니다.</p>
+          <button @click="closeModal('success')" class="close-modal-btn">확인</button>
         </div>
       </div>
 
@@ -74,6 +98,10 @@ const props = defineProps({
 const emit = defineEmits(['closeForm', 'updateList']);
 
 const title = ref('');
+const showTitleLimitModal = ref(false);
+const showEmptyTitleModal = ref(false);
+const showSuccessModal = ref(false);
+
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
@@ -93,11 +121,29 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
+// 제목 길이 확인 함수
+const checkTitleLength = () => {
+  if (title.value.length > 50) {
+    showTitleLimitModal.value = true; // 모달 표시
+    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
+    return;
+  }
+};
+
+// 모달 닫기 함수
+const closeModal = modalName => {
+  if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
+  if (modalName === 'titleLimit') showTitleLimitModal.value = false;
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+    emit('closeForm');
+  }
+};
+
 const submitDiary = async () => {
-  
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
-    alert("제목을 입력해주세요."); 
+    showEmptyTitleModal.value = true;
     return;
   }
 
@@ -105,13 +151,12 @@ const submitDiary = async () => {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: category.value, 
+    category: category.value,
     calendarIdx: authStore.calendarIdx,
   };
 
   const formData = new FormData();
-  formData.append('diaryRequest', 
-  new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   // 이미지 파일 추가 여부를 확인
   if (images.value.length > 0) {
@@ -129,7 +174,8 @@ const submitDiary = async () => {
       },
     });
     console.log('Diary Submitted Successfully', response.data);
-    emit('closeForm'); 
+    // 다이어리 저장 성공 모달 표시
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Failed to submit diary:', error);
     emit('closeForm');
@@ -140,10 +186,9 @@ const cancelForm = () => {
   emit('closeForm');
 };
 
-const removeImage = (index) => {
+const removeImage = index => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
-
 </script>
 
 <style scoped>
@@ -419,11 +464,11 @@ const removeImage = (index) => {
 }
 
 /* 파일 선택 버튼 스타일 */
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 
-label[for="image"] {
+label[for='image'] {
   display: inline-block;
   padding: 10px 20px;
   background-color: #222222;
@@ -435,8 +480,63 @@ label[for="image"] {
   text-align: center;
 }
 
-label[for="image"]:hover {
+label[for='image']:hover {
   background-color: #525151;
 }
 
+/* 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.close-modal-btn {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background-color: #5c5c5c;
+}
+
+/* 개별 모달 위치 */
+.modal-empty-title {
+  top: -30%;
+}
+
+.modal-title-limit {
+  top: -20%;
+}
+.modal-title-success {
+  top: -30%;
+}
 </style>
