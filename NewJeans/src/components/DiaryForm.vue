@@ -22,28 +22,15 @@
       </div>
 
       <!-- 제목 비어있음 경고 모달 -->
-      <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
-        <div class="modal">
-          <p>제목을 입력해주세요.</p>
-          <button @click="closeModal('emptyTitle')" class="close-modal-btn">확인</button>
-        </div>
-      </div>
+      <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
 
       <!-- 제목 글자수 경고 모달 -->
-      <div v-if="showTitleLimitModal" class="modal-overlay modal-title-limit">
-        <div class="modal">
-          <p>제목은 최대 50자까지 입력할 수 있습니다.</p>
-          <button @click="closeModal('titleLimit')" class="close-modal-btn">확인</button>
-        </div>
-      </div>
+      <BaseModal :visible="showTitleLimitModal" :message="'제목은 최대 50자까지 입력할 수 있습니다.'" @close="() => closeModal('titleLimit')" class="modal-empty-title" />
 
       <!-- 일정 저장 성공 모달 -->
-      <div v-if="showSuccessModal" class="modal-overlay modal-title-success">
-        <div class="modal">
-          <p>일기가 저장되었습니다.</p>
-          <button @click="closeModal('success')" class="close-modal-btn">확인</button>
-        </div>
-      </div>
+      <BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
+
+      <button type="submit">저장</button>
 
       <!-- Date -->
       <div class="row">
@@ -90,6 +77,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
   selectedDate: String,
@@ -130,7 +118,7 @@ const checkTitleLength = () => {
   }
 };
 
-// 모달 닫기 함수
+// 모달 닫기 로직은 부모가 담당
 const closeModal = modalName => {
   if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
   if (modalName === 'titleLimit') showTitleLimitModal.value = false;
@@ -482,61 +470,5 @@ label[for='image'] {
 
 label[for='image']:hover {
   background-color: #525151;
-}
-
-/* 모달 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* background-color: rgba(0, 0, 0, 0.5); */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.modal p {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.close-modal-btn {
-  background-color: #333;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.close-modal-btn:hover {
-  background-color: #5c5c5c;
-}
-
-/* 개별 모달 위치 */
-.modal-empty-title {
-  top: -30%;
-}
-
-.modal-title-limit {
-  top: -20%;
-}
-.modal-title-success {
-  top: -30%;
 }
 </style>

@@ -140,6 +140,9 @@
         </div>
       </div>
 
+      <!--  수정 성공 모달 -->
+      <BaseModal :visible="showSuccessModal" :message="'수정이 완료되었습니다.'" @close="() => closeModal('success')" class="modal-edit-success" />
+
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
         <div v-if="diaries.length > 0">
@@ -200,6 +203,7 @@ import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
   selectedDate: String,
@@ -222,11 +226,18 @@ const authStore = useAuthStore();
 // 모달 관련 상태
 const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
+const showSuccessModal = ref(false);
 const deleteIndex = ref(null);
 const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
 
 const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
 const showDiaryDeleteModal = ref(false);
+
+const closeModal = modalName => {
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+  }
+};
 
 // 매핑된 한글 반복 타입을 반환하는 함수
 const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
@@ -306,7 +317,7 @@ const fetchDayData = async selectedDate => {
   }
 };
 
-const startPolling = async (selectedDate) => {
+const startPolling = async selectedDate => {
   const res = await fetchDayData(selectedDate);
   console.log(res);
   // pollingInterval = setInterval(() => {
@@ -391,6 +402,7 @@ const saveDiaryEdit = async (type, index) => {
     console.log('Diary updated successfully:', response.data);
 
     Object.assign(diaryToUpdate, editData.value);
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
@@ -435,6 +447,7 @@ const saveScheduleEdit = async (type, index) => {
     });
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Error during schedule update:', error.response ? error.response.data : error.message);
   } finally {
@@ -657,14 +670,14 @@ const removeScheduleImage = index => {
 watch(
   () => props.selectedDate,
   async newDate => {
-    console.log("와치 하고 있음");
+    console.log('와치 하고 있음');
     if (newDate) {
       await fetchDayData(newDate);
     }
   },
   { immediate: true },
 );
-console.log("재 랜더링");
+console.log('재 랜더링');
 </script>
 
 <style scoped>
