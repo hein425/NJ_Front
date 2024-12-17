@@ -352,7 +352,6 @@ const checkTitleLength = () => {
 };
 
 // 모달 닫기 함수
-// 모달 닫기 함수
 const closeModal = modalName => {
   if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
   if (modalName === 'titleLimit') showTitleLimitModal.value = false;

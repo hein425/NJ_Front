@@ -188,6 +188,7 @@ const navigateToSetting = menu => {
 // Handle logout
 const handleLogout = async () => {
   await authStore.logout();
+
   router.push('/');
   setActiveMenu('');
 };

@@ -30,8 +30,6 @@
       <!-- 일정 저장 성공 모달 -->
       <BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
 
-      <button type="submit">저장</button>
-
       <!-- Date -->
       <div class="row">
         <label for="date" style="width: 80px">작성일</label>

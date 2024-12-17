@@ -30,7 +30,6 @@ export const useAuthStore = defineStore('auth', {
       this.idx = idx;
       this.calendarIdx = calendarIdx;
       this.isLoggedIn = true;
-      
 
       localStorage.setItem('token', token);
       localStorage.setItem('userName', userName);
@@ -40,7 +39,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('calendarIdx', calendarIdx || '');
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
     },
     logout() {
       this.accessToken = null;
@@ -59,7 +57,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('calendarIdx');
 
       delete axios.defaults.headers.common['Authorization'];
-
     },
     restoreLogin() {
       const accessToken = localStorage.getItem('token');
