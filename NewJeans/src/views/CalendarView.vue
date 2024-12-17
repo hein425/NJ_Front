@@ -276,6 +276,24 @@ onMounted(() => {
   }
 });
 
+// Watch 로그인 상태 변화
+watch(
+  () => authStore.isLoggedIn, // 로그인 상태 감시
+  async isLoggedIn => {
+    if (isLoggedIn && authStore.calendarIdx) {
+      console.log('로그인 상태 감지 - 캘린더 데이터 로딩');
+      await MonthlySchedules(); // 일정 재로드
+      await fetchDiaryEntriesForMonth(); // 일기 재로드
+    } else {
+      console.log('로그아웃 상태 감지 - 캘린더 초기화');
+      schedules.value = []; // 일정 초기화
+      diaryEntries.value = []; // 일기 초기화
+      holidays.value = {}; // 공휴일 초기화
+    }
+  },
+  { immediate: true }, // 초기 실행
+);
+
 // 모달 닫기 함수
 const closeModal = () => {
   showModal.value = false;

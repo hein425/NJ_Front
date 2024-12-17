@@ -37,19 +37,29 @@ const handleClose = () => {
 }
 
 .modal {
-  background: white;
+  background-color: white;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .close-modal-btn {
-  background: #333;
+  background-color: #333;
   color: white;
-  padding: 10px 20px;
   border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 /* 개별 모달 위치 */
 .modal-empty-title {

@@ -11,21 +11,14 @@
       </div>
       <!-- 제목 -->
       <div class="title-row">
-  <label for="title" class="title-label">제목</label>
-  <button type="button" @click="toggleRecordingMenu" class="split-button">
-    <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
-  </button>
-</div>
-<div class="row">
-  <input
-    id="title"
-    v-model="title"
-    placeholder="Enter Title"
-    class="input-field"
-    @input="checkTitleLength"
-  />
-</div>
-
+        <label for="title" class="title-label">제목</label>
+        <button type="button" @click="toggleRecordingMenu" class="split-button">
+          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+        </button>
+      </div>
+      <div class="row">
+        <input id="title" v-model="title" placeholder="Enter Title" class="input-field" @input="checkTitleLength" />
+      </div>
 
       <!-- 제목 비어있음 경고 모달 -->
       <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
@@ -124,37 +117,30 @@
 
       <!-- 지도 -->
       <div class="title-row">
-  <label for="location" class="title-label">위치</label>
-  <!-- + 버튼 -->
-  <button type="button" @click="toggleMapVisibility" class="split-button">
-    <span class="split-button-icon">
-      {{ isMapVisible ? '−' : '+' }}
-    </span>
-  </button>
-</div>
+        <label for="location" class="title-label">위치</label>
+        <!-- + 버튼 -->
+        <button type="button" @click="toggleMapVisibility" class="split-button">
+          <span class="split-button-icon">
+            {{ isMapVisible ? '−' : '+' }}
+          </span>
+        </button>
+      </div>
 
-<!-- 지도 컨테이너 -->
-<div v-if="isMapVisible" class="row map-container">
-  <KakaoMap @updateLocation="updateLocation" />
-</div>
+      <!-- 지도 컨테이너 -->
+      <div v-if="isMapVisible" class="row map-container">
+        <KakaoMap @updateLocation="updateLocation" />
+      </div>
 
-
-<!-- 메모 부분 -->
-<div class="memo-row">
-  <label for="content">메모</label>
-  <button type="button" @click="toggleMemoRecordingMenu" class="split-button">
-    <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
-  </button>
-</div>
-<div class="row">
-  <textarea
-    id="content"
-    v-model="description"
-    placeholder="Enter your note"
-    class="input-field textarea-field"
-  ></textarea>
-</div>
-
+      <!-- 메모 부분 -->
+      <div class="memo-row">
+        <label for="content">메모</label>
+        <button type="button" @click="toggleMemoRecordingMenu" class="split-button">
+          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+        </button>
+      </div>
+      <div class="row">
+        <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
+      </div>
 
       <!-- 메모 언어 선택 및 듣기 버튼 - 기본 숨김 -->
       <div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
@@ -170,16 +156,15 @@
           </div>
         </div>
         <div class="button-container">
-  <!-- 시작하기 버튼 -->
-  <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
-  <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
-</div>
-
+          <!-- 시작하기 버튼 -->
+          <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
+          <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+        </div>
       </div>
 
       <!-- 이미지 업로드 -->
       <div class="row">
-        <label for="image" style="width: 90px; margin-bottom: 10px; margin-top: 10px;">이미지 첨부</label>
+        <label for="image" style="width: 90px; margin-bottom: 10px; margin-top: 10px">이미지 첨부</label>
         <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
       </div>
 
@@ -245,8 +230,6 @@ const isMapVisible = ref(false);
 const toggleMapVisibility = () => {
   isMapVisible.value = !isMapVisible.value;
 };
-
-
 
 // 메모 메뉴 토글
 const toggleMemoRecordingMenu = () => {
@@ -467,8 +450,6 @@ const removeImage = index => {
 };
 </script>
 <style scoped>
-
-
 .row {
   display: flex;
   flex-direction: column;
@@ -579,7 +560,7 @@ textarea {
   background-color: #343434;
   color: white;
 }
-.submit-button:hover{
+.submit-button:hover {
   background-color: #525151;
 }
 
@@ -817,13 +798,11 @@ label[for='image']:hover {
   border-color: #888;
 }
 
-
 .split-button-text {
   padding: 5px 10px;
   font-size: 14px;
   color: #333;
 }
-
 
 /* 듣기 버튼 */
 .play-button {
@@ -837,12 +816,14 @@ label[for='image']:hover {
     background-color 0.3s ease,
     color 0.3s ease;
 }
-.play-button:hover{
-background-color: #f0f0f0;
+.play-button:hover {
+  background-color: #f0f0f0;
 }
 
 .play-button:active {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 0 #999; /* 클릭 시 그림자 감소 */
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.1),
+    0 1px 0 #999; /* 클릭 시 그림자 감소 */
   transform: translateY(2px); /* 눌리는 효과 */
 }
 
@@ -850,7 +831,6 @@ background-color: #f0f0f0;
   color: #333;
   padding: 8px 16px; /* 텍스트 영역 크기 조정 */
 }
-
 
 /* 언어 선택 버튼 */
 .language-options {
@@ -902,7 +882,6 @@ background-color: #f0f0f0;
   top: 64%;
 }
 
-
 /* 모달 */
 .modal-overlay {
   position: fixed;
@@ -949,7 +928,7 @@ background-color: #f0f0f0;
 
 /* 개별 모달 위치 */
 .modal-empty-title {
-  top: 35%;
+  top: 0%;
 }
 
 .modal-title-limit {
@@ -1019,13 +998,12 @@ background-color: #f0f0f0;
   transition: color 0.3s ease;
 }
 
-
 .language-recording-container .close-button:hover {
   color: #d32f2f;
 }
 
 /* 제목과 메모에 공통 스타일 적용 */
-.title-row, 
+.title-row,
 .memo-row {
   margin-top: 10px;
   display: flex; /* 가로 정렬 */
@@ -1035,7 +1013,7 @@ background-color: #f0f0f0;
 }
 
 /* 공통 라벨 스타일 */
-.title-row label, 
+.title-row label,
 .memo-row label {
   font-size: 1.1rem;
   font-weight: bold;
@@ -1068,7 +1046,6 @@ background-color: #f0f0f0;
   font-size: 15px; /* 아이콘 크기 */
 }
 
-
 /* 입력 필드 스타일 */
 .input-field {
   width: 100%; /* 전체 너비 */
@@ -1083,8 +1060,4 @@ background-color: #f0f0f0;
 .input-field:focus {
   border-color: #161616; /* 포커스 시 테두리 색상 */
 }
-
-
-
-
 </style>

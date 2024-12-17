@@ -126,6 +126,8 @@
         </ul>
       </div>
       <Modal :show="showModal" @close="showModal = false" />
+      <!-- f로그아웃 모달 -->
+      <BaseModal :visible="showSuccessModal" :message="'로그아웃되었습니다.'" @close="showSuccessModal = false" class="modal-logout-success" />
     </nav>
   </header>
 </template>
@@ -135,12 +137,14 @@ import { ref, onMounted } from 'vue';
 import Modal from './MoDal.vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
 
 // Router and Store
 const router = useRouter();
 const authStore = useAuthStore();
 
 // Reactive states
+const showSuccessModal = ref(false);
 const showModal = ref(false);
 const activeMenu = ref(''); // 현재 활성화된 메뉴 상태
 
@@ -187,10 +191,10 @@ const navigateToSetting = menu => {
 
 // Handle logout
 const handleLogout = async () => {
-  await authStore.logout();
-
-  router.push('/');
-  setActiveMenu('');
+  await authStore.logout(); // 로그아웃 로직 실행
+  showSuccessModal.value = true; // 로그아웃 성공 모달 표시
+  router.push('/'); // 홈 화면으로 이동
+  setActiveMenu(''); // 메뉴 상태 초기화
 };
 
 // Restore login on mount

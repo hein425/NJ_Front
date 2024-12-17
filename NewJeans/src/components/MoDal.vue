@@ -14,6 +14,9 @@
           <p class="forgot-password-button">간편 계정 등록 및 회원가입</p>
         </form>
 
+        <!-- 일정 저장 성공 모달 -->
+        <BaseModal :visible="showSuccessModal" :message="'로그인 성공!'" @close="() => closeModal('success')" class="modal-login-success" />
+
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
           <button id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
@@ -42,6 +45,7 @@ import { watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { BASE_URL } from '@/config';
 import axios from 'axios';
+import BaseModal from './BaseModal.vue';
 
 // Pinia store 사용
 const authStore = useAuthStore();
@@ -59,6 +63,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 // 로그인 관련 상태
+const showSuccessModal = ref(false);
 const username = ref('');
 const password = ref('');
 
@@ -66,10 +71,8 @@ const password = ref('');
 const openSignUp = () => {
   router.push({ path: '/signupp' });
   //const signUpUrl = router.resolve({ path: '/signupp' }).href;
-//  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
-
+  //  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
 };
-
 
 // 로그인 처리 함수 (일반 로그인)
 const handleLogin = async () => {
@@ -85,9 +88,8 @@ const handleLogin = async () => {
       // 로그인 성공 시 Pinia store에 상태 업데이트
       await authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx, response.data.calendarIdx);
 
-      alert('로그인 성공!');
+      showSuccessModal.value = true;
       await authStore.check();
-      closeModal(); // 모달 닫기
       router.push('/'); // 로그인 후 홈으로 이동
     }
   } catch (error) {
@@ -140,7 +142,6 @@ watchEffect(async () => {
     }
   }
 });
-
 </script>
 
 <style scoped>
