@@ -7,6 +7,7 @@
         <button @click="openFilePicker" class="change-img-btn">프로필 사진 변경</button>
         <input type="file" ref="fileInput" @change="handleFileChange" style="display: none" accept="image/*" />
       </div>
+
       <div class="profile-details">
         <div class="name-edit">
           <h1 v-if="!isEditingName" class="profile-name">{{ userName }}</h1>
@@ -15,6 +16,7 @@
             {{ isEditingName ? '저장' : '닉네임 변경' }}
           </button>
         </div>
+
         <p class="profile-email">{{ email }}</p>
         <div class="delete-section">
           <div class="delete-container">
@@ -25,6 +27,11 @@
             <span class="delete-arrow">›</span>
           </div>
         </div>
+
+        <!-- 닉네임 변경 완료 모달 -->
+        <BaseModal :visible="showNickEditModal" :message="'닉네임이 변경되었습니다.'" @close="() => closeModal('nickEdit')" class="modal-Nick-edit" />
+        <!-- 프로필 변경 완료 모달 -->
+        <BaseModal :visible="showProfileEditModal" :message="'프로필사진이 변경되었습니다.'" @close="() => closeModal('profileEdit')" class="modal-profile-edit" />
       </div>
     </div>
 
@@ -53,6 +60,7 @@ import axios from 'axios';
 import lightLogo from '@/assets/logo2.png'; // Light 테마 로고
 import darkLogo from '@/assets/logo_white.png'; // Dark 테마 로고
 import { BASE_URL } from '@/config';
+import BaseModal from '@/components/BaseModal.vue';
 // import { useRouter } from 'vue-router';
 
 // 테마 관련 이미지 가져오기
@@ -62,6 +70,7 @@ import pinkBackground from '@/assets/flowers-3435886_1920.jpg';
 import skyBackground from '@/assets/sky-5534319_1920.jpg';
 import flowersIcon from '@/assets/flowers_icon.jpg';
 import skyIcon from '@/assets/sky_icon.jpg';
+import { faL } from '@fortawesome/free-solid-svg-icons';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
@@ -71,6 +80,8 @@ const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 const fileInput = ref(null);
 const selectedTheme = ref('Light'); // 기본 테마
+const showNickEditModal = ref(false);
+const showProfileEditModal = ref(false);
 // const router = useRouter();/
 
 const startEditingName = () => {
@@ -88,9 +99,16 @@ const saveUserName = async () => {
     await axios.put(`${BASE_URL}/user/updateUserName`, { idx: authStore.idx, userName: sanitizedUserName });
     authStore.userName = sanitizedUserName;
     isEditingName.value = false;
+    showNickEditModal.value = true;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
   }
+};
+
+// 모달 닫기 로직은 부모가 담당
+const closeModal = modalName => {
+  if (modalName === 'nickEdit') showNickEditModal.value = false;
+  if (modalName === 'profileEdit') showProfileEditModal.value = false;
 };
 
 const fetchProfileImage = async () => {
@@ -117,6 +135,7 @@ const uploadProfileImage = async file => {
 
   try {
     await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
+    showProfileEditModal.value = true;
   } catch (error) {
     console.error('프로필 이미지 업로드 중 오류:', error);
   }

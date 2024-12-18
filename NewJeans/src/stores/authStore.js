@@ -49,6 +49,11 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = false;
       this.calendarIdx = null;
 
+      this.showLoginSuccessModal = true; // 로그인 성공 모달 활성화
+      setTimeout(() => {
+        this.showLoginSuccessModal = false; // 모달 자동 초기화
+      }, 2000);
+
       localStorage.removeItem('token');
       localStorage.removeItem('userName');
       localStorage.removeItem('profileImageUrl');

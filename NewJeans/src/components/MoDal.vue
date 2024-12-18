@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore'; // Pinia store import
 import { watchEffect } from 'vue';
@@ -63,9 +63,20 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 // 로그인 관련 상태
-const showSuccessModal = ref(false);
 const username = ref('');
 const password = ref('');
+const showSuccessModal = ref(false);
+
+watch(
+  () => props.show,
+  newVal => {
+    if (newVal) {
+      username.value = ''; // 입력 필드 초기화
+      password.value = '';
+      showSuccessModal.value = false; // 로그인 성공 모달 초기화
+    }
+  },
+);
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {

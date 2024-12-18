@@ -8,8 +8,8 @@ const emit = defineEmits(['close']);
 //더미 데이터
 const notifications = ref([
   { id: 1, message: 'John posted Design team weekly #37', time: '2h ago', type: 'all' },
-  { id: 2, message: 'Sebastian sent you kudos', time: '3h ago', type: 'mentions' },
-  { id: 3, message: 'Amy asks to join team Growth', time: '5h ago', type: 'requests' },
+  { id: 2, message: '포미님께서 일정을 공유하였습니다.', time: '3h ago', type: 'mentions' },
+  { id: 3, message: '해인님께서 친구신청을 하였습니다.', time: '5h ago', type: 'requests' },
 ]);
 
 // const notifications = ref([]); 더미데이터 삭제 시 이거 쓰면 됨, 알림 데이터 저장용임
@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
   <div class="notifications">
     <div class="notifications-header">
       <h3>Notifications</h3>
-      <button @click="markAllAsRead">Mark all as read</button>
+      <button @click="markAllAsRead">알림 모두 읽기</button>
     </div>
     <div class="notifications-tabs">
       <button :class="{ active: activeTab === 'all' }" @click="setTab('all')">All</button>

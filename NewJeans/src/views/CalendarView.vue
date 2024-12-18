@@ -407,9 +407,6 @@ const onDragLeave = event => {
 
           <!-- 가운데 컨트롤 그룹 -->
           <div class="center-controls">
-            <button @click="subMonth()" class="B-Month-button">
-              <font-awesome-icon :icon="['fas', 'angle-left']" />
-            </button>
             <div class="YMYM">
               <!-- 연도 및 월 표시 -->
               <select v-model="selectedYear" @change="onYearChange">
@@ -419,12 +416,13 @@ const onDragLeave = event => {
                 <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
               </select>
             </div>
-            <button @click="addMonth()" class="A-Month-button">
-              <font-awesome-icon :icon="['fas', 'angle-right']" />
-            </button>
+
+            <!-- 오른쪽 버튼 그룹 -->
+            <div class="right-buttons">
+              <button @click="subMonth()" class="B-Month-button">이전달</button>
+              <button @click="addMonth()" class="A-Month-button">다음달</button>
+            </div>
           </div>
-          <!-- 오른쪽 빈 공간 -->
-          <div class="right-placeholder"></div>
         </h1>
         <div class="DOWgrid">
           <div class="Sun">일</div>
@@ -538,17 +536,22 @@ const onDragLeave = event => {
 
 .Calender-title {
   display: flex;
-  justify-content: space-between; /* 왼쪽과 가운데, 오른쪽 영역 분리 */
   align-items: center;
+  justify-content: space-between; /* 양쪽 정렬 */
+  position: relative; /* 중앙 정렬에 필요한 위치 기준 */
   font-size: 2rem;
   font-weight: 500;
-  position: relative;
 }
 
 .left-buttons {
   display: flex;
   gap: 10px; /* 버튼 간 간격 */
-  flex: 1; /* 왼쪽 공간 확보 */
+}
+
+.right-buttons {
+  display: flex;
+  gap: 10px; /* 버튼 간 간격 */
+  margin-left: auto; /* 오른쪽으로 밀기 */
 }
 
 .center-controls {
@@ -573,7 +576,11 @@ const onDragLeave = event => {
   font-size: 0.9rem;
   cursor: pointer;
 }
+
 .YMYM {
+  position: absolute;
+  left: 50%; /* 왼쪽 기준 50% */
+  transform: translateX(-50%); /* 가운데 정렬 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -581,6 +588,7 @@ const onDragLeave = event => {
 }
 
 .YMYM select {
+  border: none;
   font-size: 1.5rem;
   border-radius: 5px;
   color: #333;
@@ -609,11 +617,13 @@ const onDragLeave = event => {
 }
 .B-Month-button,
 .A-Month-button {
-  background-color: transparent;
+  background-color: #333;
+  color: white;
   border: none;
-  height: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 1.25rem;
 }
 
 /* 플립 애니메이션 */
@@ -875,7 +885,7 @@ const onDragLeave = event => {
   position: absolute;
   top: 0;
   left: 5px;
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   color: #dfc38c;
   /* z-index: 10; */
 }

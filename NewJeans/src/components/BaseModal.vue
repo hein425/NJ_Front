@@ -38,7 +38,7 @@ const handleClose = () => {
 
 .modal {
   background-color: white;
-  padding: 20px;
+  padding: 20px 50px;
   border-radius: 10px;
   text-align: center;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);

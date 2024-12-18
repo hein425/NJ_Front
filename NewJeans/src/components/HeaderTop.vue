@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
   justify-content: flex-start; /* 로고와 검색창 정렬 */
   align-items: center;
   padding: 2rem 2rem 0 2rem;
-  margin-left: 25vh;
+  margin-left: 15vh;
   position: relative;
   width: 80vw;
 }
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 2vh;
   position: absolute; /* 고정 위치 지정 */
-  right: 2rem; /* 오른쪽에서 2rem 떨어짐 */
+  right: -4rem;
   top: 65%; /* 수직 중앙 정렬 */
   transform: translateY(-60%); /* 정확한 수직 중앙 정렬 */
   z-index: 1000;

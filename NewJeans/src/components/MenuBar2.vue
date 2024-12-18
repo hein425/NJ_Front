@@ -111,7 +111,7 @@
 
         <!-- Login / Logout -->
         <ul class="login">
-          <li v-if="!authStore.isLoggedIn" @click="showModal = true">
+          <li v-if="!authStore.isLoggedIn" @click="openLoginModal">
             <a href="#">
               <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="fa" />
               <span class="nav-text">로그인</span>
@@ -126,7 +126,7 @@
         </ul>
       </div>
       <Modal :show="showModal" @close="showModal = false" />
-      <!-- f로그아웃 모달 -->
+      <!-- 로그아웃 모달 -->
       <BaseModal :visible="showSuccessModal" :message="'로그아웃되었습니다.'" @close="showSuccessModal = false" class="modal-logout-success" />
     </nav>
   </header>
@@ -157,6 +157,14 @@ const setActiveMenu = menu => {
 const navigateToCalendar = menu => {
   setActiveMenu(menu);
   router.push('/');
+};
+
+const openLoginModal = () => {
+  showModal.value = false; // 잠시 닫고 초기화
+  authStore.showLoginSuccessModal = false; // 로그인 성공 모달 초기화
+  setTimeout(() => {
+    showModal.value = true; // 모달 다시 열기
+  }, 0);
 };
 
 const navigateToDiary = menu => {
