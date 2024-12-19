@@ -67,19 +67,20 @@
                 <hr class="divider" />
                 <p v-show="scheduleEditIndex !== index"><strong>Address:</strong></p>
 
-                      <!-- 🔄 기존 맵: 수정 모드가 아닐 때만 보이도록 처리 -->
-      <div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index" class="map-container">
-        <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
-      </div>
+ <!-- 기존 맵: 데이터가 없을 때 지도 표시하지 않도록 조건 추가 -->
+<div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index && schedule.latitude && schedule.longitude" class="map-container">
+  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
+</div>
 
-      <!-- 🔄 입력용 맵: 수정 모드일 때만 보이도록 처리 -->
-                <div v-if="scheduleEditIndex === index" class="map-edit-section">
-        <KakaoMap
-          @updateLocation="updateLocation"
-          :latitude="editData.latitude"
-          :longitude="editData.longitude"
-        />
-      </div>
+<!-- 수정 모드에서는 KakaoMap 컴포넌트를 그대로 유지 -->
+<div v-if="scheduleEditIndex === index" class="map-edit-section">
+  <KakaoMap
+    @updateLocation="updateLocation"
+    :latitude="editData.latitude"
+    :longitude="editData.longitude"
+  />
+</div>
+
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="scheduleEditIndex === index" class="schedule-images">
@@ -295,13 +296,10 @@ const fetchDayData = async selectedDate => {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${year}/${month}/${day}`);
 
     schedules.value = scheduleResponse.data.map(schedule => {
-      let latitude = 37.566826; // 기본값 (서울 좌표)
-      let longitude = 126.9786567;
+      const hasValidLocation = schedule.location && schedule.location.includes(',');
 
-      if (schedule.location) {
-        const [lat, lng] = schedule.location.split(',').map(coord => parseFloat(coord.trim()));
-        latitude = lat || latitude;
-        longitude = lng || longitude;
+      if (!hasValidLocation) {
+        console.warn(`스케줄(${schedule.idx})에 유효한 지도 데이터가 없습니다.`);
       }
 
       return {
@@ -312,8 +310,8 @@ const fetchDayData = async selectedDate => {
         end: schedule.end,
         repeatType: schedule.repeatType || '없음',
         repeatEndDate: schedule.repeatEndDate || null,
-        latitude, // 분리한 위도
-        longitude, // 분리한 경도
+        latitude: hasValidLocation ? parseFloat(schedule.location.split(',')[0]) : null,
+        longitude: hasValidLocation ? parseFloat(schedule.location.split(',')[1]) : null,
         content: schedule.content || 'No details provided',
         images: schedule.images || [],
       };
