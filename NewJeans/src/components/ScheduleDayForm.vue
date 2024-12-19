@@ -66,9 +66,20 @@
 
                 <hr class="divider" />
                 <p v-show="scheduleEditIndex !== index"><strong>Address:</strong></p>
-                <div v-if="isScheduleExpanded[index]" class="map-container">
-                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
-                </div>
+
+                      <!-- 🔄 기존 맵: 수정 모드가 아닐 때만 보이도록 처리 -->
+      <div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index" class="map-container">
+        <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
+      </div>
+
+      <!-- 🔄 입력용 맵: 수정 모드일 때만 보이도록 처리 -->
+                <div v-if="scheduleEditIndex === index" class="map-edit-section">
+        <KakaoMap
+          @updateLocation="updateLocation"
+          :latitude="editData.latitude"
+          :longitude="editData.longitude"
+        />
+      </div>
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="scheduleEditIndex === index" class="schedule-images">
@@ -94,6 +105,8 @@
                     <button @click.stop="cancelEdit('schedule')">Cancel</button>
                   </div>
                 </div>
+
+
               </div>
             </transition>
           </div>
@@ -201,9 +214,11 @@
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
+import KakaoMap from "@/views/KakaoMap.vue";
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
+
 
 const props = defineProps({
   selectedDate: String,
@@ -261,6 +276,12 @@ const categoryKoreanMap = {
   ETC: '기타',
 };
 
+const isMapVisible = ref(false);
+
+
+
+
+
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
@@ -291,7 +312,6 @@ const fetchDayData = async selectedDate => {
         end: schedule.end,
         repeatType: schedule.repeatType || '없음',
         repeatEndDate: schedule.repeatEndDate || null,
-        address: schedule.location || 'No address provided',
         latitude, // 분리한 위도
         longitude, // 분리한 경도
         content: schedule.content || 'No details provided',
@@ -362,13 +382,21 @@ const toggleDiaryExpand = index => {
   isDiaryExpanded.value[index] = !isDiaryExpanded.value[index];
 };
 
+// 수정 모드 시작
 const startEdit = (type, index) => {
   if (type === 'schedule') {
     scheduleEditIndex.value = index; // 일정 편집 상태 설정
-    editData.value = { ...schedules.value[index] }; // 편집 데이터를 복사
+    editData.value = { ...schedules.value[index] }; // 편집 데이터 복사
+
+    // 🔄 카카오맵 관련 데이터 설정
+    editData.value.latitude = schedules.value[index].latitude || 37.5665; // 기본값
+    editData.value.longitude = schedules.value[index].longitude || 126.9780;
+
+    isMapVisible.value = true; // 🔄 지도 표시
   } else if (type === 'diary') {
     diaryEditIndex.value = index; // 일기 편집 상태 설정
-    editData.value = { ...diaries.value[index] }; // 편집 데이터를 복사
+    editData.value = { ...diaries.value[index] }; // 편집 데이터 복사
+    isMapVisible.value = false; // 🔄 지도 숨김 (일기에는 필요 없음)
   }
 };
 
@@ -452,15 +480,24 @@ const saveScheduleEdit = async (type, index) => {
     console.error('Error during schedule update:', error.response ? error.response.data : error.message);
   } finally {
     scheduleEditIndex.value = null;
+    isMapVisible.value = false; // 🔄 지도 숨김
   }
 };
 
 const cancelEdit = type => {
   if (type === 'schedule') {
     scheduleEditIndex.value = null;
+    isMapVisible.value = false; // 🔄 지도 숨김
   } else if (type === 'diary') {
     diaryEditIndex.value = null;
   }
+};
+
+// 🔄 KakaoMap에서 위치 데이터 업데이트
+const updateLocation = ({ lat, lng }) => {
+  editData.value.latitude = lat; // 위도 업데이트
+  editData.value.longitude = lng; // 경도 업데이트
+  console.log('Updated location:', lat, lng);
 };
 
 // 모달을 열 때 호출되는 함수
