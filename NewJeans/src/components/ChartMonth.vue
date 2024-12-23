@@ -2,9 +2,9 @@
     <div>
       <h2>월별 통계</h2>
       <div class="header">
-        <button @click="goToPreviousMonth">〈</button>
+        <button @click="goToPreviousMonth" class="tooltip-btn" data-tooltip="이전달">〈</button>
         <span>{{ displayDate }}</span>
-        <button @click="goToNextMonth">〉</button>
+        <button @click="goToNextMonth" class="tooltip-btn" data-tooltip="다음달">〉</button>
       </div>
       <canvas ref="combinedChartCanvas" id="combined-chart-month"></canvas>
     </div>
@@ -15,6 +15,9 @@
   import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement } from 'chart.js';
   import { BASE_URL } from '@/config';
   import { useAuthStore } from '@/stores/authStore';
+  import 'tippy.js/dist/tippy.css';
+  import tippy from 'tippy.js';
+  import { onMounted } from 'vue';
 
 
   Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, BarController, BarElement);
@@ -197,6 +200,21 @@
       },
     },
   };
+
+  onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
   </script>
   
   <style scoped>

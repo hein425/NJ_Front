@@ -102,6 +102,11 @@ const handleLogin = async () => {
 
       showSuccessModal.value = true;
       await authStore.check();
+
+      // SSE 구독 시작 (userName 전달)
+      const userName = response.data.userName; // userName 변수에 저장
+      startSSESubscription(userName); // userName 전달
+
       router.push('/'); // 로그인 후 홈으로 이동
     }
   } catch (error) {
@@ -110,6 +115,24 @@ const handleLogin = async () => {
     console.error('로그인 오류:', error);
   }
 };
+
+// SSE 구독 함수
+const startSSESubscription = (userName) => {
+  console.log('SSE 구독 시작: ', userName); // 전달된 userName 로그로 확인
+  const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe`);
+  // const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${encodeURIComponent(userName)}`);
+
+  eventSource.onmessage = (event) => {
+    console.log('새 알림:', event.data);
+    alert(`새 알림: ${event.data}`); // 알림 표시
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE 오류 발생:', error);
+    eventSource.close(); // 오류 시 연결 닫기
+  };
+};
+
 
 // 모달 닫기 함수
 const closeModal = () => {
