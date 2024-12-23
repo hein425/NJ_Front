@@ -1,6 +1,6 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
-import { computed, ref } from 'vue';
+import { RouterView } from 'vue-router';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import MenuBar2 from './components/MenuBar2.vue';
 import HeaderTop from './components/HeaderTop.vue';
