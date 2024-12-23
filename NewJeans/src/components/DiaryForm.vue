@@ -6,11 +6,11 @@
         <div class="title-category-row">
           <div class="title-section">
             <label for="title" style="width: 50px">제목</label>
-            <input id="title" v-model="title" class="input-field" />
+            <input id="title" v-model="title" class="input-field" @input="checkTitleLength" />
           </div>
 
           <div class="category-section">
-            <select v-model="category" id="category" class="input-field" style="width: 114px">
+            <select v-model="category" id="category" class="input-field tooltip-btn" data-tooltip="카테고리" style="width: 114px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="EXERCISE">#운동</option>
@@ -20,6 +20,15 @@
           </div>
         </div>
       </div>
+
+      <!-- 제목 비어있음 경고 모달 -->
+      <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
+
+      <!-- 제목 글자수 경고 모달 -->
+      <BaseModal :visible="showTitleLimitModal" :message="'제목은 최대 50자까지 입력할 수 있습니다.'" @close="() => closeModal('titleLimit')" class="modal-empty-title" />
+
+      <!-- 일정 저장 성공 모달 -->
+      <BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
 
       <!-- Date -->
       <div class="row">
@@ -48,12 +57,12 @@
 
       <div class="button-row">
         <!-- 저장 버튼 -->
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button tooltip-btn" data-tooltip="저장">
           <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
 
         <!-- 취소 버튼 -->
-        <button type="button" @click="cancelForm" class="cancel-button">
+        <button type="button" @click="cancelForm" class="cancel-button tooltip-btn" data-tooltip="취소">
           <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
@@ -62,10 +71,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -74,6 +86,10 @@ const props = defineProps({
 const emit = defineEmits(['closeForm', 'updateList']);
 
 const title = ref('');
+const showTitleLimitModal = ref(false);
+const showEmptyTitleModal = ref(false);
+const showSuccessModal = ref(false);
+
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
@@ -93,11 +109,29 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
+// 제목 길이 확인 함수
+const checkTitleLength = () => {
+  if (title.value.length > 50) {
+    showTitleLimitModal.value = true; // 모달 표시
+    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
+    return;
+  }
+};
+
+// 모달 닫기 로직은 부모가 담당
+const closeModal = modalName => {
+  if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
+  if (modalName === 'titleLimit') showTitleLimitModal.value = false;
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+    emit('closeForm');
+  }
+};
+
 const submitDiary = async () => {
-  
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
-    alert("제목을 입력해주세요."); 
+    showEmptyTitleModal.value = true;
     return;
   }
 
@@ -105,13 +139,12 @@ const submitDiary = async () => {
     title: title.value,
     date: date.value,
     content: content.value,
-    category: category.value, 
+    category: category.value,
     calendarIdx: authStore.calendarIdx,
   };
 
   const formData = new FormData();
-  formData.append('diaryRequest', 
-  new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   // 이미지 파일 추가 여부를 확인
   if (images.value.length > 0) {
@@ -129,7 +162,8 @@ const submitDiary = async () => {
       },
     });
     console.log('Diary Submitted Successfully', response.data);
-    emit('closeForm'); 
+    // 다이어리 저장 성공 모달 표시
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Failed to submit diary:', error);
     emit('closeForm');
@@ -140,9 +174,24 @@ const cancelForm = () => {
   emit('closeForm');
 };
 
-const removeImage = (index) => {
+const removeImage = index => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
 
 </script>
 
@@ -419,11 +468,11 @@ const removeImage = (index) => {
 }
 
 /* 파일 선택 버튼 스타일 */
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 
-label[for="image"] {
+label[for='image'] {
   display: inline-block;
   padding: 10px 20px;
   background-color: #222222;
@@ -435,8 +484,7 @@ label[for="image"] {
   text-align: center;
 }
 
-label[for="image"]:hover {
+label[for='image']:hover {
   background-color: #525151;
 }
-
 </style>

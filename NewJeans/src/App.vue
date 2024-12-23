@@ -80,6 +80,6 @@ const isSignUpPage = computed(() => route.path === '/signupp');
 .content-area {
   padding: 0;
   width: 100%;
-  margin-left: 20vh;
+  margin-left: 8vh;
 }
 </style>

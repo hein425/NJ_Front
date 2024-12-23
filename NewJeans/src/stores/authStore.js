@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지 경로
 import axios from 'axios';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -30,7 +32,6 @@ export const useAuthStore = defineStore('auth', {
       this.idx = idx;
       this.calendarIdx = calendarIdx;
       this.isLoggedIn = true;
-      
 
       localStorage.setItem('token', token);
       localStorage.setItem('userName', userName);
@@ -40,7 +41,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('calendarIdx', calendarIdx || '');
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
     },
     logout() {
       this.accessToken = null;
@@ -51,6 +51,11 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = false;
       this.calendarIdx = null;
 
+      this.showLoginSuccessModal = true; // 로그인 성공 모달 활성화
+      setTimeout(() => {
+        this.showLoginSuccessModal = false; // 모달 자동 초기화
+      }, 2000);
+
       localStorage.removeItem('token');
       localStorage.removeItem('userName');
       localStorage.removeItem('profileImageUrl');
@@ -59,7 +64,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('calendarIdx');
 
       delete axios.defaults.headers.common['Authorization'];
-
     },
     restoreLogin() {
       const accessToken = localStorage.getItem('token');
@@ -90,6 +94,21 @@ export const useAuthStore = defineStore('auth', {
     changeProfileImage(newprofileImageUrl) {
       this.profileImageUrl = newprofileImageUrl && newprofileImageUrl !== '' ? newprofileImageUrl : defaultProfileImage; // 기본 이미지 적용
       localStorage.setItem('profileImageUrl', newprofileImageUrl || '');
+    },
+  },
+});
+
+// Notification 스토어
+export const toolBox = defineStore('notification', {
+  state: () => ({
+    messages: [],
+  }),
+  actions: {
+    addMessage(message) {
+      this.messages.push(message);
+    },
+    removeMessage(index) {
+      this.messages.splice(index, 1);
     },
   },
 });

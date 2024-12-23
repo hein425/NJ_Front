@@ -7,6 +7,7 @@
         <button @click="openFilePicker" class="change-img-btn">프로필 사진 변경</button>
         <input type="file" ref="fileInput" @change="handleFileChange" style="display: none" accept="image/*" />
       </div>
+
       <div class="profile-details">
         <div class="name-edit">
           <h1 v-if="!isEditingName" class="profile-name">{{ userName }}</h1>
@@ -15,6 +16,7 @@
             {{ isEditingName ? '저장' : '닉네임 변경' }}
           </button>
         </div>
+
         <p class="profile-email">{{ email }}</p>
         <div class="delete-section">
           <div class="delete-container">
@@ -25,6 +27,30 @@
             <span class="delete-arrow">›</span>
           </div>
         </div>
+
+            <!-- 언어 선택 섹션 -->
+            <div class="language-section">
+    <div class="row">
+      <label class="holiday-label">공휴일 언어 선택</label>
+      <div class="language-options">
+        <button
+          v-for="(lang, index) in languages"
+          :key="index"
+          :class="{ 'active-lang': selectedLanguage === lang.code }"
+          @click="changeLanguage(lang.code)"
+          type="button"
+        >
+          {{ lang.name }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+        <!-- 닉네임 변경 완료 모달 -->
+        <BaseModal :visible="showNickEditModal" :message="'닉네임이 변경되었습니다.'" @close="() => closeModal('nickEdit')" class="modal-Nick-edit" />
+        <!-- 프로필 변경 완료 모달 -->
+        <BaseModal :visible="showProfileEditModal" :message="'프로필사진이 변경되었습니다.'" @close="() => closeModal('profileEdit')" class="modal-profile-edit" />
       </div>
     </div>
 
@@ -53,6 +79,7 @@ import axios from 'axios';
 import lightLogo from '@/assets/logo2.png'; // Light 테마 로고
 import darkLogo from '@/assets/logo_white.png'; // Dark 테마 로고
 import { BASE_URL } from '@/config';
+import BaseModal from '@/components/BaseModal.vue';
 // import { useRouter } from 'vue-router';
 
 // 테마 관련 이미지 가져오기
@@ -62,6 +89,8 @@ import pinkBackground from '@/assets/flowers-3435886_1920.jpg';
 import skyBackground from '@/assets/sky-5534319_1920.jpg';
 import flowersIcon from '@/assets/flowers_icon.jpg';
 import skyIcon from '@/assets/sky_icon.jpg';
+import { useCountryStore } from '@/stores/countryStore';
+import { faL } from '@fortawesome/free-solid-svg-icons';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName);
@@ -71,7 +100,26 @@ const isEditingName = ref(false);
 const newUserName = ref(userName.value);
 const fileInput = ref(null);
 const selectedTheme = ref('Light'); // 기본 테마
+const showNickEditModal = ref(false);
+const showProfileEditModal = ref(false);
 // const router = useRouter();/
+
+const languages = ref([
+  { code: 'KR', name: '한국' },
+  { code: 'US', name: '미국' },
+  { code: 'JP', name: '일본' },
+  { code: 'CN', name: '중국' },
+]);
+
+// Pinia store로 관리
+const countryStore = useCountryStore();
+const selectedLanguage = ref(countryStore.countryCode);
+
+// 언어 변경
+const changeLanguage = (code) => {
+  selectedLanguage.value = code;
+  countryStore.setCountryCode(code); // 상태 업데이트
+};
 
 const startEditingName = () => {
   isEditingName.value = true;
@@ -88,9 +136,16 @@ const saveUserName = async () => {
     await axios.put(`${BASE_URL}/user/updateUserName`, { idx: authStore.idx, userName: sanitizedUserName });
     authStore.userName = sanitizedUserName;
     isEditingName.value = false;
+    showNickEditModal.value = true;
   } catch (error) {
     console.error('닉네임 저장 중 오류:', error);
   }
+};
+
+// 모달 닫기 로직은 부모가 담당
+const closeModal = modalName => {
+  if (modalName === 'nickEdit') showNickEditModal.value = false;
+  if (modalName === 'profileEdit') showProfileEditModal.value = false;
 };
 
 const fetchProfileImage = async () => {
@@ -117,6 +172,7 @@ const uploadProfileImage = async file => {
 
   try {
     await axios.post(`${BASE_URL}/user/updateProfileImage/${authStore.idx}`, formData);
+    showProfileEditModal.value = true;
   } catch (error) {
     console.error('프로필 이미지 업로드 중 오류:', error);
   }
@@ -405,4 +461,37 @@ const deleteAccount = async () => {
 .statistics-btn:hover {
   background-color: var(--border-color);
 }
+
+.language-options {
+  display: flex;
+  gap: 10px;
+}
+
+.language-options button {
+  padding: 8px 25px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  background-color: #fff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.language-options button.active-lang {
+  background-color: #444444;
+  color: white;
+  font-weight: bold;
+}
+
+/* 공휴일 선택 레이블 스타일 */
+.holiday-label {
+  font-size: 1.2rem; /* 텍스트 크기 */
+  font-weight: bold; /* 굵은 텍스트 */
+  color: #333; /* 기본 색상 */
+  border-radius: 5px; /* 둥근 모서리 */
+  display: inline-block; /* 텍스트에 여백 추가 */
+  margin-bottom: 10px; /* 하단 여백 */
+  margin-top: 20px;
+}
+
+
 </style>

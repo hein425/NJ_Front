@@ -1,8 +1,10 @@
 <template>
   <!-- 메뉴 접기/펼치기 버튼 -->
-  <button type="button" class="toggle-menu-btn" @click="toggleMenu">
-{{ isMenuOpen ? "검색창 닫기🔺" : "검색하기🔻" }}
+  <button type="button" class="split-button" @click="toggleMenu">
+  <span class="split-button-icon">{{ isMenuOpen ? "➖" : "🍳" }}</span>
+  <span class="split-button-text">{{ isMenuOpen ? "검색창 닫기" : "검색하기" }}</span>
 </button>
+
   <div class="map_wrap">
     <div id="map" style="width: 450px; height: 300px"></div>
     
@@ -232,6 +234,11 @@ onMounted(() => {
   font-size: 12px;
   border-radius: 10px;
 }
+.map_wrap {
+  position: relative; /* 부모 컨테이너를 relative로 설정 */
+  width: 100%; /* 전체 너비 */
+  height: 100%; /* 전체 높이 */
+}
 
 .addressPreview {
   margin-top: 10px;
@@ -337,6 +344,50 @@ onMounted(() => {
   font-weight: bold;
   color: #777;
 }
+
+.split-button {
+  width: 160px; /* 버튼의 가로 크기 */
+  height: 30px; /* 버튼의 세로 크기 */
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: center;
+  background: linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%);
+  border: 2px solid #aaa; /* 테두리 색상 */
+  border-radius: 5px; /* 약간 둥근 모서리 */
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1), 0 3px 0 #aaa; /* 버튼 그림자 */
+  padding: 0; /* 패딩 제거 */
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  overflow: hidden; /* 내용 넘칠 경우 숨김 */
+  text-shadow: 0 1px 0 #fff; /* 텍스트에 입체감 */
+}
+
+.split-button:active {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 0 #999; /* 클릭 시 그림자 감소 */
+  transform: translateY(2px); /* 눌리는 효과 */
+}
+
+.map-container .split-button-icon{
+  margin-right: 15px;
+}
+
+.split-button-icon {
+  color: #333;
+  border-right: 2px solid #aaa; /* 오른쪽 분할 선 */
+  padding: 8px 12px; /* 아이콘 영역 크기 조정 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.split-button-text {
+  color: #333;
+  padding: 8px 16px; /* 텍스트 영역 크기 조정 */
+}
+
+
 
 
 </style>

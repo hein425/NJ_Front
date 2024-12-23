@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <!-- 로고 -->
-    <div class="logo">
+    <div class="logo tooltip-btn" data-tooltip="홈으로 이동">
       <RouterLink to="/">
         <img :src="logoSrc" alt="Logo" />
       </RouterLink>
@@ -22,7 +22,7 @@
         </div>
         <div class="filter-btn-container" ref="filterBtn">
           <!-- 필터 아이콘 -->
-          <button class="filter-btn" @click="toggleDropdown">
+          <button class="filter-btn tooltip-btn" @click="toggleDropdown" data-tooltip="검색필터">
             <font-awesome-icon :icon="['fas', 'sliders']" />
           </button>
           <!-- 필터 드롭다운 -->
@@ -38,14 +38,14 @@
     <div class="notifi">
       <!-- 메시지 아이콘 -->
       <div class="message-icon">
-        <button>
+        <button class="tooltip-btn" data-tooltip="쪽지">
           <font-awesome-icon :icon="['fas', 'envelope']" />
         </button>
       </div>
 
       <!-- 알림 아이콘 -->
       <div class="notification-icon">
-        <button @click="toggleNotifications">
+        <button @click="toggleNotifications" class="tooltip-btn" data-tooltip="알림">
           <font-awesome-icon :icon="['fas', 'bell']" />
           <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
         </button>
@@ -65,6 +65,8 @@ import lightLogo from '@/assets/logo2.png';
 import darkLogo from '@/assets/logo_white.png';
 import { faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import Notifications from '@/components/NotiFication.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 // Font Awesome 아이콘 등록
 library.add(faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope);
@@ -79,6 +81,7 @@ const filterBtn = ref(null);
 
 const showNotifications = ref(false);
 const unreadCount = ref(3); // 예제: 알림 개수 (API 연동 필요)
+
 
 // 알림 창 표시/숨기기
 const toggleNotifications = () => {
@@ -101,6 +104,21 @@ const applyTheme = () => {
 // 페이지 로드 및 라우트 변경 시 로고 업데이트
 onMounted(() => {
   applyTheme();
+});
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
 });
 
 watch(router.currentRoute, () => {
@@ -165,12 +183,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.tippy-box[data-theme~='custom'] {
+  background-color: #007bff; /* 파란 배경 */
+  color: white;             /* 흰색 글자 */
+  border-radius: 10px;      /* 모서리 둥글게 */
+  border: 2px solid white;  /* 흰색 테두리 */
+}
+
 .header {
   display: flex;
   justify-content: flex-start; /* 로고와 검색창 정렬 */
   align-items: center;
   padding: 2rem 2rem 0 2rem;
-  margin-left: 25vh;
+  margin-left: 15vh;
+  position: relative;
+  width: 80vw;
 }
 
 .logo {
@@ -291,6 +318,13 @@ onBeforeUnmount(() => {
 
 .notifi {
   display: flex;
+  align-items: center;
+  gap: 2vh;
+  position: absolute; /* 고정 위치 지정 */
+  right: -4rem;
+  top: 65%; /* 수직 중앙 정렬 */
+  transform: translateY(-60%); /* 정확한 수직 중앙 정렬 */
+  z-index: 1000;
 }
 
 .notification-icon {

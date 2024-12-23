@@ -10,11 +10,37 @@
         </div>
       </div>
       <!-- 제목 -->
+      <div class="title-row">
+        <label for="title" class="title-label">제목</label>
+        <button type="button" @click="toggleRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
+          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+        </button>
+      </div>
       <div class="row">
-        <label for="title" style="width: 80px; margin-bottom: 5px">제목</label>
-        <div class="input-with-buttons">
-          <input id="title" v-model="title" placeholder="Enter Title" class="input-field" />
-          <button type="button" @click="toggleRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
+        <input id="title" v-model="title" placeholder="Enter Title" class="input-field" @input="checkTitleLength" />
+      </div>
+
+      <!-- 제목 비어있음 경고 모달 -->
+      <div v-if="showEmptyTitleModal" class="modal-overlay modal-empty-title">
+        <div class="modal">
+          <p>제목을 입력해주세요.</p>
+          <button @click="closeModal('emptyTitle')" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 제목 글자수 경고 모달 -->
+      <div v-if="showTitleLimitModal" class="modal-overlay modal-title-limit">
+        <div class="modal">
+          <p>제목은 최대 50자까지 입력할 수 있습니다.</p>
+          <button @click="closeModal('titleLimit')" class="close-modal-btn">확인</button>
+        </div>
+      </div>
+
+      <!-- 일정 저장 성공 모달 -->
+      <div v-if="showSuccessModal" class="modal-overlay modal-title-success">
+        <div class="modal">
+          <p>일정이 저장되었습니다.</p>
+          <button @click="closeModal('success')" class="close-modal-btn">확인</button>
         </div>
       </div>
 
@@ -22,7 +48,7 @@
 
       <div class="language-recording-container" v-if="isRecordingMenuVisible">
         <!-- 닫기 버튼 -->
-        <button type="button" class="close-button" @click="closeLanguageRecordingContainer">X</button>
+        <button type="button" class="close-button" @click="closeLanguageRecordingContainer"><strong>X</strong></button>
         <!-- 언어 선택 -->
         <div class="row">
           <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
@@ -32,7 +58,7 @@
             </button>
           </div>
         </div>
-        <button type="button" @click="startRecording('title')" class="play-button">시작하기⏺️</button>
+        <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
         <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
       </div>
 
@@ -42,7 +68,7 @@
         <div class="color-options">
           <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
             <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
-            <span class="color-circle" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
+            <span class="color-circle tooltip-btn" :data-tooltip="colorOption.label" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
           </label>
         </div>
       </div>
@@ -90,26 +116,36 @@
       </div>
 
       <!-- 지도 -->
-      <div class="row">
-        <label for="location" style="width: 80px; margin-bottom: 5px">지도</label>
-        <div class="map-container">
-          <KakaoMap @updateLocation="updateLocation" />
-        </div>
+      <div class="title-row">
+        <label for="location" class="title-label">위치</label>
+        <!-- + 버튼 -->
+        <button type="button" @click="toggleMapVisibility" class="split-button tooltip-btn" data-tooltip="추가">
+          <span class="split-button-icon">
+            {{ isMapVisible ? '−' : '+' }}
+          </span>
+        </button>
       </div>
 
-      <!-- 내용입력 -->
+      <!-- 지도 컨테이너 -->
+      <div v-if="isMapVisible" class="row map-container">
+        <KakaoMap @updateLocation="updateLocation" />
+      </div>
+
+      <!-- 메모 부분 -->
+      <div class="memo-row">
+        <label for="content">메모</label>
+        <button type="button" @click="toggleMemoRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
+          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+        </button>
+      </div>
       <div class="row">
-        <label for="content" style="width: 80px; margin-bottom: 5px">메모</label>
-        <div class="input-with-buttons">
-          <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
-          <button type="button" @click="toggleMemoRecordingMenu" class="record-button">음성 텍스트 변환⏺️</button>
-        </div>
+        <textarea id="content" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
       <!-- 메모 언어 선택 및 듣기 버튼 - 기본 숨김 -->
       <div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
         <!-- 닫기 버튼 -->
-        <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer">X</button>
+        <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer"><strong>X</strong></button>
         <!-- 언어 선택 -->
         <div class="row">
           <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
@@ -119,13 +155,16 @@
             </button>
           </div>
         </div>
-        <button type="button" @click="startRecording('description')" class="play-button">시작하기⏺️</button>
-        <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
+        <div class="button-container">
+          <!-- 시작하기 버튼 -->
+          <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
+          <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+        </div>
       </div>
 
       <!-- 이미지 업로드 -->
       <div class="row">
-        <label for="image" style="width: 80px; margin-bottom: 5px">이미지</label>
+        <label for="image" style="width: 90px; margin-bottom: 10px; margin-top: 10px">이미지 첨부</label>
         <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
       </div>
 
@@ -138,10 +177,10 @@
 
       <!-- 버튼 -->
       <div class="button-row">
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button tooltip-btn" data-tooltip="저장">
           <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
-        <button type="button" @click="cancelForm" class="cancel-button">
+        <button type="button" @click="cancelForm" class="cancel-button tooltip-btn" data-tooltip="취소">
           <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
@@ -154,8 +193,10 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
-import { BASE_URL } from '@/config';
+import {BASE_URL, SCHE_URL} from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -165,6 +206,10 @@ const emit = defineEmits(['closeForm']);
 const authStore = useAuthStore();
 
 const title = ref('');
+const showTitleLimitModal = ref(false);
+const showEmptyTitleModal = ref(false);
+const showSuccessModal = ref(false);
+
 const color = ref('ORANGE');
 const startdate = ref('');
 const enddate = ref('');
@@ -181,6 +226,12 @@ const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
 
 const isRecordingMenuVisible = ref(false);
 const isMemoRecordingMenuVisible = ref(false); // 메모 녹음 메뉴 상태
+const isMapVisible = ref(false);
+
+// 토글 함수: 지도 표시 여부를 반전시킴
+const toggleMapVisibility = () => {
+  isMapVisible.value = !isMapVisible.value;
+};
 
 // 메모 메뉴 토글
 const toggleMemoRecordingMenu = () => {
@@ -281,13 +332,13 @@ const changeLanguage = langCode => {
 };
 
 const colorList = [
-  { value: 'PINK', color: '#ff7f7f' },
-  { value: 'ORANGE', color: '#ff9933' },
-  { value: 'YELLOW', color: '#ffe066' },
-  { value: 'BLUE', color: '#4da6ff' },
-  { value: 'GREEN', color: '#5cd65c' },
-  { value: 'VIOLET', color: '#b366ff' },
-  { value: 'GRAY', color: '#a6a6a6' },
+  { value: 'PINK', color: '#ff7f7f', label: '분홍색'},
+  { value: 'ORANGE', color: '#ff9933', label: '주황색' },
+  { value: 'YELLOW', color: '#ffe066', label: '노란색' },
+  { value: 'BLUE', color: '#4da6ff', label: '파란색' },
+  { value: 'GREEN', color: '#5cd65c', label: '초록색' },
+  { value: 'VIOLET', color: '#b366ff', label: '보라색' },
+  { value: 'GRAY', color: '#a6a6a6', label: '회색' },
 ];
 
 const updateLocation = coords => {
@@ -300,6 +351,21 @@ onMounted(() => {
   if (props.selectedDate) {
     startdate.value = dayjs(props.selectedDate).format('YYYY-MM-DDTHH:mm');
   }
+});
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
 });
 
 // 이미지 업로드 핸들러
@@ -315,10 +381,27 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
+// 제목 길이 확인 함수
+const checkTitleLength = () => {
+  if (title.value.length > 50) {
+    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
+    showTitleLimitModal.value = true; // 모달 표시
+  }
+};
+
+// 모달 닫기 함수
+const closeModal = modalName => {
+  if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
+  if (modalName === 'titleLimit') showTitleLimitModal.value = false;
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+    emit('closeForm');
+  }
+};
 const submitSchedule = async () => {
   //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
-    alert('제목을 입력해주세요.');
+    showEmptyTitleModal.value = true;
     return;
   }
 
@@ -354,12 +437,14 @@ const submitSchedule = async () => {
   }
 
   try {
-    const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
+    const response = await axios.post(`${SCHE_URL}/schedule/create`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true, // 쿠키를 자동으로 포함
     });
     console.log('Schedule Submitted Successfully', response.data);
 
-    emit('closeForm');
+    // 일정 저장 성공 모달 표시
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Failed to submit Schedule:', error);
     emit('closeForm');
@@ -383,14 +468,6 @@ const removeImage = index => {
 };
 </script>
 <style scoped>
-.schedule-form {
-  border: 1px solid #ccc;
-  margin-top: 10vh;
-  padding: 20px;
-  border-radius: 10px;
-  height: auto;
-}
-
 .row {
   display: flex;
   flex-direction: column;
@@ -501,6 +578,9 @@ textarea {
   background-color: #343434;
   color: white;
 }
+.submit-button:hover {
+  background-color: #525151;
+}
 
 /* .map-container{
   display: flex;
@@ -510,6 +590,11 @@ textarea {
 
 .cancel-button {
   background-color: #808080;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #a1a1a1;
   color: white;
 }
 
@@ -537,15 +622,6 @@ textarea {
   border-radius: 10px;
   background-color: #ffffff;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #e6e6e6;
-  padding: 15px 0;
-  font-weight: bold;
-  font-size: 1.1rem;
 }
 
 .color-options {
@@ -631,11 +707,13 @@ input[type='radio']:checked {
 }
 
 .input-field {
-  font-size: 1.05rem;
-  color: #333;
-  padding: 10px 12px; /* 양쪽 패딩을 추가하여 입력 필드 안의 텍스트 위치를 조정 */
-  margin: 0 5px; /* 외부 마진을 적용하여 양쪽 밸런스를 맞추기 */
-  width: calc(100% - 34px); /* 좌우 패딩과 마진을 포함하여 전체 넓이에 맞추기 */
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
 .image-preview {
@@ -704,8 +782,8 @@ input[type='file'] {
 
 label[for='image'] {
   display: inline-block;
-  padding: 10px 20px;
-  background-color: #222222;
+  padding: 10px 25px;
+  background-color: #343434;
   color: white;
   border-radius: 8px;
   cursor: pointer;
@@ -718,41 +796,58 @@ label[for='image']:hover {
   background-color: #525151;
 }
 
-/* 음성 텍스트 변환 버튼 */
-.record-button {
-  padding: 10px 15px;
-  border: 1px solid #2196f3;
+.split-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
+  border: 1px solid #aaa;
   border-radius: 5px;
-  background-color: white;
-  color: #2196f3;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  transition: all 0.3s ease;
 }
 
-.record-button:hover {
-  background-color: #2196f3;
-  color: white;
+.split-button:hover {
+  background: #ddd;
+  border-color: #888;
+}
+
+.split-button-text {
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #333;
 }
 
 /* 듣기 버튼 */
 .play-button {
+  margin-top: 10px;
   padding: 10px 15px;
-  font-size: 16px;
-  border: 1px solid #2196f3;
+  border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: white;
-  color: #2196f3;
   cursor: pointer;
+  background-color: #fff;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
-
 .play-button:hover {
-  background-color: #2196f3;
-  color: white;
+  background-color: #f0f0f0;
+}
+
+.play-button:active {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.1),
+    0 1px 0 #999; /* 클릭 시 그림자 감소 */
+  transform: translateY(2px); /* 눌리는 효과 */
+}
+
+.play-button-text {
+  color: #333;
+  padding: 8px 16px; /* 텍스트 영역 크기 조정 */
 }
 
 /* 언어 선택 버튼 */
@@ -773,7 +868,7 @@ label[for='image']:hover {
 }
 
 .language-options button.active-lang {
-  background-color: #2196f3;
+  background-color: #555;
   color: white;
   font-weight: bold;
 }
@@ -783,24 +878,12 @@ label[for='image']:hover {
 }
 
 /* 언어 선택 및 듣기 버튼 컨테이너 */
-.language-recording-container {
-  position: absolute;
-  top: 0%;
-  left: 430px;
-  width: 300px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  z-index: 1000;
-  animation: slideIn 0.3s ease-in-out;
-}
+.language-recording-container,
 .language-recording-container-memo {
   position: absolute;
-  top: 115%;
-  left: 430px;
-  width: 300px;
+  top: 0%;
+  left: 550px;
+  width: 350px;
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -810,6 +893,13 @@ label[for='image']:hover {
   animation: slideIn 0.3s ease-in-out;
 }
 
+.language-recording-container {
+  top: 0%;
+}
+.language-recording-container-memo {
+  top: 64%;
+}
+
 /* 모달 */
 .modal-overlay {
   position: fixed;
@@ -817,7 +907,7 @@ label[for='image']:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* background-color: rgba(0, 0, 0, 0.5); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -837,6 +927,30 @@ label[for='image']:hover {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 20px;
+}
+
+.close-modal-btn {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background-color: #5c5c5c;
+}
+
+/* 개별 모달 위치 */
+.modal-empty-title {
+  top: 0%;
+}
+
+.modal-title-limit {
+  top: -20%;
 }
 
 .stop-recording-button {
@@ -890,8 +1004,78 @@ label[for='image']:hover {
   cursor: pointer;
   transition: color 0.3s ease;
 }
+.language-recording-container-memo .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
 
 .language-recording-container .close-button:hover {
   color: #d32f2f;
+}
+
+/* 제목과 메모에 공통 스타일 적용 */
+.title-row,
+.memo-row {
+  margin-top: 10px;
+  display: flex; /* 가로 정렬 */
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 10px; /* 요소 간격 */
+  margin-bottom: 5px; /* 하단 여백 */
+}
+
+/* 공통 라벨 스타일 */
+.title-row label,
+.memo-row label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 버튼 스타일 */
+.split-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.split-button:hover {
+  background: #ddd;
+  border-color: #888;
+}
+
+.split-button-icon {
+  color: #555;
+  font-size: 15px; /* 아이콘 크기 */
+}
+
+/* 입력 필드 스타일 */
+.input-field {
+  width: 100%; /* 전체 너비 */
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  border-color: #161616; /* 포커스 시 테두리 색상 */
 }
 </style>

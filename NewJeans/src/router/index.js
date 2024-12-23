@@ -12,6 +12,7 @@ import NotFoundPage from '@/components/NotFoundPage.vue';
 import GraphView from '@/views/GraphView.vue';
 import KakaoLoginView from '@/views/KakaoLoginView.vue';
 import ScheduleDetail from '@/views/ScheduleDetail.vue';
+import ThreadView from '@/views/ThreadView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,11 @@ const router = createRouter({
       path: '/teams',
       name: 'teams',
       component: Teams,
+    },
+    {
+      path: '/thread',
+      name: 'thread',
+      component: ThreadView,
     },
     {
       path: '/setting',

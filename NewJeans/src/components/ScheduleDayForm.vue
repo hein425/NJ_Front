@@ -66,9 +66,21 @@
 
                 <hr class="divider" />
                 <p v-show="scheduleEditIndex !== index"><strong>Address:</strong></p>
-                <div v-if="isScheduleExpanded[index]" class="map-container">
-                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
-                </div>
+
+ <!-- 기존 맵: 데이터가 없을 때 지도 표시하지 않도록 조건 추가 -->
+<div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index && schedule.latitude && schedule.longitude" class="map-container">
+  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
+</div>
+
+<!-- 수정 모드에서는 KakaoMap 컴포넌트를 그대로 유지 -->
+<div v-if="scheduleEditIndex === index" class="map-edit-section">
+  <KakaoMap
+    @updateLocation="updateLocation"
+    :latitude="editData.latitude"
+    :longitude="editData.longitude"
+  />
+</div>
+
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="scheduleEditIndex === index" class="schedule-images">
@@ -86,14 +98,16 @@
                 </div>
 
                 <div class="button-group">
-                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index">Delete</button>
+                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="scheduleEditIndex === index">
-                    <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
-                    <button @click.stop="cancelEdit('schedule')">Cancel</button>
+                    <button @click.stop="saveScheduleEdit('schedule', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('schedule')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
+
+
               </div>
             </transition>
           </div>
@@ -140,6 +154,9 @@
         </div>
       </div>
 
+      <!--  수정 성공 모달 -->
+      <BaseModal :visible="showSuccessModal" :message="'수정이 완료되었습니다.'" @close="() => closeModal('success')" class="modal-edit-success" />
+
       <!-- 다이어리 섹션 -->
       <div class="diary-section">
         <div v-if="diaries.length > 0">
@@ -174,12 +191,12 @@
                   </div>
                 </div>
                 <div class="button-group">
-                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteDiaryModal(index)">Delete</button>
+                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteDiaryModal(index)" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="diaryEditIndex === index">
-                    <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
-                    <button @click.stop="cancelEdit('diary')">Cancel</button>
+                    <button @click.stop="saveDiaryEdit('diary', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('diary')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -198,22 +215,17 @@
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
+import KakaoMap from "@/views/KakaoMap.vue";
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
+
 
 const props = defineProps({
   selectedDate: String,
 });
-
-watch(
-  () => props.selectedDate,
-  async newDate => {
-    if (newDate) {
-      await fetchDayData(newDate);
-    }
-  },
-  { immediate: true },
-);
 
 const schedules = ref([]);
 const diaries = ref([]);
@@ -225,18 +237,25 @@ const showDayView = ref(true);
 const scheduleEditIndex = ref(null); // 일정 편집 상태 인덱스
 const diaryEditIndex = ref(null); // 일기 편집 상태 인덱스
 
-let pollingInterval = null;
+// let pollingInterval = null;
 
 const authStore = useAuthStore();
 
 // 모달 관련 상태
 const showRepeatDeleteModal = ref(false);
 const showSingleDeleteModal = ref(false);
+const showSuccessModal = ref(false);
 const deleteIndex = ref(null);
 const isRepeatSchedule = ref(false); // 반복 일정 여부 상태
 
 const diaryToDeleteIndex = ref(null); // 다이어리 삭제 모달
 const showDiaryDeleteModal = ref(false);
+
+const closeModal = modalName => {
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+  }
+};
 
 // 매핑된 한글 반복 타입을 반환하는 함수
 const repeatTypeKorean = repeatType => repeatTypeKoreanMap[repeatType] || '반복 없음';
@@ -260,6 +279,12 @@ const categoryKoreanMap = {
   ETC: '기타',
 };
 
+const isMapVisible = ref(false);
+
+
+
+
+
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
     schedules: [...isScheduleExpanded.value],
@@ -273,13 +298,10 @@ const fetchDayData = async selectedDate => {
     const scheduleResponse = await axios.get(`${BASE_URL}/schedule/${calendarIdx.value}/${year}/${month}/${day}`);
 
     schedules.value = scheduleResponse.data.map(schedule => {
-      let latitude = 37.566826; // 기본값 (서울 좌표)
-      let longitude = 126.9786567;
+      const hasValidLocation = schedule.location && schedule.location.includes(',');
 
-      if (schedule.location) {
-        const [lat, lng] = schedule.location.split(',').map(coord => parseFloat(coord.trim()));
-        latitude = lat || latitude;
-        longitude = lng || longitude;
+      if (!hasValidLocation) {
+        console.warn(`스케줄(${schedule.idx})에 유효한 지도 데이터가 없습니다.`);
       }
 
       return {
@@ -290,9 +312,8 @@ const fetchDayData = async selectedDate => {
         end: schedule.end,
         repeatType: schedule.repeatType || '없음',
         repeatEndDate: schedule.repeatEndDate || null,
-        address: schedule.location || 'No address provided',
-        latitude, // 분리한 위도
-        longitude, // 분리한 경도
+        latitude: hasValidLocation ? parseFloat(schedule.location.split(',')[0]) : null,
+        longitude: hasValidLocation ? parseFloat(schedule.location.split(',')[1]) : null,
         content: schedule.content || 'No details provided',
         images: schedule.images || [],
       };
@@ -316,39 +337,40 @@ const fetchDayData = async selectedDate => {
   }
 };
 
-const startPolling = selectedDate => {
-  fetchDayData(selectedDate);
-  pollingInterval = setInterval(() => {
-    fetchDayData(selectedDate);
-  }, 1100);
+const startPolling = async selectedDate => {
+  const res = await fetchDayData(selectedDate);
+  console.log(res);
+  // pollingInterval = setInterval(() => {
+  //   fetchDayData(selectedDate);
+  // }, 1100);
 };
 
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-  }
-};
+// const stopPolling = () => {
+//   if (pollingInterval) {
+//     clearInterval(pollingInterval);
+//   }
+// };
 
-onMounted(() => {
-  if (props.selectedDate) {
-    startPolling(props.selectedDate);
-  }
-});
+// onMounted(() => {
+//   if (props.selectedDate) {
+//     startPolling(props.selectedDate);
+//   }
+// });
 
-onUnmounted(() => {
-  stopPolling();
-});
+// onUnmounted(() => {
+//   stopPolling();
+// });
 
-watch(
-  () => props.selectedDate,
-  newDate => {
-    stopPolling();
-    if (newDate) {
-      startPolling(newDate);
-    }
-  },
-  { immediate: true },
-);
+// watch(
+//   () => props.selectedDate,
+//   newDate => {
+//     stopPolling();
+//     if (newDate) {
+//       startPolling(newDate);
+//     }
+//   },
+//   { immediate: true },
+// );
 
 const toggleScheduleExpand = index => {
   if (scheduleEditIndex.value === index) return;
@@ -360,13 +382,21 @@ const toggleDiaryExpand = index => {
   isDiaryExpanded.value[index] = !isDiaryExpanded.value[index];
 };
 
+// 수정 모드 시작
 const startEdit = (type, index) => {
   if (type === 'schedule') {
     scheduleEditIndex.value = index; // 일정 편집 상태 설정
-    editData.value = { ...schedules.value[index] }; // 편집 데이터를 복사
+    editData.value = { ...schedules.value[index] }; // 편집 데이터 복사
+
+    // 🔄 카카오맵 관련 데이터 설정
+    editData.value.latitude = schedules.value[index].latitude || 37.5665; // 기본값
+    editData.value.longitude = schedules.value[index].longitude || 126.9780;
+
+    isMapVisible.value = true; // 🔄 지도 표시
   } else if (type === 'diary') {
     diaryEditIndex.value = index; // 일기 편집 상태 설정
-    editData.value = { ...diaries.value[index] }; // 편집 데이터를 복사
+    editData.value = { ...diaries.value[index] }; // 편집 데이터 복사
+    isMapVisible.value = false; // 🔄 지도 숨김 (일기에는 필요 없음)
   }
 };
 
@@ -400,6 +430,7 @@ const saveDiaryEdit = async (type, index) => {
     console.log('Diary updated successfully:', response.data);
 
     Object.assign(diaryToUpdate, editData.value);
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Error during diary update:', error.response ? error.response.data : error.message);
   } finally {
@@ -444,19 +475,29 @@ const saveScheduleEdit = async (type, index) => {
     });
     console.log('Schedule updated successfully:', response.data);
     Object.assign(scheduleToUpdate, editData.value);
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Error during schedule update:', error.response ? error.response.data : error.message);
   } finally {
     scheduleEditIndex.value = null;
+    isMapVisible.value = false; // 🔄 지도 숨김
   }
 };
 
 const cancelEdit = type => {
   if (type === 'schedule') {
     scheduleEditIndex.value = null;
+    isMapVisible.value = false; // 🔄 지도 숨김
   } else if (type === 'diary') {
     diaryEditIndex.value = null;
   }
+};
+
+// 🔄 KakaoMap에서 위치 데이터 업데이트
+const updateLocation = ({ lat, lng }) => {
+  editData.value.latitude = lat; // 위도 업데이트
+  editData.value.longitude = lng; // 경도 업데이트
+  console.log('Updated location:', lat, lng);
 };
 
 // 모달을 열 때 호출되는 함수
@@ -662,6 +703,34 @@ const removeScheduleImage = index => {
 
   editData.value.images.splice(index, 1);
 };
+
+watch(
+  () => props.selectedDate,
+  async newDate => {
+    console.log('와치 하고 있음');
+    if (newDate) {
+      await fetchDayData(newDate);
+    }
+  },
+  { immediate: true },
+);
+console.log('재 랜더링');
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
+
 </script>
 
 <style scoped>

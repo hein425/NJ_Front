@@ -120,11 +120,11 @@ onMounted(() => {
 }
 
 .diary-view-container {
-  width: 87.5%;
+  width: 88.5%;
   height: 100%;
   padding: 20px;
   border-radius: 10px;
-  margin: 5.5vh 8.5vh;
+  margin: 5.5vh 9vh;
   background-color: white;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);

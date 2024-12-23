@@ -111,7 +111,7 @@
 
         <!-- Login / Logout -->
         <ul class="login">
-          <li v-if="!authStore.isLoggedIn" @click="showModal = true">
+          <li v-if="!authStore.isLoggedIn" @click="openLoginModal">
             <a href="#">
               <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="fa" />
               <span class="nav-text">로그인</span>
@@ -126,6 +126,8 @@
         </ul>
       </div>
       <Modal :show="showModal" @close="showModal = false" />
+      <!-- 로그아웃 모달 -->
+      <BaseModal :visible="showSuccessModal" :message="'로그아웃되었습니다.'" @close="showSuccessModal = false" class="modal-logout-success" />
     </nav>
   </header>
 </template>
@@ -135,12 +137,14 @@ import { ref, onMounted } from 'vue';
 import Modal from './MoDal.vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import BaseModal from './BaseModal.vue';
 
 // Router and Store
 const router = useRouter();
 const authStore = useAuthStore();
 
 // Reactive states
+const showSuccessModal = ref(false);
 const showModal = ref(false);
 const activeMenu = ref(''); // 현재 활성화된 메뉴 상태
 
@@ -153,6 +157,14 @@ const setActiveMenu = menu => {
 const navigateToCalendar = menu => {
   setActiveMenu(menu);
   router.push('/');
+};
+
+const openLoginModal = () => {
+  showModal.value = false; // 잠시 닫고 초기화
+  authStore.showLoginSuccessModal = false; // 로그인 성공 모달 초기화
+  setTimeout(() => {
+    showModal.value = true; // 모달 다시 열기
+  }, 0);
 };
 
 const navigateToDiary = menu => {
@@ -187,9 +199,10 @@ const navigateToSetting = menu => {
 
 // Handle logout
 const handleLogout = async () => {
-  await authStore.logout();
-  router.push('/');
-  setActiveMenu('');
+  await authStore.logout(); // 로그아웃 로직 실행
+  showSuccessModal.value = true; // 로그아웃 성공 모달 표시
+  router.push('/'); // 홈 화면으로 이동
+  setActiveMenu(''); // 메뉴 상태 초기화
 };
 
 // Restore login on mount
@@ -209,6 +222,7 @@ html {
 }
 
 .main-menu {
+  z-index: 999;
   background: #f7f7f7;
   position: fixed;
   top: 0;

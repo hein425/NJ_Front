@@ -11,6 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter, useRoute } from 'vue-router';
 import Modal from '@/components/MoDal.vue';
+import { useCountryStore } from '@/stores/countryStore';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 //문자열 색상을 hex 값으로 변환
 const colorList = [
@@ -23,9 +26,11 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
+
 const router = useRouter();
 const authStore = useAuthStore();
 const calendarIdx = ref(authStore.calendarIdx);
+const forceKey = ref(0);
 
 const schedules = ref([]); // 현재 월의 일정 데이터를 저장
 const now = ref(dayjs());
@@ -33,6 +38,8 @@ const columns = ref([]);
 const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
+const countryStore = useCountryStore();
+const currentCountry = ref(countryStore.countryCode);
 
 const selectDate = ref(null);
 const isFlipped = ref(false);
@@ -57,6 +64,23 @@ const onYearChange = () => {
     fetchDiaryEntriesForMonth();
   }
 };
+
+// 공휴일 데이터 가져오기
+const fetchCalendarHolidays = async () => {
+  const year = selectedYear.value; // 현재 선택된 연도
+  try {
+    const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${currentCountry.value}`);
+    holidays.value = response.data.reduce((acc, holiday) => {
+      if (!acc[holiday.date]) acc[holiday.date] = [];
+      acc[holiday.date].push(holiday.localName);
+      return acc;
+    }, {});
+    console.log(`공휴일 (${year}): `, holidays.value);
+  } catch (error) {
+    console.error('공휴일 데이터를 가져오는 중 오류 발생:', error);
+  }
+};
+
 
 // 월 변경 시
 const onMonthChange = () => {
@@ -100,6 +124,7 @@ const fetchHolidays = async () => {
   }
 };
 
+
 // @<@ 일정 띄우기 @>@
 const MonthlySchedules = async () => {
   try {
@@ -112,7 +137,11 @@ const MonthlySchedules = async () => {
 
 // 날짜에 해당하는 일정을 필터링하는 함수
 const getSchedulesForDate = date => {
-  return schedules.value.filter(schedule => dayjs(schedule.start).isSame(date, 'day')).slice(0, 3);
+  return schedules.value.filter(schedule => {
+    const start = dayjs(schedule.start);
+    const end = dayjs(schedule.end);
+    return start.isSame(date, 'day') || (start.isBefore(date) && end.isAfter(date));
+  });
 };
 
 const flipBack = () => {
@@ -165,6 +194,7 @@ const showDiaryForm = () => {
 
 // 스케줄 폼 닫기
 const closeScheduleForm = () => {
+  forceKey.value++;
   isScheduleFormVisible.value = false;
   isDiaryFormVisible.value = false;
 };
@@ -187,6 +217,21 @@ const hexToRgba = (hex, opacity) => {
   return hex;
 };
 
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
+
 function speakAllSchedules() {
   const parent = event.target.parentElement;
 
@@ -207,7 +252,15 @@ function speakText(text) {
 // 일기 북마크
 
 watch(
-  now,
+  () => countryStore.countryCode,
+  (newCode) => {
+    currentCountry.value = newCode;
+    fetchCalendarHolidays();
+  },
+  { immediate: true }
+);
+
+watch( now,
   () => {
     columns.value = [];
     groupColumns.value = [];
@@ -245,7 +298,7 @@ watch(
       MonthlySchedules();
       fetchDiaryEntriesForMonth();
     }
-    fetchHolidays();
+    fetchCalendarHolidays();
   },
   {
     immediate: true,
@@ -271,9 +324,110 @@ onMounted(() => {
   }
 });
 
+// Watch 로그인 상태 변화
+watch(
+  () => authStore.isLoggedIn, // 로그인 상태 감시
+  async isLoggedIn => {
+    if (isLoggedIn && authStore.calendarIdx) {
+      console.log('로그인 상태 감지 - 캘린더 데이터 로딩');
+      await MonthlySchedules(); // 일정 재로드
+      await fetchDiaryEntriesForMonth(); // 일기 재로드
+    } else {
+      console.log('로그아웃 상태 감지 - 캘린더 초기화');
+      schedules.value = []; // 일정 초기화
+      diaryEntries.value = []; // 일기 초기화
+      holidays.value = {}; // 공휴일 초기화
+    }
+  },
+  { immediate: true }, // 초기 실행
+);
+
 // 모달 닫기 함수
 const closeModal = () => {
   showModal.value = false;
+};
+
+//드래그 앤 드랍 관련
+const onDragStart = (event, schedule) => {
+  const rawSchedule = JSON.parse(JSON.stringify(schedule)); // Proxy 제거
+  if (!rawSchedule || !rawSchedule.idx) {
+    // idx 확인
+    console.error('Invalid schedule:', rawSchedule);
+    return;
+  }
+
+  event.dataTransfer.setData('application/json', JSON.stringify(rawSchedule));
+  console.log('Drag started with schedule:', rawSchedule);
+};
+
+const onScheduleClick = schedule => {
+  console.log('Schedule clicked:', schedule);
+  // 원하는 작업 추가 (예: 상세보기 모달 열기)
+};
+
+const onDrop = async (event, targetDate) => {
+  event.preventDefault();
+
+  // 데이터 가져오기
+  const scheduleData = event.dataTransfer.getData('application/json');
+  if (!scheduleData) {
+    console.error('No data found in event.dataTransfer');
+    return;
+  }
+
+  let parsedSchedule;
+  try {
+    parsedSchedule = JSON.parse(scheduleData);
+    console.log('Dropped schedule:', parsedSchedule);
+  } catch (error) {
+    console.error('Failed to parse schedule data:', scheduleData, error);
+    return;
+  }
+
+  if (!parsedSchedule.idx) {
+    console.error('Invalid schedule data: Missing idx', parsedSchedule);
+    return;
+  }
+
+  // 기존 start와 end 시간 추출
+  const startTime = dayjs(parsedSchedule.start).format('HH:mm:ss'); // 기존 시작 시간
+  const endTime = dayjs(parsedSchedule.end).format('HH:mm:ss'); // 기존 종료 시간
+
+  // 기존 start와 end의 차이 계산
+  const startDate = dayjs(parsedSchedule.start);
+  const endDate = dayjs(parsedSchedule.end);
+  const duration = endDate.diff(startDate, 'day'); // 일정 기간 (일 단위)
+
+  // 새 start와 end 계산
+  const newStart = dayjs(targetDate.format('YYYY-MM-DD') + `T${startTime}`); // 기존 시간 유지
+  const newEnd = newStart.add(duration, 'day').add(1, 'second'); // 기존 기간 유지 (초 단위 조정)
+
+  try {
+    // 서버로 PUT 요청
+    await axios.put(`${BASE_URL}/schedule/${parsedSchedule.idx}`, {
+      ...parsedSchedule,
+      start: newStart.format('YYYY-MM-DDTHH:mm:ss'),
+      end: newEnd.format('YYYY-MM-DDTHH:mm:ss'),
+    });
+    console.log('Schedule updated successfully:', {
+      idx: parsedSchedule.idx,
+      start: newStart,
+      end: newEnd,
+    });
+
+    // 일정 데이터 갱신
+    MonthlySchedules();
+  } catch (error) {
+    console.error('Failed to update schedule:', error);
+  }
+};
+
+const onDragOver = event => {
+  event.currentTarget.classList.add('drag-over');
+};
+
+const onDragLeave = event => {
+  event.currentTarget.classList.remove('drag-over');
 };
 </script>
 
@@ -285,7 +439,7 @@ const closeModal = () => {
     v-else
     class="calendar-wrapper"
     :style="{
-      height: `${weeksInMonth * 240}px`, // 주차 수에 따라 높이 동적으로 설정
+      height: `${weeksInMonth * 250}px`, // 주차 수에 따라 높이 동적으로 설정
     }"
   >
     <!-- 달력이 뒤집힌 상태에 따라 조건부 렌더링 -->
@@ -296,29 +450,27 @@ const closeModal = () => {
           <!-- 왼쪽 버튼 그룹 -->
           <div class="left-buttons">
             <button @click="goToday" class="Today-button">오늘</button>
-            <button @click="isYearlyView = true" class="Yealy-button">연도</button>
+            <button @click="isYearlyView = true" class="Yealy-button tooltip-btn" data-tooltip="연달력으로 이동">연도</button>
           </div>
 
           <!-- 가운데 컨트롤 그룹 -->
           <div class="center-controls">
-            <button @click="subMonth()" class="B-Month-button">
-              <font-awesome-icon :icon="['fas', 'angle-left']" />
-            </button>
             <div class="YMYM">
               <!-- 연도 및 월 표시 -->
-              <select v-model="selectedYear" @change="onYearChange">
+              <select v-model="selectedYear" @change="onYearChange" class="tooltip-btn" data-tooltip="연도 이동">
                 <option v-for="year in yearsRange" :key="year" :value="year">{{ year }}</option>
               </select>
-              <select v-model="selectedMonth" @change="onMonthChange">
+              <select v-model="selectedMonth" @change="onMonthChange" class="tooltip-btn" data-tooltip="월 이동">
                 <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
               </select>
             </div>
-            <button @click="addMonth()" class="A-Month-button">
-              <font-awesome-icon :icon="['fas', 'angle-right']" />
-            </button>
+
+            <!-- 오른쪽 버튼 그룹 -->
+            <div class="right-buttons">
+              <button @click="subMonth()" class="B-Month-button">이전달</button>
+              <button @click="addMonth()" class="A-Month-button">다음달</button>
+            </div>
           </div>
-          <!-- 오른쪽 빈 공간 -->
-          <div class="right-placeholder"></div>
         </h1>
         <div class="DOWgrid">
           <div class="Sun">일</div>
@@ -341,27 +493,38 @@ const closeModal = () => {
               notthisMdays: !column.isSame(now, 'month'),
               today: column.isSame(dayjs(), 'day'),
             }"
+            @dragover.prevent
+            @drop="onDrop($event, column)"
           >
             <!-- 일기북마크 -->
             <font-awesome-icon v-if="isDiaryEntry(column)" icon="bookmark" class="bookmark-icon" />
 
-            <template v-for="holiday in holidays" :key="holiday">
-              <div v-if="holiday.date == column.format('YYYY-MM-DD')" class="holiday-name">
-                {{ holiday.localName }}
+            <!-- 공휴일 -->
+            <div v-if="holidays[column.format('YYYY-MM-DD')]">
+              <div class="holiday-container">
+                <div v-for="(holiday, index) in holidays[column.format('YYYY-MM-DD')]" :key="index" class="holiday-name">
+                  {{ holiday }}
+                </div>
               </div>
-            </template>
+            </div>
+
+            <!-- 날짜 숫자 -->
             <div class="date-number">{{ column.get('date') }}</div>
 
             <div v-if="getSchedulesForDate(column) && Object.keys(getSchedulesForDate(column)).length > 0" class="icon" @click.stop="speakAllSchedules">🔊</div>
             <!-- 일정표시창 -->
             <div
               v-for="schedule in getSchedulesForDate(column)"
-              :key="schedule.id"
+              :key="schedule.idx"
               :style="{
                 backgroundColor: hexToRgba(getHexColor(schedule.color), 0.3), // 투명한 배경색
                 border: `1px solid ${getHexColor(schedule.color)}`, // 테두리 색상
+                gridColumn: `span ${dayjs(schedule.end).diff(dayjs(schedule.start), 'day') + 1}`,
               }"
               class="schedule-title"
+              draggable="true"
+              @dragstart="onDragStart($event, schedule)"
+              @click.stop="onScheduleClick(schedule)"
             >
               {{ schedule.title }}
             </div>
@@ -376,7 +539,7 @@ const closeModal = () => {
             <font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" />
             &nbsp;Schedule
           </button>
-          <button class="flip-back-btn" @click="flipBack">&orarr;</button>
+          <button class="flip-back-btn tooltip-btn" data-tooltip="달력으로 이동" @click="flipBack">&orarr;</button>
           <!-- ㄴ 달력 다시 뒤집기 버튼 -->
           <button class="diary-btn" @click="showDiaryForm"><font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" /> &nbsp; Diary</button>
         </div>
@@ -392,7 +555,7 @@ const closeModal = () => {
         </div>
 
         <div v-show="!isScheduleFormVisible && !isDiaryFormVisible">
-          <ScheduleDayForm :selectedDate="selectDate" />
+          <ScheduleDayForm :key="forceKey" :selectedDate="selectDate" />
         </div>
       </div>
     </div>
@@ -421,17 +584,22 @@ const closeModal = () => {
 
 .Calender-title {
   display: flex;
-  justify-content: space-between; /* 왼쪽과 가운데, 오른쪽 영역 분리 */
   align-items: center;
+  justify-content: space-between; /* 양쪽 정렬 */
+  position: relative; /* 중앙 정렬에 필요한 위치 기준 */
   font-size: 2rem;
   font-weight: 500;
-  position: relative;
 }
 
 .left-buttons {
   display: flex;
   gap: 10px; /* 버튼 간 간격 */
-  flex: 1; /* 왼쪽 공간 확보 */
+}
+
+.right-buttons {
+  display: flex;
+  gap: 10px; /* 버튼 간 간격 */
+  margin-left: auto; /* 오른쪽으로 밀기 */
 }
 
 .center-controls {
@@ -456,7 +624,11 @@ const closeModal = () => {
   font-size: 0.9rem;
   cursor: pointer;
 }
+
 .YMYM {
+  position: absolute;
+  left: 50%; /* 왼쪽 기준 50% */
+  transform: translateX(-50%); /* 가운데 정렬 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -464,6 +636,7 @@ const closeModal = () => {
 }
 
 .YMYM select {
+  border: none;
   font-size: 1.5rem;
   border-radius: 5px;
   color: #333;
@@ -492,11 +665,13 @@ const closeModal = () => {
 }
 .B-Month-button,
 .A-Month-button {
-  background-color: transparent;
+  background-color: #333;
+  color: white;
   border: none;
-  height: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 1.25rem;
 }
 
 /* 플립 애니메이션 */
@@ -540,13 +715,17 @@ const closeModal = () => {
 }
 
 /* 달력 그리드와 날짜 셀 스타일 */
-.DOWgrid,
-.CALgrid {
+.DOWgrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr); /* 7열 그리드 */
   gap: 15px;
   text-align: center;
   margin-bottom: 1rem;
+}
+.CALgrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7열 그리드 */
+  text-align: center;
 }
 
 .Datecell {
@@ -560,15 +739,22 @@ const closeModal = () => {
   align-items: center;
   justify-content: center;
   position: relative;
-  transition:
-    background-color 0.2s,
-    border 0.2s;
+  transition: background-color 0.3s ease;
   aspect-ratio: 1 / 1; /* 정사각형 유지 */
   flex-direction: column; /* 세로 배치 */
   align-items: flex-start;
-  padding: 5px;
   cursor: pointer;
   overflow: hidden;
+  border: #b4b4b4 solid 1px;
+  pointer-events: auto; /* 기본 이벤트 활성화 */
+}
+
+.Datecell.drag-over {
+  background-color: rgba(0, 255, 0, 0.2);
+}
+.drag-over {
+  background-color: rgba(0, 0, 0, 0.1); /* 드래그 시 배경 강조 */
+  border: 2px dashed #ccc; /* 드래그 시 테두리 변경 */
 }
 
 .date-number {
@@ -615,7 +801,7 @@ const closeModal = () => {
 }
 
 .today {
-  border: 2px solid black;
+  background-color: #fffae9;
 }
 
 /* flipped-content 스타일 */
@@ -699,11 +885,12 @@ const closeModal = () => {
 
 /* 일정 제목 스타일 */
 .schedule-title {
+  pointer-events: auto; /* 스케줄에만 이벤트 적용 */
   width: 100%; /* 셀의 너비를 꽉 차게 설정 */
   box-sizing: border-box; /* padding 포함하여 너비를 계산 */
   font-size: 0.8rem;
   color: #3a3a3a;
-  padding: 9px 5px; /* 내부 여백 */
+  padding: 15px 5px; /* 내부 여백 */
   border-radius: 3px;
   margin-top: 4px;
   text-align: left;
@@ -711,34 +898,50 @@ const closeModal = () => {
   white-space: nowrap;
   text-overflow: ellipsis;
   position: relative;
-  top: 10px;
+  top: 30px;
   /* height: 15px; */
   line-height: 0px;
+  cursor: grab; /* 드래그 가능 표시 */
+  height: auto;
+}
+.schedule-title:active {
+  opacity: 0.7;
+}
+
+.holiday-container {
+  position: absolute;
+  top: 32px; /* 상단 여백 */
+  right: 8px;
+  display: flex;
+  flex-wrap: wrap; /* 줄바꿈 허용 */
+  gap: 4px; /* 공휴일 간격 */
+  margin: 0; /* 상단 여백 제거 */
+  align-items: flex-start; /* 항목 상단 정렬 */
 }
 
 .holiday-name {
-  font-size: 0.7rem; /* 원하는 폰트 크기 */
-  color: red; /* 원하는 글자 색상 */
-  font-weight: lighter; /* 글자를 굵게 설정 */
-  position: absolute;
-  display: block; /* 블록 형식으로 배치 (필요 시) */
-  top: 14px;
-  left: 45px;
+  font-size: 0.7rem;
+  color: red;
+  font-weight: bold;
+  background-color: rgba(255, 0, 0, 0.1); /* 연한 배경색 */
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
 /* 북마크 아이콘 스타일 추가 */
 .bookmark-icon {
   position: absolute;
-  top: 2px;
+  top: 0;
   left: 5px;
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   color: #dfc38c;
   /* z-index: 10; */
 }
 
 .icon {
   position: absolute;
-  top: 0.5rem;
+  top: 1.8rem;
+  left: 5px;
   opacity: 0.5;
   transition: opacity 0.3s ease;
 }
