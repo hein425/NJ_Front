@@ -10,7 +10,7 @@
           </div>
 
           <div class="category-section">
-            <select v-model="category" id="category" class="input-field" style="width: 114px">
+            <select v-model="category" id="category" class="input-field tooltip-btn" data-tooltip="카테고리" style="width: 114px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="EXERCISE">#운동</option>
@@ -57,12 +57,12 @@
 
       <div class="button-row">
         <!-- 저장 버튼 -->
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button tooltip-btn" data-tooltip="저장">
           <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
 
         <!-- 취소 버튼 -->
-        <button type="button" @click="cancelForm" class="cancel-button">
+        <button type="button" @click="cancelForm" class="cancel-button tooltip-btn" data-tooltip="취소">
           <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
@@ -71,11 +71,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -175,6 +177,22 @@ const cancelForm = () => {
 const removeImage = index => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
+
 </script>
 
 <style scoped>

@@ -25,6 +25,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import

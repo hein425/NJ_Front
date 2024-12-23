@@ -5,26 +5,27 @@
         <h2>Login</h2>
         <form @submit.prevent="handleLogin">
           <div class="form-group">
-            <input type="text" placeholder="Email" v-model="username" required />
+            <input type="text" placeholder="Email" v-model="username" required/>
           </div>
           <div class="form-group">
-            <input type="password" placeholder="Password" v-model="password" required />
+            <input type="password" placeholder="Password" v-model="password" required/>
           </div>
           <button type="submit" class="login-button">로그인</button>
           <p class="forgot-password-button">간편 계정 등록 및 회원가입</p>
         </form>
 
         <!-- 일정 저장 성공 모달 -->
-        <BaseModal :visible="showSuccessModal" :message="'로그인 성공!'" @close="() => closeModal('success')" class="modal-login-success" />
+        <BaseModal :visible="showSuccessModal" :message="'로그인 성공!'" @close="() => closeModal('success')"
+                   class="modal-login-success"/>
 
         <!-- 소셜 로그인 버튼 추가 -->
         <div class="social-login-buttons">
           <button id="custom-login-btn" @click="kakaoLogin()" class="social-button kakao-button">
-            <img src="../assets/kakao.png" alt="Kakao Icon" class="social-icon" />
+            <img src="../assets/kakao.png" alt="Kakao Icon" class="social-icon"/>
             카카오 계정으로 로그인
           </button>
           <button class="social-button google-button">
-            <img src="../assets/google.png" alt="Google Icon" class="social-icon" />
+            <img src="../assets/google.png" alt="Google Icon" class="social-icon"/>
             구글 계정으로 로그인
           </button>
           <button class="social-button naver-button">네이버 계정으로 로그인</button>
@@ -38,12 +39,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore'; // Pinia store import
-import { watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
-import { BASE_URL } from '@/config';
+import {ref, watch} from 'vue';
+import {useRouter} from 'vue-router';
+import {useAuthStore} from '@/stores/authStore'; // Pinia store import
+import {watchEffect} from 'vue';
+import {useRoute} from 'vue-router';
+import {BASE_URL} from '@/config';
 import axios from 'axios';
 import BaseModal from './BaseModal.vue';
 
@@ -80,7 +81,7 @@ watch(
 
 // 회원가입 페이지 새 창으로 열기
 const openSignUp = () => {
-  router.push({ path: '/signupp' });
+  router.push({path: '/signupp'});
   //const signUpUrl = router.resolve({ path: '/signupp' }).href;
   //  window.open(signUpUrl, '_blank'); // 새 창에서 회원가입 페이지 열기
 };
@@ -101,6 +102,11 @@ const handleLogin = async () => {
 
       showSuccessModal.value = true;
       await authStore.check();
+
+      // SSE 구독 시작 (userName 전달)
+      const userName = response.data.userName; // userName 변수에 저장
+      startSSESubscription(userName); // userName 전달
+
       router.push('/'); // 로그인 후 홈으로 이동
     }
   } catch (error) {
@@ -109,6 +115,24 @@ const handleLogin = async () => {
     console.error('로그인 오류:', error);
   }
 };
+
+// SSE 구독 함수
+const startSSESubscription = (userName) => {
+  console.log('SSE 구독 시작: ', userName); // 전달된 userName 로그로 확인
+  const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe`);
+  // const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${encodeURIComponent(userName)}`);
+
+  eventSource.onmessage = (event) => {
+    console.log('새 알림:', event.data);
+    alert(`새 알림: ${event.data}`); // 알림 표시
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE 오류 발생:', error);
+    eventSource.close(); // 오류 시 연결 닫기
+  };
+};
+
 
 // 모달 닫기 함수
 const closeModal = () => {
@@ -130,13 +154,19 @@ watchEffect(async () => {
   if (route.query.code) {
     try {
       // 백엔드로 GET 요청을 보내서 액세스 토큰을 가져오는 부분
-      const response = await axios.get(`${BASE_URL}/auth/kakao/login?code=${route.query.code}`);
+      const response = await axios.get(`${BASE_URL}/auth/kakao/login`, {
+        params: {
+          code: route.query.code,
+        },
+        withCredentials: true, // 반드시 추가
+      });
+
 
       console.log(response.data);
 
       if (response.status === 200) {
         // 서버로부터 받은 토큰과 사용자 정보를 저장
-        const { accessToken, userName, profileImageUrl, email, idx, calendarIdx } = response.data;
+        const {accessToken, userName, profileImageUrl, email, idx, calendarIdx} = response.data;
 
         // 로컬 스토리지 및 Pinia 스토어 업데이트
         localStorage.setItem('token', accessToken);
@@ -145,7 +175,7 @@ watchEffect(async () => {
         console.log(authStore.profileImageUrl);
 
         alert('로그인 되었습니다.');
-        router.push('/'); // 로그인 후 홈으로 리다이렉트
+        // router.push('/'); // 로그인 후 홈으로 리다이렉트
       }
     } catch (error) {
       console.log('카카오 로그인 실패:', error);

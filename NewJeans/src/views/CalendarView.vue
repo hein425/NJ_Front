@@ -11,7 +11,12 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter, useRoute } from 'vue-router';
 import Modal from '@/components/MoDal.vue';
+<<<<<<< HEAD
 import { useCountryStore } from '@/stores/countryStore';
+=======
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
+>>>>>>> cew
 
 //문자열 색상을 hex 값으로 변환
 const colorList = [
@@ -198,6 +203,21 @@ const hexToRgba = (hex, opacity) => {
   }
   return hex;
 };
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
 
 function speakAllSchedules() {
   const parent = event.target.parentElement;
@@ -414,17 +434,17 @@ const onDragLeave = event => {
           <!-- 왼쪽 버튼 그룹 -->
           <div class="left-buttons">
             <button @click="goToday" class="Today-button">오늘</button>
-            <button @click="isYearlyView = true" class="Yealy-button">연도</button>
+            <button @click="isYearlyView = true" class="Yealy-button tooltip-btn" data-tooltip="연달력으로 이동">연도</button>
           </div>
 
           <!-- 가운데 컨트롤 그룹 -->
           <div class="center-controls">
             <div class="YMYM">
               <!-- 연도 및 월 표시 -->
-              <select v-model="selectedYear" @change="onYearChange">
+              <select v-model="selectedYear" @change="onYearChange" class="tooltip-btn" data-tooltip="연도 이동">
                 <option v-for="year in yearsRange" :key="year" :value="year">{{ year }}</option>
               </select>
-              <select v-model="selectedMonth" @change="onMonthChange">
+              <select v-model="selectedMonth" @change="onMonthChange" class="tooltip-btn" data-tooltip="월 이동">
                 <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
               </select>
             </div>
@@ -503,7 +523,7 @@ const onDragLeave = event => {
             <font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" />
             &nbsp;Schedule
           </button>
-          <button class="flip-back-btn" @click="flipBack">&orarr;</button>
+          <button class="flip-back-btn tooltip-btn" data-tooltip="달력으로 이동" @click="flipBack">&orarr;</button>
           <!-- ㄴ 달력 다시 뒤집기 버튼 -->
           <button class="diary-btn" @click="showDiaryForm"><font-awesome-icon :icon="['fas', 'pencil']" class="icon-margin" /> &nbsp; Diary</button>
         </div>
