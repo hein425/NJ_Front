@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter, useRoute } from 'vue-router';
 import Modal from '@/components/MoDal.vue';
+import { useCountryStore } from '@/stores/countryStore';
 
 //문자열 색상을 hex 값으로 변환
 const colorList = [
@@ -23,6 +24,7 @@ const colorList = [
   { value: 'GRAY', color: '#a6a6a6' },
 ];
 
+
 const router = useRouter();
 const authStore = useAuthStore();
 const calendarIdx = ref(authStore.calendarIdx);
@@ -34,6 +36,8 @@ const columns = ref([]);
 const groupColumns = ref([]);
 const holidays = ref([]);
 const countryCode = 'KR';
+const countryStore = useCountryStore();
+const currentCountry = ref(countryStore.countryCode);
 
 const selectDate = ref(null);
 const isFlipped = ref(false);
@@ -56,6 +60,23 @@ const onYearChange = () => {
   MonthlySchedules();
   fetchDiaryEntriesForMonth();
 };
+
+// 공휴일 데이터 가져오기
+const fetchCalendarHolidays = async () => {
+  const year = selectedYear.value; // 현재 선택된 연도
+  try {
+    const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${currentCountry.value}`);
+    holidays.value = response.data.reduce((acc, holiday) => {
+      if (!acc[holiday.date]) acc[holiday.date] = [];
+      acc[holiday.date].push(holiday.localName);
+      return acc;
+    }, {});
+    console.log(`공휴일 (${year}): `, holidays.value);
+  } catch (error) {
+    console.error('공휴일 데이터를 가져오는 중 오류 발생:', error);
+  }
+};
+
 
 // 월 변경 시
 const onMonthChange = () => {
@@ -85,24 +106,7 @@ const isDiaryEntry = date => {
   return diaryEntries.value.includes(date.format('YYYY-MM-DD'));
 };
 
-// Nager.Date API에서 공휴일 데이터를 가져오는 함수
-const fetchHolidays = async () => {
-  const year = now.value.format('YYYY');
-  try {
-    const response = await axios.get(`https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`);
 
-    // 날짜별로 공휴일 그룹화
-    holidays.value = response.data.reduce((acc, holiday) => {
-      if (!acc[holiday.date]) acc[holiday.date] = [];
-      acc[holiday.date].push(holiday.localName);
-      return acc;
-    }, {});
-
-    console.log(`공휴일 (${year}): `, holidays.value);
-  } catch (error) {
-    console.error('Failed to fetch holidays:', error);
-  }
-};
 
 // @<@ 일정 띄우기 @>@
 const MonthlySchedules = async () => {
@@ -216,7 +220,15 @@ function speakText(text) {
 // 일기 북마크
 
 watch(
-  now,
+  () => countryStore.countryCode,
+  (newCode) => {
+    currentCountry.value = newCode;
+    fetchCalendarHolidays();
+  },
+  { immediate: true }
+);
+
+watch( now,
   () => {
     columns.value = [];
     groupColumns.value = [];
@@ -250,9 +262,10 @@ watch(
     for (let i = 0; i < columns.value.length; i += 7) {
       groupColumns.value.push(columns.value.slice(i, i + 7));
     }
+
     MonthlySchedules();
     fetchDiaryEntriesForMonth();
-    fetchHolidays();
+    fetchCalendarHolidays();
   },
   {
     immediate: true,
