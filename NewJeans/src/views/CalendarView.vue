@@ -35,7 +35,6 @@ const now = ref(dayjs());
 const columns = ref([]);
 const groupColumns = ref([]);
 const holidays = ref([]);
-const countryCode = 'KR';
 const countryStore = useCountryStore();
 const currentCountry = ref(countryStore.countryCode);
 

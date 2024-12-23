@@ -1,35 +1,127 @@
 <template>
-  <div class="diary-view-container">
-    <div class="toolbar">
-      <div class="category-buttons">
-        <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
-          {{ category.label }}
+  <div>
+    <div class="diary-view-container">
+      <!-- 상단 도구바 -->
+      <div class="toolbar">
+        <div class="category-buttons">
+          <button v-for="category in categories" :key="category.value" @click="fetchDiaries(category.value)" :class="{ selected: selectedCategory === category.value }">
+            {{ category.label }}
+          </button>
+        </div>
+        <div class="sort-buttons">
+          <button @click="sortDiaries('LATEST')" :class="{ selected: sortOrder === 'LATEST' }">최신순</button>
+          <button @click="sortDiaries('OLDEST')" :class="{ selected: sortOrder === 'OLDEST' }">오래된순</button>
+        </div>
+      </div>
+
+      <!-- 일기 목록 -->
+      <div v-if="paginatedDiaries.length > 0" class="diary-list">
+        <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
+          <h3>{{ diary.title }}</h3>
+          <p>{{ getCategoryLabel(diary.category) }}</p>
+          <p>{{ diary.date }}</p>
+        </div>
+      </div>
+      <div v-else>
+        <p>해당 카테고리의 일기가 없습니다.</p>
+      </div>
+
+      <!-- 페이지네이션 -->
+      <div class="pagination">
+        <button v-for="page in totalPages" :key="page" @click="goToPage(page)" :class="{ active: currentPage === page }">
+          {{ page }}
         </button>
       </div>
-      <div class="sort-buttons">
-        <button @click="sortDiaries('LATEST')" :class="{ selected: sortOrder === 'LATEST' }">최신순</button>
-        <button @click="sortDiaries('OLDEST')" :class="{ selected: sortOrder === 'OLDEST' }">오래된순</button>
-      </div>
     </div>
 
-    <div v-if="paginatedDiaries.length > 0" class="diary-list">
-      <div v-for="(diary, index) in paginatedDiaries" :key="index" class="diary-item" @click="goToDiaryDetail(diary.idx)">
-        <h3>{{ diary.title }}</h3>
-        <p>{{ getCategoryLabel(diary.category) }}</p>
-        <p>{{ diary.date }}</p>
-      </div>
-    </div>
-    <div v-else>
-      <p>해당 카테고리의 일기가 없습니다.</p>
-    </div>
+    <!-- 오른쪽 아래 + 버튼 -->
+    <button class="add-diary-btn" @click="toggleModal">+</button>
 
-    <div class="pagination">
-      <button v-for="page in totalPages" :key="page" @click="goToPage(page)" :class="{ active: currentPage === page }">
-        {{ page }}
-      </button>
+<!-- 모달 -->
+<div v-if="isModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>일기 작성</h3>
+      <button class="close-btn" @click="toggleModal">X</button>
+    </div>
+    <div class="modal-body">
+      <form @submit.prevent="submitDiary">
+        <!-- 제목과 카테고리 -->
+        <div class="row">
+          <div class="title-category-row">
+            <div class="title-section">
+              <label for="title">제목</label>
+              <input id="title" v-model="title" class="input-field" placeholder="제목을 입력하세요" @input="checkTitleLength" />
+            </div>
+            <div class="category-section">
+  <label for="category">카테고리</label>
+  <select id="category" v-model="category" class="input-field">
+    <option value="DAILY">#일기</option>
+    <option value="GROWTH">#성장일지</option>
+    <option value="EXERCISE">#운동</option>
+    <option value="TRIP">#여행</option>
+    <option value="ETC">#기타</option>
+  </select>
+</div>
+          </div>
+        </div>
+
+        <!-- 작성일 -->
+        <div class="row">
+          <label for="date">작성일</label>
+          <input id="date" v-model="date" type="date" class="input-field" />
+        </div>
+
+        <!-- 내용 -->
+        <div class="row">
+          <label for="content">내용</label>
+          <textarea id="content" v-model="content" class="input-field textarea-field" placeholder="내용을 입력하세요"></textarea>
+        </div>
+
+        <!-- 이미지 업로드 -->
+        <div class="row">
+          <label for="image" style="width: 100px">이미지 추가</label>
+          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+        </div>
+
+        <div class="image-preview">
+  <div v-for="(image, index) in images" :key="index" class="image-container">
+    <img :src="image.url" alt="Preview" />
+    <button class="delete-btn" @click.prevent="removeImage(index)">X</button>
+  </div>
+</div>
+
+
+        <!-- 버튼 -->
+        <div class="button-row">
+          <button type="submit" class="submit-button">
+            <strong>작성하기</strong>
+          </button>
+          <button type="button" @click="toggleModal" class="cancel-button">
+            <strong>취소</strong>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
+      <!-- 제목 비어있음 경고 모달 -->
+      <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
+
+<!-- 제목 글자수 경고 모달 -->
+<BaseModal :visible="showTitleLimitModal" :message="'제목은 최대 50자까지 입력할 수 있습니다.'" @close="() => closeModal('titleLimit')" class="modal-empty-title" />
+
+<!-- 일정 저장 성공 모달 -->
+<BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
+  <BaseModal 
+  :visible="showSuccessModal" 
+  :message="'일기가 성공적으로 작성되었습니다.'" 
+  @close="closeModal('success')" 
+/>
+
+  </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
@@ -44,9 +136,134 @@ const sortOrder = ref('LATEST');
 const selectedCategory = ref('ALL');
 const authStore = useAuthStore();
 const calendarIdx = authStore.calendarIdx;
-const currentPage = ref(1); // 현재 페이지 번호
-const itemsPerPage = 6; // 한 페이지에 보여줄 일기 개수
+const currentPage = ref(1);
+const itemsPerPage = 6;
 
+
+// 모달 상태 관리
+const isModalOpen = ref(false);
+const title = ref('');
+const category = ref('DAILY');
+const content = ref('');
+const images = ref([]); // 이미지 리스트
+
+const showEmptyTitleModal = ref(false);
+const showTitleLimitModal = ref(false);
+const showSuccessModal = ref(false);
+const emit = defineEmits(['closeForm', 'updateList']);
+
+
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const date = ref(getTodayDate()); // 디폴트값: 오늘 날짜
+
+const closeModal = modalName => {
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+  }
+  if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
+  if (modalName === 'titleLimit') showTitleLimitModal.value = false;
+  if (modalName === 'success') {
+    showSuccessModal.value = false;
+    emit('closeForm');
+  }
+};
+
+// 제목 길이 확인 함수
+const checkTitleLength = () => {
+  if (title.value.length > 50) {
+    showTitleLimitModal.value = true; // 모달 표시
+    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
+    return;
+  }
+};
+
+const handleImageUpload = event => {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      images.value.push({ file, url: e.target.result }); // 이미지 파일과 URL 추가
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = ''; // 입력 초기화
+};
+
+
+
+// 모달 열기/닫기
+const toggleModal = () => {
+  isModalOpen.value = !isModalOpen.value;
+};
+
+// 일기 작성 API 호출
+const submitDiary = async () => {
+  if (!title.value.trim()) {
+    alert('제목을 입력해주세요.');
+    return;
+  }
+
+  const diaryRequest = {
+    title: title.value,
+    content: content.value,
+    category: category.value,
+    date: date.value,
+    calendarIdx: authStore.calendarIdx,
+  };
+
+  const formData = new FormData();
+  formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
+
+  if (images.value.length > 0) {
+  images.value.forEach(image => {
+    formData.append('imageFiles', image.file); // 이미지 파일 추가
+  });
+} else {
+  formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
+}
+
+
+  try {
+  const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  console.log('Diary submitted successfully:', response.data);
+
+  // 성공 처리
+  alert('일기가 성공적으로 작성되었습니다!'); // 성공 알림
+  toggleModal(); // 모달 닫기
+
+  // 입력 필드 초기화
+  title.value = '';
+  content.value = '';
+  category.value = 'DAILY';
+  date.value = getTodayDate();
+  images.value = [];
+
+  // 목록 갱신
+  fetchDiaries('ALL');
+} catch (error) {
+  console.error('Failed to submit diary:', error.response?.data || error.message);
+  alert('작성 중 문제가 발생했습니다.');
+}
+
+};
+
+const removeImage = index => {
+  images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
+};
+
+
+// 기존 기능 유지
 const categories = [
   { label: '전체보기', value: 'ALL' },
   { label: '#일기', value: 'DAILY' },
@@ -232,4 +449,294 @@ onMounted(() => {
   background-color: black;
   color: white;
 }
+/* 추가된 스타일 */
+.add-diary-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 110px;
+  width: 80px;
+  height: 80px;
+  background-color: #343434;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 650px;
+  text-align: center;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-body {
+  margin-top: 20px;
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: white;
+  padding: 30px;
+  width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  font-size: 22px;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+  margin-top: 5px;
+}
+
+.input-field:focus {
+  border-color: #2196f3;
+  outline: none;
+}
+
+.textarea-field {
+  height: 150px;
+  resize: none;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.submit-button,
+.cancel-button {
+  width: 48%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.submit-button {
+  background-color: #222222;
+  color: white;
+}
+
+.submit-button:hover {
+  background-color: #525151;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: black;
+}
+
+.cancel-button:hover {
+  background-color: #aaa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap; /* 여러 줄로 표시 */
+  margin-top: 10px;
+}
+
+.image-container {
+  margin: 5px;
+  position: relative;
+}
+
+.image-container img {
+  width: 100px; /* 고정된 가로 크기 */
+  height: 100px; /* 고정된 세로 크기 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+label[for='image'] {
+  display: inline-block;
+  padding: 10px 50px;
+  background-color: #222222;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+label[for='image']:hover {
+  background-color: #525151;
+}
+
+input[type='file'] {
+  display: none;
+}
+
+label{
+  padding-top: 10px;
+  font-weight: bold;
+}
+
+label[for='title'] {
+  text-align: left;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+label[for='category'] {
+  text-align: left;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+label[for='date'] {
+  text-align: left;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+label[for='content'] {
+  text-align: left;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+label[for='image'] {
+  text-align: left;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+select#category {
+  width: 103.5%; /* 다른 입력 필드와 동일한 폭 */
+  padding: 10px; /* 다른 필드와 동일한 내부 여백 */
+}
+
+
 </style>
