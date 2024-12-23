@@ -2,13 +2,13 @@
   <div class="calendar-wrapper">
     <div class="year-selector">
       <button class="this-year-button" @click="resetToCurrentYear">올해</button>
-      <button @click="$emit('toMonthlyView')" class="monthly-button">월</button>
+      <button @click="$emit('toMonthlyView')" class="monthly-button tooltip-btn" data-tooltip="월달력으로 이동">월</button>
       <div class="yearCha">
-        <button @click="changeYear(-1)">
+        <button @click="changeYear(-1)" class="tooltip-btn" data-tooltip="이전 연도">
           <font-awesome-icon :icon="['fas', 'angle-left']" />
         </button>
         <h1>{{ currentYear }}</h1>
-        <button @click="changeYear(1)">
+        <button @click="changeYear(1)" class="tooltip-btn" data-tooltip="다음 연도">
           <font-awesome-icon :icon="['fas', 'angle-right']" />
         </button>
       </div>
@@ -55,6 +55,8 @@ import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 // const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
@@ -86,6 +88,21 @@ const MonthlySchedules = async () => {
     console.error('Failed to show monthly schedules:', error);
   }
 };
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
 
 // 컴포넌트가 로드될 때 일정 데이터를 가져옴
 onMounted(() => {

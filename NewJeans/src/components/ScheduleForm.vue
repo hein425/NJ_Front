@@ -12,7 +12,7 @@
       <!-- 제목 -->
       <div class="title-row">
         <label for="title" class="title-label">제목</label>
-        <button type="button" @click="toggleRecordingMenu" class="split-button">
+        <button type="button" @click="toggleRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
           <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
         </button>
       </div>
@@ -68,7 +68,7 @@
         <div class="color-options">
           <label v-for="(colorOption, index) in colorList" :key="index" class="color-label">
             <input type="radio" v-model="color" :value="colorOption.value" class="color-radio" />
-            <span class="color-circle" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
+            <span class="color-circle tooltip-btn" :data-tooltip="colorOption.label" :style="{ backgroundColor: colorOption.color }" @click="color = colorOption.value"></span>
           </label>
         </div>
       </div>
@@ -119,7 +119,7 @@
       <div class="title-row">
         <label for="location" class="title-label">위치</label>
         <!-- + 버튼 -->
-        <button type="button" @click="toggleMapVisibility" class="split-button">
+        <button type="button" @click="toggleMapVisibility" class="split-button tooltip-btn" data-tooltip="추가">
           <span class="split-button-icon">
             {{ isMapVisible ? '−' : '+' }}
           </span>
@@ -134,7 +134,7 @@
       <!-- 메모 부분 -->
       <div class="memo-row">
         <label for="content">메모</label>
-        <button type="button" @click="toggleMemoRecordingMenu" class="split-button">
+        <button type="button" @click="toggleMemoRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
           <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
         </button>
       </div>
@@ -177,10 +177,10 @@
 
       <!-- 버튼 -->
       <div class="button-row">
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button tooltip-btn" data-tooltip="저장">
           <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
-        <button type="button" @click="cancelForm" class="cancel-button">
+        <button type="button" @click="cancelForm" class="cancel-button tooltip-btn" data-tooltip="취소">
           <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
@@ -195,6 +195,8 @@ import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -330,13 +332,13 @@ const changeLanguage = langCode => {
 };
 
 const colorList = [
-  { value: 'PINK', color: '#ff7f7f' },
-  { value: 'ORANGE', color: '#ff9933' },
-  { value: 'YELLOW', color: '#ffe066' },
-  { value: 'BLUE', color: '#4da6ff' },
-  { value: 'GREEN', color: '#5cd65c' },
-  { value: 'VIOLET', color: '#b366ff' },
-  { value: 'GRAY', color: '#a6a6a6' },
+  { value: 'PINK', color: '#ff7f7f', label: '분홍색'},
+  { value: 'ORANGE', color: '#ff9933', label: '주황색' },
+  { value: 'YELLOW', color: '#ffe066', label: '노란색' },
+  { value: 'BLUE', color: '#4da6ff', label: '파란색' },
+  { value: 'GREEN', color: '#5cd65c', label: '초록색' },
+  { value: 'VIOLET', color: '#b366ff', label: '보라색' },
+  { value: 'GRAY', color: '#a6a6a6', label: '회색' },
 ];
 
 const updateLocation = coords => {
@@ -349,6 +351,21 @@ onMounted(() => {
   if (props.selectedDate) {
     startdate.value = dayjs(props.selectedDate).format('YYYY-MM-DDTHH:mm');
   }
+});
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
 });
 
 // 이미지 업로드 핸들러

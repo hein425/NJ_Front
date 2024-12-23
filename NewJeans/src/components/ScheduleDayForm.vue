@@ -98,12 +98,12 @@
                 </div>
 
                 <div class="button-group">
-                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index">Delete</button>
+                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="scheduleEditIndex === index">
-                    <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
-                    <button @click.stop="cancelEdit('schedule')">Cancel</button>
+                    <button @click.stop="saveScheduleEdit('schedule', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('schedule')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
 
@@ -191,12 +191,12 @@
                   </div>
                 </div>
                 <div class="button-group">
-                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteDiaryModal(index)">Delete</button>
+                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteDiaryModal(index)" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="diaryEditIndex === index">
-                    <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
-                    <button @click.stop="cancelEdit('diary')">Cancel</button>
+                    <button @click.stop="saveDiaryEdit('diary', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('diary')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -219,6 +219,8 @@ import KakaoMap from "@/views/KakaoMap.vue";
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 
 const props = defineProps({
@@ -713,6 +715,22 @@ watch(
   { immediate: true },
 );
 console.log('재 랜더링');
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+  
+  buttons.forEach((button) => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
+
 </script>
 
 <style scoped>
