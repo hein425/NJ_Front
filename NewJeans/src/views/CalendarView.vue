@@ -11,12 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter, useRoute } from 'vue-router';
 import Modal from '@/components/MoDal.vue';
-<<<<<<< HEAD
 import { useCountryStore } from '@/stores/countryStore';
-=======
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
->>>>>>> cew
 
 //문자열 색상을 hex 값으로 변환
 const colorList = [
