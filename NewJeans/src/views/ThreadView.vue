@@ -303,10 +303,12 @@ body {
 
 /* 컨텐츠 */
 .content-container {
+  justify-items: center;
   margin-top: 15%;
 }
 
 .content-box {
+  width: 100vh;
   background: #f9f9f9;
   border: 1px solid #e5e5e5;
   border-radius: 10px;
