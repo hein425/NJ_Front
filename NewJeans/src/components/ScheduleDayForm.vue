@@ -212,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import KakaoMap from "@/views/KakaoMap.vue";
@@ -280,10 +280,6 @@ const categoryKoreanMap = {
 };
 
 const isMapVisible = ref(false);
-
-
-
-
 
 const fetchDayData = async selectedDate => {
   const previousExpandedStates = {
