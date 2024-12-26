@@ -710,6 +710,7 @@ const onDragLeave = event => {
 }
 
 .Datecell {
+  padding-top: 20px;
   position: relative;
   background-color: #f7f7f7;
   border-radius: 3px;
@@ -718,16 +719,17 @@ const onDragLeave = event => {
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
-  justify-content: center;
   position: relative;
   transition: background-color 0.3s ease;
   aspect-ratio: 1 / 1; /* 정사각형 유지 */
   flex-direction: column; /* 세로 배치 */
+  justify-content: flex-start;
   align-items: flex-start;
   cursor: pointer;
   overflow: hidden;
   border: #b4b4b4 solid 1px;
   pointer-events: auto; /* 기본 이벤트 활성화 */
+  
 }
 
 .Datecell.drag-over {
