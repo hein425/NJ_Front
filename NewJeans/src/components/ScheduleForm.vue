@@ -193,7 +193,7 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
-import {BASE_URL, SCHE_URL} from '@/config';
+import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
@@ -437,7 +437,7 @@ const submitSchedule = async () => {
   }
 
   try {
-    const response = await axios.post(`${SCHE_URL}/schedule/create`, formData, {
+    const response = await axios.post(`${BASE_URL}/schedule/create`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       withCredentials: true, // 쿠키를 자동으로 포함
     });

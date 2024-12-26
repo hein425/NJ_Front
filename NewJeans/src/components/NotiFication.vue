@@ -1,28 +1,53 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-// import axios from 'axios';
+import axios from 'axios';
+import { BASE_URL } from '@/config';
 
 // emit 정의
 const emit = defineEmits(['close']);
 
 //더미 데이터
-const notifications = ref([
-  { id: 1, message: 'John posted Design team weekly #37', time: '2h ago', type: 'all' },
-  { id: 2, message: '포미님께서 일정을 공유하였습니다.', time: '3h ago', type: 'mentions' },
-  { id: 3, message: '해인님께서 친구신청을 하였습니다.', time: '5h ago', type: 'requests' },
-]);
+// const notifications = ref([
+//   { id: 1, message: 'John posted Design team weekly #37', time: '2h ago', type: 'all' },
+//   { id: 2, message: '포미님께서 일정을 공유하였습니다.', time: '3h ago', type: 'mentions' },
+//   { id: 3, message: '해인님께서 친구신청을 하였습니다.', time: '5h ago', type: 'requests' },
+// ]);
 
-// const notifications = ref([]); 더미데이터 삭제 시 이거 쓰면 됨, 알림 데이터 저장용임
-
+// 알림 데이터 저장용임
+const notifications = ref([]);
 // 활성화된 탭 (All, Mentions, Requests)
 const activeTab = ref('all');
-// 탭 변경
-const setTab = tab => {
+// 탭 변경 함수
+const setTab = (tab) => {
   activeTab.value = tab;
 };
 
 // 활성화된 탭에 따라 알림 필터링
-const filteredNotifications = computed(() => notifications.value.filter(notification => activeTab.value === 'all' || notification.type === activeTab.value));
+const filteredNotifications = computed(() =>
+  notifications.value.filter(
+    (notification) => activeTab.value === 'all' || notification.type === activeTab.value
+  )
+);
+
+// 알림 데이터 가져오기
+const fetchNotifications = async () => {
+  try {
+    const userName = "exampleUser"; // 실제 로그인된 사용자 이름으로 교체 (로그인 시스템 사용 시 변경 필요)
+    const response = await axios.get(`${BASE_URL}/friend-request`, {
+      params: { userName },
+    });
+
+    // 백엔드에서 반환된 데이터가 배열 형태라고 가정하고 데이터를 처리
+    notifications.value = response.data.map((notification) => ({
+      id: notification.notificationId, // 고유 ID
+      message: notification.content,   // 알림 메시지
+      time: new Date(notification.createdAt).toLocaleString(), // 생성 시간 포맷팅
+      type: notification.notificationType.toLowerCase(), // 알림 타입 (소문자로 변환)
+    }));
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error);
+  }
+};
 
 // 알림 모두 읽음 처리 (더미 로직)
 const markAllAsRead = () => {
@@ -50,6 +75,7 @@ const handleClickOutside = event => {
 };
 
 onMounted(() => {
+  fetchNotifications(); 
   document.addEventListener('click', handleClickOutside);
 });
 
@@ -59,7 +85,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="notifications">
+  <div class="notifications" ref="notificationPopup">
     <div class="notifications-header">
       <h3>Notifications</h3>
       <button @click="markAllAsRead">알림 모두 읽기</button>
@@ -70,10 +96,15 @@ onBeforeUnmount(() => {
       <button :class="{ active: activeTab === 'requests' }" @click="setTab('requests')">Requests</button>
     </div>
     <ul class="notifications-list">
-      <li v-for="notification in filteredNotifications" :key="notification.id">
-        <p>{{ notification.message }}</p>
-        <small>{{ notification.time }}</small>
-      </li>
+      <template v-if="filteredNotifications.length > 0">
+        <li v-for="notification in filteredNotifications" :key="notification.id">
+          <p>{{ notification.message }}</p>
+          <small>{{ notification.time }}</small>
+        </li>
+      </template>
+      <template v-else>
+        <li class="no-notifications">알림이 없습니다.</li>
+      </template>
     </ul>
   </div>
 </template>
@@ -136,5 +167,11 @@ onBeforeUnmount(() => {
 
 .notifications-list li:last-child {
   border-bottom: none;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #999;
+  padding: 1rem;
 }
 </style>
