@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import defaultProfileImage from '@/assets/profile2.jpg'; // 기본 프로필 이미지 경로
 import axios from 'axios';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -92,6 +94,21 @@ export const useAuthStore = defineStore('auth', {
     changeProfileImage(newprofileImageUrl) {
       this.profileImageUrl = newprofileImageUrl && newprofileImageUrl !== '' ? newprofileImageUrl : defaultProfileImage; // 기본 이미지 적용
       localStorage.setItem('profileImageUrl', newprofileImageUrl || '');
+    },
+  },
+});
+
+// Notification 스토어
+export const toolBox = defineStore('notification', {
+  state: () => ({
+    messages: [],
+  }),
+  actions: {
+    addMessage(message) {
+      this.messages.push(message);
+    },
+    removeMessage(index) {
+      this.messages.splice(index, 1);
     },
   },
 });

@@ -93,12 +93,12 @@
                 </div>
 
                 <div class="button-group">
-                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index">Delete</button>
+                  <button @click.stop="startEdit('schedule', index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteModal(index)" v-if="scheduleEditIndex !== index" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="scheduleEditIndex === index">
-                    <button @click.stop="saveScheduleEdit('schedule', index)">Save</button>
-                    <button @click.stop="cancelEdit('schedule')">Cancel</button>
+                    <button @click.stop="saveScheduleEdit('schedule', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('schedule')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -154,6 +154,7 @@
       <div class="diary-section">
         <div v-if="diaries.length > 0">
           <div v-for="(diary, index) in diaries" :key="index" class="diary-item" @click="toggleDiaryExpand(index)">
+            <!-- 제목과 카테고리 -->
             <div class="title-container">
               <h4 v-if="diaryEditIndex !== index">{{ diary.title }}</h4>
               <input v-else v-model="editData.title" class="input-field" placeholder="Enter Title" @click.stop />
@@ -163,8 +164,14 @@
             <transition name="slide-fade">
               <div v-show="isDiaryExpanded[index]" class="expanded-content">
                 <hr class="divider" />
-                <p v-if="diaryEditIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
-                <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date" @click.stop />
+                <div class="date-share-row">
+                  <p v-if="diaryEditIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
+                  <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date" @click.stop />
+                  <!-- 공개 설정 -->
+                  <p class="share-info">
+                    {{ diary.share === 'ALL' ? '전체공개' : diary.share === 'CHOOSE' ? '친구공개' : '비공개' }}
+                  </p>
+                </div>
                 <hr class="divider" />
                 <p v-if="diaryEditIndex !== index">{{ diary.content }}</p>
                 <textarea v-else v-model="editData.content" class="input-field textarea-field" placeholder="Enter Content" @click.stop></textarea>
@@ -184,12 +191,12 @@
                   </div>
                 </div>
                 <div class="button-group">
-                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index">Edit</button>
-                  <button @click.stop="openDeleteDiaryModal(index)">Delete</button>
+                  <button @click.stop="startEdit('diary', index)" v-if="diaryEditIndex !== index" class="tooltip-btn" data-tooltip="수정">Edit</button>
+                  <button @click.stop="openDeleteDiaryModal(index)" class="tooltip-btn" data-tooltip="삭제">Delete</button>
 
                   <div v-if="diaryEditIndex === index">
-                    <button @click.stop="saveDiaryEdit('diary', index)">Save</button>
-                    <button @click.stop="cancelEdit('diary')">Cancel</button>
+                    <button @click.stop="saveDiaryEdit('diary', index)" class="tooltip-btn" data-tooltip="저장">Save</button>
+                    <button @click.stop="cancelEdit('diary')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -205,13 +212,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
 import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -308,12 +317,15 @@ const fetchDayData = async selectedDate => {
     isScheduleExpanded.value = schedules.value.map((_, index) => previousExpandedStates.schedules[index] || false);
 
     const diaryResponse = await axios.get(`${BASE_URL}/diary/${calendarIdx.value}/${year}/${month}/${day}`);
+    console.log('Diary Response:', diaryResponse.data); // 서버 응답 데이터 확인
+
     diaries.value = diaryResponse.data.map(diary => ({
       ...diary,
       id: diary.idx,
       date: `${year}-${month}-${day}`,
       content: diary.content || 'No content available',
       category: diary.category || 'Uncategorized',
+      share: diary.share || 'NONE', // 수정: 서버에서 받은 공개 설정 값 포함
       images: diary.images || [],
     }));
 
@@ -382,6 +394,7 @@ const startEdit = (type, index) => {
   } else if (type === 'diary') {
     diaryEditIndex.value = index; // 일기 편집 상태 설정
     editData.value = { ...diaries.value[index] }; // 편집 데이터 복사
+    editData.value.share = diaries.value[index].share || 'NONE'; // 수정: 공개 설정 값 포함
     isMapVisible.value = false; // 🔄 지도 숨김 (일기에는 필요 없음)
   }
 };
@@ -397,6 +410,7 @@ const saveDiaryEdit = async (type, index) => {
     date: editData.value.date,
     content: editData.value.content,
     category: diaryToUpdate.category,
+    share: editData.value.share || 'NONE',
     deletedImageList: editData.value.deletedImageList || [],
   };
 
@@ -701,6 +715,21 @@ watch(
   { immediate: true },
 );
 console.log('재 랜더링');
+
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+
+  buttons.forEach(button => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+});
 </script>
 
 <style scoped>
@@ -741,6 +770,27 @@ console.log('재 랜더링');
   font-size: 0.9rem;
   color: gray;
   margin-left: auto;
+}
+
+/* Date와 공개 설정을 동일한 줄에 배치 */
+.date-share-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px; /* 간격 추가 */
+}
+
+.date-share-row p {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+.share-info {
+  font-size: 0.9rem;
+  color: #888;
+  font-style: italic;
+  margin-left: 15px;
 }
 
 .expanded-content {

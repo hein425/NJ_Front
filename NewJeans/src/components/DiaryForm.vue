@@ -10,7 +10,7 @@
           </div>
 
           <div class="category-section">
-            <select v-model="category" id="category" class="input-field" style="width: 114px">
+            <select v-model="category" id="category" class="input-field tooltip-btn" data-tooltip="카테고리" style="width: 114px">
               <option value="DAILY">#일기</option>
               <option value="GROWTH">#성장일지</option>
               <option value="EXERCISE">#운동</option>
@@ -78,12 +78,12 @@
 
       <div class="button-row">
         <!-- 저장 버튼 -->
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button tooltip-btn" data-tooltip="저장">
           <font-awesome-icon :icon="['fas', 'check']" style="font-size: 24px; color: white" />
         </button>
 
         <!-- 취소 버튼 -->
-        <button type="button" @click="cancelForm" class="cancel-button">
+        <button type="button" @click="cancelForm" class="cancel-button tooltip-btn" data-tooltip="취소">
           <font-awesome-icon :icon="['fas', 'times']" style="font-size: 24px; color: white" />
         </button>
       </div>
@@ -92,11 +92,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
+import 'tippy.js/dist/tippy.css';
+import tippy from 'tippy.js';
 
 const props = defineProps({
   selectedDate: String,
@@ -182,14 +184,24 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value,
-    share: share.value,
+    share: share.value || 'ALL', // 기본값을 'ALL'로 설정
     calendarIdx: authStore.calendarIdx,
     friendIdxList: share.value === 'CHOOSE' ? selectedFriends.value : null,
   };
 
+  console.log('Diary Request:', diaryRequest); // 서버로 보내는 데이터 확인
+
   const formData = new FormData();
   formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
-  images.value.forEach(image => formData.append('imageFiles', image.file));
+
+  // 이미지 처리 로직
+  if (images.value.length > 0) {
+    images.value.forEach(image => {
+      formData.append('imageFiles', image.file);
+    });
+  } else {
+    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 필드 추가
+  }
 
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
@@ -198,7 +210,7 @@ const submitDiary = async () => {
     console.log('Diary saved:', response.data);
     showSuccessModal.value = true; // 저장 성공 모달 표시
   } catch (error) {
-    console.error('Failed to save diary:', error);
+    console.error('Failed to save diary:', error.response?.data || error.message);
     alert('일기 저장에 실패했습니다.');
   }
 };
@@ -223,6 +235,20 @@ const removeImage = index => {
 // 컴포넌트 로드시 친구 목록 로드
 onMounted(() => {
   loadFriends();
+});
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+
+  buttons.forEach(button => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
 });
 </script>
 
