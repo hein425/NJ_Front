@@ -44,7 +44,7 @@ import {useRouter} from 'vue-router';
 import {useAuthStore} from '@/stores/authStore'; // Pinia store import
 import {watchEffect} from 'vue';
 import {useRoute} from 'vue-router';
-import {BASE_URL,NOTI_BASE_URL} from '@/config';
+import {BASE_URL} from '@/config';
 import axios from 'axios';
 import BaseModal from './BaseModal.vue';
 
@@ -119,7 +119,7 @@ const handleLogin = async () => {
 // SSE 구독 함수
 const startSSESubscription = (userName) => {
   console.log('SSE 구독 시작: ', userName); // 전달된 userName 로그로 확인
-  const eventSource = new EventSource(`${NOTI_BASE_URL}/noti/api/subscribe?userName=${userName}`);
+  const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${userName}`);
   // const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${encodeURIComponent(userName)}`);
 
   eventSource.addEventListener('sse',(data)=>{
