@@ -25,7 +25,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import
@@ -54,7 +53,12 @@ const handleSignUp = async () => {
     };
 
     //백엔드로 회원가입 요청 보내기(백엔드에서 url 받아서 집어넣으면 됨)
-    const response = await axios.post(`${BASE_URL}/auth/join`, signUpDate);
+    const response = await axios.post(`${BASE_URL}/auth/join`, signUpDate, {
+      withCredentials: true, // 필요한 경우
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     // 성공적으로 회원가입이 완료된 경우
     if (response.status === 200) {

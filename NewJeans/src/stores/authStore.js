@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', {
     profileImageUrl: '',
     email: '',
     idx: null,
-    calendarIdx: null,
+    calendarIdx: null, // idx 값 그대로 저장
   }),
   actions: {
     check() {
@@ -24,13 +24,13 @@ export const useAuthStore = defineStore('auth', {
       console.log(`this.idx = ${this.idx}`);
       console.log(`this.calendarIdx = ${this.calendarIdx}`);
     },
-    login(token, userName, profileImageUrl, email, idx, calendarIdx) {
+    login(token, userName, profileImageUrl, email, idx) {
       this.accessToken = token;
       this.userName = userName;
       this.profileImageUrl = profileImageUrl && profileImageUrl !== 'undefined' ? profileImageUrl : defaultProfileImage; // 기본 이미지 적용
       this.email = email;
       this.idx = idx;
-      this.calendarIdx = calendarIdx;
+      this.calendarIdx = idx; // idx 값을 그대로 저장
       this.isLoggedIn = true;
 
       localStorage.setItem('token', token);
@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('profileImageUrl', profileImageUrl || '');
       localStorage.setItem('email', email || '');
       localStorage.setItem('idx', idx || '');
-      localStorage.setItem('calendarIdx', calendarIdx || '');
+      localStorage.setItem('calendarIdx', idx || ''); // idx 값을 저장
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     },
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', {
         this.profileImageUrl = profileImageUrl && profileImageUrl !== 'undefined' && profileImageUrl !== '' ? profileImageUrl : defaultProfileImage; // 기본 이미지 적용
         this.email = email || '';
         this.idx = idx ? Number(idx) : null;
-        this.calendarIdx = calendarIdx ? Number(calendarIdx) : null;
+        this.calendarIdx = idx ? Number(idx) : null; // idx 값을 그대로 복원
         this.isLoggedIn = true;
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;

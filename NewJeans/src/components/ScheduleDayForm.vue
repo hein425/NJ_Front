@@ -67,20 +67,15 @@
                 <hr class="divider" />
                 <p v-show="scheduleEditIndex !== index"><strong>Address:</strong></p>
 
- <!-- 기존 맵: 데이터가 없을 때 지도 표시하지 않도록 조건 추가 -->
-<div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index && schedule.latitude && schedule.longitude" class="map-container">
-  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
-</div>
+                <!-- 기존 맵: 데이터가 없을 때 지도 표시하지 않도록 조건 추가 -->
+                <div v-if="isScheduleExpanded[index] && scheduleEditIndex !== index && schedule.latitude && schedule.longitude" class="map-container">
+                  <KakaoMapView :latitude="schedule.latitude" :longitude="schedule.longitude" :key="schedule.id" />
+                </div>
 
-<!-- 수정 모드에서는 KakaoMap 컴포넌트를 그대로 유지 -->
-<div v-if="scheduleEditIndex === index" class="map-edit-section">
-  <KakaoMap
-    @updateLocation="updateLocation"
-    :latitude="editData.latitude"
-    :longitude="editData.longitude"
-  />
-</div>
-
+                <!-- 수정 모드에서는 KakaoMap 컴포넌트를 그대로 유지 -->
+                <div v-if="scheduleEditIndex === index" class="map-edit-section">
+                  <KakaoMap @updateLocation="updateLocation" :latitude="editData.latitude" :longitude="editData.longitude" />
+                </div>
 
                 <!-- 이미지 관리 섹션 -->
                 <div v-if="scheduleEditIndex === index" class="schedule-images">
@@ -106,8 +101,6 @@
                     <button @click.stop="cancelEdit('schedule')" class="tooltip-btn" data-tooltip="취소">Cancel</button>
                   </div>
                 </div>
-
-
               </div>
             </transition>
           </div>
@@ -215,13 +208,12 @@
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import KakaoMapView from '@/views/KakaoMapView.vue';
-import KakaoMap from "@/views/KakaoMap.vue";
+import KakaoMap from '@/views/KakaoMap.vue';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
-
 
 const props = defineProps({
   selectedDate: String,
@@ -333,13 +325,13 @@ const fetchDayData = async selectedDate => {
   }
 };
 
-const startPolling = async selectedDate => {
-  const res = await fetchDayData(selectedDate);
-  console.log(res);
+// const startPolling = async selectedDate => {
+//   const res = await fetchDayData(selectedDate);
+//   console.log(res);
   // pollingInterval = setInterval(() => {
   //   fetchDayData(selectedDate);
   // }, 1100);
-};
+// };
 
 // const stopPolling = () => {
 //   if (pollingInterval) {
@@ -386,7 +378,7 @@ const startEdit = (type, index) => {
 
     // 🔄 카카오맵 관련 데이터 설정
     editData.value.latitude = schedules.value[index].latitude || 37.5665; // 기본값
-    editData.value.longitude = schedules.value[index].longitude || 126.9780;
+    editData.value.longitude = schedules.value[index].longitude || 126.978;
 
     isMapVisible.value = true; // 🔄 지도 표시
   } else if (type === 'diary') {
@@ -714,8 +706,8 @@ console.log('재 랜더링');
 
 onMounted(() => {
   const buttons = document.querySelectorAll('.tooltip-btn');
-  
-  buttons.forEach((button) => {
+
+  buttons.forEach(button => {
     const tooltipContent = button.getAttribute('data-tooltip');
     tippy(button, {
       content: tooltipContent,
@@ -726,7 +718,6 @@ onMounted(() => {
     });
   });
 });
-
 </script>
 
 <style scoped>

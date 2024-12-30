@@ -6,6 +6,7 @@ import MenuBar2 from './components/MenuBar2.vue';
 import HeaderTop from './components/HeaderTop.vue';
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
+// import axios from 'axios';
 
 // 테마 설정
 const themes = [
@@ -60,6 +61,27 @@ onMounted(async () => {
 
 const route = useRoute();
 const isSignUpPage = computed(() => route.path === '/signupp');
+
+// const requestData = {
+//   senderId: 0,
+//   receiverId: 0,
+//   content: "string",
+// };
+
+// // axios 요청
+// axios.post('http://localhost:50004/message/send', requestData, {
+//   headers: {
+//     'accept': '*/*',
+//     'Content-Type': 'application/json',
+//   },
+// })
+//   .then(response => {
+//     console.log('Response:', response.data); // 성공 시 응답 데이터 출력
+//   })
+//   .catch(error => {
+//     console.error('Error:', error.response ? error.response.data : error.message); // 에러 출력
+//   });
+
 </script>
 
 <template>
