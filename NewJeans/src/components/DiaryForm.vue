@@ -21,6 +21,25 @@
         </div>
       </div>
 
+      <!-- 공개 범위 설정 -->
+      <div class="row">
+        <label for="share" style="width: 80px">공개 설정</label>
+        <select v-model="share" id="share" class="input-field" @change="handleShareChange">
+          <option value="ALL">전체공개</option>
+          <option value="CHOOSE">친구공개</option>
+          <option value="NONE">비공개</option>
+        </select>
+      </div>
+
+      <!-- 친구 목록 (친구공개 선택 시 표시) -->
+      <div v-if="share === 'CHOOSE'" class="friend-selection">
+        <h4>공개할 친구 선택</h4>
+        <div v-for="friend in friends" :key="friend.idx" class="friend-item">
+          <input type="checkbox" :value="friend.idx" v-model="selectedFriends" />
+          <span>{{ friend.userName }}</span>
+        </div>
+      </div>
+
       <!-- 제목 비어있음 경고 모달 -->
       <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
 
@@ -44,8 +63,10 @@
 
       <!-- 이미지 미리보기 -->
       <div class="row">
-        <label for="image" style="width: 80px">이미지</label>
-        <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+        <div class="image-section">
+          <label for="image" style="width: 80px">이미지</label>
+          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+        </div>
       </div>
 
       <div class="image-preview">
@@ -93,32 +114,35 @@ const showSuccessModal = ref(false);
 const date = ref(props.selectedDate || '');
 const content = ref('');
 const category = ref('DAILY');
+const share = ref('ALL'); // 공개 범위 설정
 const images = ref([]); // 이미지 리스트
+const friends = ref([]); // 친구 목록
+const selectedFriends = ref([]); // 선택한 친구 목록
 
 const authStore = useAuthStore();
 
+// 이미지 업로드 처리
 const handleImageUpload = event => {
-  const files = Array.from(event.target.files); // 선택한 모든 파일을 배열로 변환
+  const files = Array.from(event.target.files);
   files.forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
-      images.value.push({ file, url: e.target.result }); // 이미지 파일과 URL을 모두 추가
+      images.value.push({ file, url: e.target.result });
     };
     reader.readAsDataURL(file);
   });
   event.target.value = ''; // 입력 초기화
 };
 
-// 제목 길이 확인 함수
+// 제목 길이 확인
 const checkTitleLength = () => {
   if (title.value.length > 50) {
-    showTitleLimitModal.value = true; // 모달 표시
-    title.value = title.value.slice(0, 50); // 최대 50자까지 자르기
-    return;
+    showTitleLimitModal.value = true;
+    title.value = title.value.slice(0, 50);
   }
 };
 
-// 모달 닫기 로직은 부모가 담당
+// 모달 닫기 로직
 const closeModal = modalName => {
   if (modalName === 'emptyTitle') showEmptyTitleModal.value = false;
   if (modalName === 'titleLimit') showTitleLimitModal.value = false;
@@ -128,8 +152,28 @@ const closeModal = modalName => {
   }
 };
 
+// 친구 목록 로드
+const loadFriends = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
+    friends.value = response.data.map(friend => ({
+      ...friend,
+      profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
+    }));
+  } catch (error) {
+    console.error('Failed to load friends:', error);
+  }
+};
+
+// 공개 범위 변경
+const handleShareChange = () => {
+  if (share.value !== 'CHOOSE') {
+    selectedFriends.value = []; // 친구 선택 초기화
+  }
+};
+
+// 다이어리 저장
 const submitDiary = async () => {
-  //제목없으면 얼럿 띄우고 중단
   if (!title.value.trim()) {
     showEmptyTitleModal.value = true;
     return;
@@ -140,48 +184,62 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value,
+    share: share.value || 'ALL', // 기본값을 'ALL'로 설정
     calendarIdx: authStore.calendarIdx,
+    friendIdxList: share.value === 'CHOOSE' ? selectedFriends.value : null,
   };
+
+  console.log('Diary Request:', diaryRequest); // 서버로 보내는 데이터 확인
 
   const formData = new FormData();
   formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-  // 이미지 파일 추가 여부를 확인
+  // 이미지 처리 로직
   if (images.value.length > 0) {
     images.value.forEach(image => {
-      formData.append('imageFiles', image.file); // 이미지 파일 추가
+      formData.append('imageFiles', image.file);
     });
   } else {
-    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
+    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 필드 추가
   }
 
   try {
     const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log('Diary Submitted Successfully', response.data);
-    // 다이어리 저장 성공 모달 표시
-    showSuccessModal.value = true;
+    console.log('Diary saved:', response.data);
+    showSuccessModal.value = true; // 저장 성공 모달 표시
   } catch (error) {
-    console.error('Failed to submit diary:', error);
-    emit('closeForm');
+    console.error('Failed to save diary:', error.response?.data || error.message);
+    alert('일기 저장에 실패했습니다.');
   }
 };
 
+// 취소
 const cancelForm = () => {
-  emit('closeForm');
+  title.value = '';
+  content.value = '';
+  date.value = '';
+  category.value = 'DAILY';
+  share.value = 'ALL';
+  images.value = [];
+  selectedFriends.value = [];
+  emit('closeForm'); // 폼 닫기 이벤트
 };
 
+// 이미지 삭제
 const removeImage = index => {
-  images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
+  images.value.splice(index, 1);
 };
 
+// 컴포넌트 로드시 친구 목록 로드
+onMounted(() => {
+  loadFriends();
+});
 onMounted(() => {
   const buttons = document.querySelectorAll('.tooltip-btn');
-  
-  buttons.forEach((button) => {
+
+  buttons.forEach(button => {
     const tooltipContent = button.getAttribute('data-tooltip');
     tippy(button, {
       content: tooltipContent,
@@ -192,7 +250,6 @@ onMounted(() => {
     });
   });
 });
-
 </script>
 
 <style scoped>
