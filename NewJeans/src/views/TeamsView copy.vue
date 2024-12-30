@@ -610,6 +610,24 @@ input.search-input {
   scroll-behavior: smooth;
 }
 
+/* 스크롤바 스타일링 */
+.chatroom-messages::-webkit-scrollbar {
+  width: 8px; /* 세로 스크롤바의 너비 */
+  height: 8px; /* 가로 스크롤바의 높이 */
+}
+.chatroom-messages::-webkit-scrollbar-thumb {
+  background: #888; /* 스크롤바의 색상 */
+  border-radius: 4px; /* 스크롤바의 둥근 모서리 */
+}
+.chatroom-messages::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 스크롤바에 마우스 오버 시 색상 */
+}
+.chatroom-messages::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 스크롤 트랙의 색상 */
+}
+
+
+
 .chatroom-header {
   display: flex;
   align-items: center;
