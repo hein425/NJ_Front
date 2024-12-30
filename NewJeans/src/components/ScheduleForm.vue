@@ -110,6 +110,11 @@
         </div>
       </div>
 
+      <div class="row" v-if="repeatType !== 'NONE'">
+        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px">반복 종료</label>
+        <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
+      </div>
+
       <!-- 공개 범위 설정 -->
       <div class="row">
         <label for="share" style="width: 80px">공개 설정</label>
@@ -127,11 +132,6 @@
           <input type="checkbox" :value="friend.idx" v-model="selectedFriends" />
           <span>{{ friend.userName }}</span>
         </div>
-      </div>
-
-      <div class="row" v-if="repeatType !== 'NONE'">
-        <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px">반복 종료</label>
-        <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
       </div>
 
       <!-- 지도 -->

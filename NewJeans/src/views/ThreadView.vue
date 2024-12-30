@@ -71,16 +71,31 @@ const data = ref([
     author: '포미언니',
     category: '#성장기록',
     comments: 20,
-    profileImg: 'src/assets/profile2.jpg/',
+    profileImg: 'src/assets/profile2.jpg',
   },
   {
     id: 2,
     type: 'diary',
     title: '기운 없는 포미',
-    content: '오늘은 포미가 기운이 없다. 애견 유치원에서 무슨 일이 있던 걸까? 어떻게 하면 포미가 기운을 차릴까? 오랜만에 간식 좀 줄까?',
+    content: '오늘 포미는 밥 잘 먹고 있을까? 새 친구는 많이 사귀었을까? 우리 포미 사진은 언제쯤 올라나, 너무 궁금하다.',
     date: '2024.11.28',
     author: '포미언니',
     category: '#성장기록',
+    comments: 20,
+    profileImg: 'src/assets/profile2.jpg',
+  },
+  {
+    id: 3,
+    type: 'schedule',
+    title: '멘토님 방문',
+    startTime: '2024-12-24 PM 17:20',
+    endTime: '2024-12-24 PM 18:10',
+    repeat: '없음',
+    content: '멘토님께서 방문하시는 날입니다. 모두 프로젝트 진행상황 및 궁금한 점 질문 준비해주세요!',
+    // address: '대구 중구 남일동 109-2',
+    mapImg: 'src/assets/map.png',
+    date: '2024.12.24',
+    author: '포미언니',
     comments: 20,
     profileImg: 'src/assets/profile2.jpg',
   },
@@ -89,6 +104,7 @@ const data = ref([
 // 활성 탭에 따라 데이터를 필터링
 const filteredData = computed(() => {
   if (activeTab.value === 1) return data.value; // 전체보기
+  if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
   if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
   return [];
 });
@@ -131,29 +147,41 @@ function clickTab(index) {
       </svg>
     </div>
 
-    <!-- 다이어리 컨텐츠 섹션 -->
     <div class="content-container">
       <div v-for="item in filteredData" :key="item.id" class="content-box">
-        <!-- 프로필 섹션 -->
         <div class="header-section">
-          <div class="profile-section">
+          <div class="profile-info">
             <img :src="item.profileImg" alt="Profile" class="profile-img" />
-            <div class="info">
+            <div class="text-info">
               <h3 class="author">{{ item.author }}</h3>
+              <div v-if="item.type === 'diary'" class="title-category">
+                <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+                <span class="category" :style="{ backgroundColor: '#FFEBCC' }">{{ item.category }}</span>
+              </div>
+              <div v-else-if="item.type === 'schedule'" class="title-only">
+                <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+              </div>
             </div>
           </div>
           <span class="date">{{ item.date }}</span>
         </div>
 
-        <!-- 제목과 카테고리 섹션 -->
-        <div class="title-category">
-          <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
-          <span class="category" :style="{ backgroundColor: '#FFEBCC' }">{{ item.category }}</span>
+        <!-- 다이어리 내용 -->
+        <div v-if="item.type === 'diary'" class="content-section" style="margin-left: 4.5rem; text-align: left">
+          <p class="content">{{ item.content }}</p>
         </div>
 
-        <!-- 내용 섹션 -->
-        <div class="content-section">
-          <p class="content">{{ item.content }}</p>
+        <!-- 일정 내용 -->
+        <div v-else-if="item.type === 'schedule'" class="schedule-section">
+          <p><span style="font-weight: bold">시작 시간:</span> {{ item.startTime }}</p>
+          <p><span style="font-weight: bold">종료 시간:</span> {{ item.endTime }}</p>
+          <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
+          <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
+          <div class="map-section">
+            <p><span style="font-weight: bold">Address:</span></p>
+            <img :src="item.mapImg" alt="Map" class="map-img" />
+            <p>{{ item.address }}</p>
+          </div>
         </div>
 
         <!-- 댓글 섹션 -->
@@ -311,7 +339,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  margin-top: 15%;
+  margin-top: 15rem;
 }
 
 .content-box {
@@ -321,14 +349,20 @@ body {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative; /* footer-section 위치 조정을 위해 추가 */
+  position: relative;
 }
 
-.profile-section {
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.profile-info {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 10px;
 }
 
 .profile-img {
@@ -338,59 +372,29 @@ body {
   object-fit: cover;
 }
 
-.info {
+.text-info {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .author {
   font-size: 1.1rem;
   font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .title-category {
   display: flex;
-  align-items: center;
   gap: 10px;
 }
 
+.title,
 .category {
-  display: inline-block;
   font-size: 0.9rem;
   padding: 5px 10px;
-  border-radius: 15px;
-  margin-top: 5px;
+  border-radius: 10px;
   font-weight: bold;
-}
-
-.title {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #333;
-  padding: 5px 10px;
-  border-radius: 15px;
-  margin-top: 5px;
-}
-
-.content-section .content {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-bottom: 15px;
-}
-
-.footer-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  color: #888;
-}
-
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
 }
 
 .date {
@@ -399,31 +403,54 @@ body {
   font-weight: bold;
 }
 
-.profile-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+.content-section .content {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  max-width: 60rem;
 }
 
-.profile-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+.schedule-section {
+  margin-top: 15px;
+  margin-left: 4.5rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #555;
+}
+
+.map-section {
+  margin-top: 10px;
+}
+
+.map-img {
+  max-width: 100%;
+  /* max-height: 200px; */
   object-fit: cover;
+  margin: 10px 0;
+}
+
+.title-only .title {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.title-only {
+  margin-top: 5px;
 }
 
 .footer-section {
-  position: absolute; /* 박스 내의 오른쪽 하단에 고정 */
-  bottom: 10px; /* 아래로부터 간격 */
-  right: 20px; /* 오른쪽으로부터 간격 */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   font-size: 0.9rem;
   color: #888;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  margin-top: 10px;
 }
 
 .footer-section .comments i {
   font-size: 1rem;
+  margin-right: 5px;
 }
 </style>
