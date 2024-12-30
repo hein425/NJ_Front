@@ -37,91 +37,84 @@
     <!-- 오른쪽 아래 + 버튼 -->
     <button class="add-diary-btn" @click="toggleModal">+</button>
 
-<!-- 모달 -->
-<div v-if="isModalOpen" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>일기 작성</h3>
-      <button class="close-btn" @click="toggleModal">X</button>
-    </div>
-    <div class="modal-body">
-      <form @submit.prevent="submitDiary">
-        <!-- 제목과 카테고리 -->
-        <div class="row">
-          <div class="title-category-row">
-            <div class="title-section">
-              <label for="title">제목</label>
-              <input id="title" v-model="title" class="input-field" placeholder="제목을 입력하세요" @input="checkTitleLength" />
+    <!-- 모달 -->
+    <div v-if="isModalOpen" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>일기 작성</h3>
+          <button class="close-btn" @click="toggleModal">X</button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="submitDiary">
+            <!-- 제목과 카테고리 -->
+            <div class="row">
+              <div class="title-category-row">
+                <div class="title-section">
+                  <label for="title">제목</label>
+                  <input id="title" v-model="title" class="input-field" placeholder="제목을 입력하세요" @input="checkTitleLength" />
+                </div>
+                <div class="category-section">
+                  <label for="category">카테고리</label>
+                  <select id="category" v-model="category" class="input-field">
+                    <option value="DAILY">#일기</option>
+                    <option value="GROWTH">#성장일지</option>
+                    <option value="EXERCISE">#운동</option>
+                    <option value="TRIP">#여행</option>
+                    <option value="ETC">#기타</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div class="category-section">
-  <label for="category">카테고리</label>
-  <select id="category" v-model="category" class="input-field">
-    <option value="DAILY">#일기</option>
-    <option value="GROWTH">#성장일지</option>
-    <option value="EXERCISE">#운동</option>
-    <option value="TRIP">#여행</option>
-    <option value="ETC">#기타</option>
-  </select>
-</div>
-          </div>
+
+            <!-- 작성일 -->
+            <div class="row">
+              <label for="date">작성일</label>
+              <input id="date" v-model="date" type="date" class="input-field" />
+            </div>
+
+            <!-- 내용 -->
+            <div class="row">
+              <label for="content">내용</label>
+              <textarea id="content" v-model="content" class="input-field textarea-field" placeholder="내용을 입력하세요"></textarea>
+            </div>
+
+            <!-- 이미지 업로드 -->
+            <div class="row">
+              <label for="image" style="width: 100px">이미지 추가</label>
+              <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
+            </div>
+
+            <div class="image-preview">
+              <div v-for="(image, index) in images" :key="index" class="image-container">
+                <img :src="image.url" alt="Preview" />
+                <button class="delete-btn" @click.prevent="removeImage(index)">X</button>
+              </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="button-row">
+              <button type="submit" class="submit-button">
+                <strong>작성하기</strong>
+              </button>
+              <button type="button" @click="toggleModal" class="cancel-button">
+                <strong>취소</strong>
+              </button>
+            </div>
+          </form>
         </div>
-
-        <!-- 작성일 -->
-        <div class="row">
-          <label for="date">작성일</label>
-          <input id="date" v-model="date" type="date" class="input-field" />
-        </div>
-
-        <!-- 내용 -->
-        <div class="row">
-          <label for="content">내용</label>
-          <textarea id="content" v-model="content" class="input-field textarea-field" placeholder="내용을 입력하세요"></textarea>
-        </div>
-
-        <!-- 이미지 업로드 -->
-        <div class="row">
-          <label for="image" style="width: 100px">이미지 추가</label>
-          <input id="image" type="file" @change="handleImageUpload" multiple class="input-field" />
-        </div>
-
-        <div class="image-preview">
-  <div v-for="(image, index) in images" :key="index" class="image-container">
-    <img :src="image.url" alt="Preview" />
-    <button class="delete-btn" @click.prevent="removeImage(index)">X</button>
-  </div>
-</div>
-
-
-        <!-- 버튼 -->
-        <div class="button-row">
-          <button type="submit" class="submit-button">
-            <strong>작성하기</strong>
-          </button>
-          <button type="button" @click="toggleModal" class="cancel-button">
-            <strong>취소</strong>
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
-</div>
-      <!-- 제목 비어있음 경고 모달 -->
-      <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
+    <!-- 제목 비어있음 경고 모달 -->
+    <BaseModal :visible="showEmptyTitleModal" :message="'제목을 입력해주세요.'" @close="() => closeModal('emptyTitle')" class="modal-title-limit" />
 
-<!-- 제목 글자수 경고 모달 -->
-<BaseModal :visible="showTitleLimitModal" :message="'제목은 최대 50자까지 입력할 수 있습니다.'" @close="() => closeModal('titleLimit')" class="modal-empty-title" />
+    <!-- 제목 글자수 경고 모달 -->
+    <BaseModal :visible="showTitleLimitModal" :message="'제목은 최대 50자까지 입력할 수 있습니다.'" @close="() => closeModal('titleLimit')" class="modal-empty-title" />
 
-<!-- 일정 저장 성공 모달 -->
-<BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
-  <BaseModal 
-  :visible="showSuccessModal" 
-  :message="'일기가 성공적으로 작성되었습니다.'" 
-  @close="closeModal('success')" 
-/>
-
+    <!-- 일정 저장 성공 모달 -->
+    <BaseModal :visible="showSuccessModal" :message="'일기가 저장되었습니다.'" @close="() => closeModal('success')" class="modal-title-success" />
+    <BaseModal :visible="showSuccessModal" :message="'일기가 성공적으로 작성되었습니다.'" @close="closeModal('success')" />
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
@@ -139,7 +132,6 @@ const calendarIdx = authStore.calendarIdx;
 const currentPage = ref(1);
 const itemsPerPage = 6;
 
-
 // 모달 상태 관리
 const isModalOpen = ref(false);
 const title = ref('');
@@ -151,7 +143,6 @@ const showEmptyTitleModal = ref(false);
 const showTitleLimitModal = ref(false);
 const showSuccessModal = ref(false);
 const emit = defineEmits(['closeForm', 'updateList']);
-
 
 const getTodayDate = () => {
   const today = new Date();
@@ -195,8 +186,6 @@ const handleImageUpload = event => {
   event.target.value = ''; // 입력 초기화
 };
 
-
-
 // 모달 열기/닫기
 const toggleModal = () => {
   isModalOpen.value = !isModalOpen.value;
@@ -221,47 +210,44 @@ const submitDiary = async () => {
   formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
   if (images.value.length > 0) {
-  images.value.forEach(image => {
-    formData.append('imageFiles', image.file); // 이미지 파일 추가
-  });
-} else {
-  formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
-}
-
+    images.value.forEach(image => {
+      formData.append('imageFiles', image.file); // 이미지 파일 추가
+    });
+  } else {
+    formData.append('imageFiles', new Blob([], { type: 'application/octet-stream' })); // 빈 Blob 추가
+  }
 
   try {
-  const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+    const response = await axios.post(`${BASE_URL}/diary/create`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-  console.log('Diary submitted successfully:', response.data);
+    console.log('Diary submitted successfully:', response.data);
 
-  // 성공 처리
-  alert('일기가 성공적으로 작성되었습니다!'); // 성공 알림
-  toggleModal(); // 모달 닫기
+    // 성공 처리
+    alert('일기가 성공적으로 작성되었습니다!'); // 성공 알림
+    toggleModal(); // 모달 닫기
 
-  // 입력 필드 초기화
-  title.value = '';
-  content.value = '';
-  category.value = 'DAILY';
-  date.value = getTodayDate();
-  images.value = [];
+    // 입력 필드 초기화
+    title.value = '';
+    content.value = '';
+    category.value = 'DAILY';
+    date.value = getTodayDate();
+    images.value = [];
 
-  // 목록 갱신
-  fetchDiaries('ALL');
-} catch (error) {
-  console.error('Failed to submit diary:', error.response?.data || error.message);
-  alert('작성 중 문제가 발생했습니다.');
-}
-
+    // 목록 갱신
+    fetchDiaries('ALL');
+  } catch (error) {
+    console.error('Failed to submit diary:', error.response?.data || error.message);
+    alert('작성 중 문제가 발생했습니다.');
+  }
 };
 
 const removeImage = index => {
   images.value.splice(index, 1); // 선택한 이미지를 배열에서 제거
 };
-
 
 // 기존 기능 유지
 const categories = [
@@ -505,7 +491,6 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -688,7 +673,7 @@ input[type='file'] {
   display: none;
 }
 
-label{
+label {
   padding-top: 10px;
   font-weight: bold;
 }
@@ -737,6 +722,4 @@ select#category {
   width: 103.5%; /* 다른 입력 필드와 동일한 폭 */
   padding: 10px; /* 다른 필드와 동일한 내부 여백 */
 }
-
-
 </style>
