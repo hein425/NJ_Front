@@ -7,14 +7,7 @@
         <div class="friend-list-header">
           <h3>친구 목록</h3>
           <button class="add-friend-button tooltip-btn" data-tooltip="친구 추가" @click="openFriendSearchModal">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              class="plus-icon"
-              viewBox="0 0 16 16"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="plus-icon" viewBox="0 0 16 16">
               <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 .5-.5z" />
             </svg>
           </button>
@@ -23,11 +16,7 @@
           <li v-for="friend in friends" :key="friend.idx" class="friend-item">
             <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
             <span class="friend-name">{{ friend.userName }}</span>
-            <button
-              class="message-icon tooltip-btn"
-              data-tooltip="메시지 전송"
-              @click="openChat(friend.idx)"
-            >
+            <button class="message-icon tooltip-btn" data-tooltip="메시지 전송" @click="openChat(friend.idx)">
               <font-awesome-icon :icon="['fas', 'envelope']" />
             </button>
             <button @click="deleteFriend(friend.idx)" class="friend-action">친구 끊기</button>
@@ -161,12 +150,22 @@ const searchFriends = async () => {
 
 const sendFriendRequest = async receiverId => {
   try {
-    await axios.post(`${BASE_URL}/friend/request`, null, {
-      params: { requesterId: userId, receiverId },
-    });
+    
+    const friend = searchResults.value.find(user => user.userId === receiverId);
+    const friendName = friend ? friend.userName : 'Unknown';
+
+    const requestBody = {
+      userId: userId,       // 현재 사용자의 ID
+      friendId: receiverId, // 친구로 추가하려는 사용자의 ID
+      userName: authStore.userName, // 현재 사용자의 이름
+      friendName: friendName,       // 검색 결과에서 가져온 친구 이름
+    };
+
+    await axios.post(`${BASE_URL}/friend/request`, requestBody);
+
     alert('친구 요청이 성공적으로 전송되었습니다.');
   } catch (error) {
-    console.error('Failed to send friend request:', error);
+    console.error('Failed to send friend request:', error.response?.data || error.message);
     alert('친구 요청 전송에 실패했습니다.');
   }
 };
@@ -176,43 +175,43 @@ const loadMessages = async () => {
     {
       id: 1,
       senderId: 101,
-      senderName: "Alice",
-      senderProfile: "https://via.placeholder.com/50",
-      content: "안녕하세요! 오랜만이에요.",
-      timestamp: "2024-12-27T09:00:00Z"
+      senderName: 'Alice',
+      senderProfile: 'https://via.placeholder.com/50',
+      content: '안녕하세요! 오랜만이에요.',
+      timestamp: '2024-12-27T09:00:00Z',
     },
     {
       id: 2,
       senderId: 102,
-      senderName: "Bob",
-      senderProfile: "https://via.placeholder.com/50",
-      content: "네! 잘 지내셨나요?",
-      timestamp: "2024-12-27T09:01:00Z"
+      senderName: 'Bob',
+      senderProfile: 'https://via.placeholder.com/50',
+      content: '네! 잘 지내셨나요?',
+      timestamp: '2024-12-27T09:01:00Z',
     },
     {
       id: 3,
       senderId: 103,
-      senderName: "Charlie",
-      senderProfile: "https://via.placeholder.com/50",
-      content: "회의 일정 조정이 필요합니다.",
-      timestamp: "2024-12-27T10:30:00Z"
+      senderName: 'Charlie',
+      senderProfile: 'https://via.placeholder.com/50',
+      content: '회의 일정 조정이 필요합니다.',
+      timestamp: '2024-12-27T10:30:00Z',
     },
     {
       id: 4,
       senderId: 104,
-      senderName: "David",
-      senderProfile: "https://via.placeholder.com/50",
-      content: "오늘 저녁에 약속 가능하신가요?",
-      timestamp: "2024-12-27T14:45:00Z"
+      senderName: 'David',
+      senderProfile: 'https://via.placeholder.com/50',
+      content: '오늘 저녁에 약속 가능하신가요?',
+      timestamp: '2024-12-27T14:45:00Z',
     },
     {
       id: 5,
       senderId: 105,
-      senderName: "Eve",
-      senderProfile: "https://via.placeholder.com/50",
-      content: "프로젝트 관련 자료 확인 부탁드립니다.",
-      timestamp: "2024-12-27T16:15:00Z"
-    }
+      senderName: 'Eve',
+      senderProfile: 'https://via.placeholder.com/50',
+      content: '프로젝트 관련 자료 확인 부탁드립니다.',
+      timestamp: '2024-12-27T16:15:00Z',
+    },
   ];
 };
 
@@ -532,5 +531,3 @@ button {
   cursor: pointer;
 }
 </style>
-
-
