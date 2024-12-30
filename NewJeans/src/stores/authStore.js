@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', {
     profileImageUrl: '',
     email: '',
     idx: null,
+    userIdx: null, // 추가: userIdx
     calendarIdx: null, // idx 값 그대로 저장
   }),
   actions: {
@@ -21,6 +22,7 @@ export const useAuthStore = defineStore('auth', {
       console.log(`this.userName = ${this.userName}`);
       console.log(`this.profileImageUrl = ${this.profileImageUrl}`);
       console.log(`this.email = ${this.email}`);
+      console.log(`this.idx = ${this.userIdx}`);
       console.log(`this.idx = ${this.idx}`);
       console.log(`this.calendarIdx = ${this.calendarIdx}`);
     },
@@ -30,6 +32,7 @@ export const useAuthStore = defineStore('auth', {
       this.profileImageUrl = profileImageUrl && profileImageUrl !== 'undefined' ? profileImageUrl : defaultProfileImage; // 기본 이미지 적용
       this.email = email;
       this.idx = idx;
+      this.userIdx = idx; // 추가: userIdx를 idx와 동일하게 설정
       this.calendarIdx = idx; // idx 값을 그대로 저장
       this.isLoggedIn = true;
 
@@ -38,6 +41,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('profileImageUrl', profileImageUrl || '');
       localStorage.setItem('email', email || '');
       localStorage.setItem('idx', idx || '');
+      localStorage.setItem('userIdx', idx || ''); // 추가: userIdx를 로컬 스토리지에 저장
       localStorage.setItem('calendarIdx', idx || ''); // idx 값을 저장
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -61,6 +65,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('profileImageUrl');
       localStorage.removeItem('email');
       localStorage.removeItem('idx');
+      localStorage.removeItem('userIdx');
       localStorage.removeItem('calendarIdx');
 
       delete axios.defaults.headers.common['Authorization'];
@@ -70,10 +75,13 @@ export const useAuthStore = defineStore('auth', {
       const userName = localStorage.getItem('userName');
       const profileImageUrl = localStorage.getItem('profileImageUrl');
       const email = localStorage.getItem('email');
+      const userIdx = localStorage.getItem('userIdx'); // 추가: userIdx 복원
       const idx = localStorage.getItem('idx');
       const calendarIdx = localStorage.getItem('calendarIdx');
 
-      console.log('restoreLogin 호출됨 - 가져온 데이터:', { accessToken, userName, profileImageUrl, email, idx, calendarIdx });
+      console.log('restoreLogin 호출됨 - 가져온 데이터:', { accessToken, userName, profileImageUrl, email, userIdx, idx, calendarIdx });
+      // 로컬 스토리지에서 가져온 값 확인
+      console.log('localStorage.getItem("userIdx"):', localStorage.getItem('userIdx'));
 
       if (accessToken && userName) {
         this.accessToken = accessToken;

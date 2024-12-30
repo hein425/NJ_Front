@@ -81,7 +81,6 @@ const isSignUpPage = computed(() => route.path === '/signupp');
 //   .catch(error => {
 //     console.error('Error:', error.response ? error.response.data : error.message); // 에러 출력
 //   });
-
 </script>
 
 <template>

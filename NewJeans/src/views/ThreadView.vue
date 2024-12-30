@@ -1,6 +1,9 @@
 <script setup>
+import axios from 'axios';
+import { BASE_URL } from '@/config';
 import { ref, computed, onMounted } from 'vue';
-
+import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+axios;
 // 전역 변수 선언
 let body, menu, menuItems, menuBorder, activeItem;
 
@@ -59,59 +62,88 @@ onMounted(() => {
 });
 
 const activeTab = ref(1); // 현재 활성 탭 (1: 전체보기, 2: 일정, 3: 다이어리, 4: 마감 임박 일정)
+const data = ref([]); // 다이어리 및 일정 데이터
+
+// Pinia를 통해 로그인한 사용자의 ID 가져오기
+const authStore = useAuthStore();
+const userIdx = authStore.userIdx;
 
 // 더미 데이터
-const data = ref([
-  {
-    id: 1,
-    type: 'diary',
-    title: '포미의 일상',
-    content: '오늘 포미는 밥 잘 먹고 있을까? 새 친구는 많이 사귀었을까? 우리 포미 사진은 언제쯤 올라나, 너무 궁금하다. 포미 사진 보고 싶은 사람 댓글 달아줘 >_<',
-    date: '2024.11.28',
-    author: '포미언니',
-    category: '#성장기록',
-    comments: 20,
-    profileImg: 'src/assets/profile2.jpg',
-  },
-  {
-    id: 2,
-    type: 'diary',
-    title: '기운 없는 포미',
-    content: '오늘 포미는 밥 잘 먹고 있을까? 새 친구는 많이 사귀었을까? 우리 포미 사진은 언제쯤 올라나, 너무 궁금하다.',
-    date: '2024.11.28',
-    author: '포미언니',
-    category: '#성장기록',
-    comments: 20,
-    profileImg: 'src/assets/profile2.jpg',
-  },
-  {
-    id: 3,
-    type: 'schedule',
-    title: '멘토님 방문',
-    startTime: '2024-12-24 PM 17:20',
-    endTime: '2024-12-24 PM 18:10',
-    repeat: '없음',
-    content: '멘토님께서 방문하시는 날입니다. 모두 프로젝트 진행상황 및 궁금한 점 질문 준비해주세요!',
-    // address: '대구 중구 남일동 109-2',
-    mapImg: 'src/assets/map.png',
-    date: '2024.12.24',
-    author: '포미언니',
-    comments: 20,
-    profileImg: 'src/assets/profile2.jpg',
-  },
-]);
+// const data = ref([
+//   {
+//     id: 1,
+//     type: 'diary',
+//     title: '집가고 싶다',
+//     content: '오늘만 아침에 일어나서 학원가면, 내일부터는 늦잠도 자고 오후에 학원간다 오예',
+//     date: '2024.12.30',
+//     author: '다람이',
+//     category: '#일기',
+//     comments: 20,
+//     profileImg: 'src/assets/profile2.jpg',
+//   },
+//   {
+//     id: 2,
+//     type: 'diary',
+//     title: '포미의 일상',
+//     content: '오늘 포미는 밥 잘 먹고 있을까? 새 친구는 많이 사귀었을까? 우리 포미 사진은 언제쯤 올라나, 너무 궁금하다. 포미 사진 보고 싶은 사람 댓글 달아줘 >_<',
+//     date: '2024.12.27',
+//     author: '포미언니',
+//     category: '#성장기록',
+//     comments: 20,
+//     profileImg: 'src/assets/profile2.jpg',
+//   },
+//   {
+//     id: 3,
+//     type: 'schedule',
+//     title: '멘토님 방문',
+//     startTime: '2024-12-24 PM 17:20',
+//     endTime: '2024-12-24 PM 18:10',
+//     repeat: '없음',
+//     content: '멘토님께서 방문하시는 날입니다. 모두 프로젝트 진행상황 및 궁금한 점 질문 준비해주세요!',
+//     // address: '대구 중구 남일동 109-2',
+//     mapImg: 'src/assets/map.png',
+//     date: '2024.12.24',
+//     author: '탁민지',
+//     comments: 20,
+//     profileImg: 'src/assets/profile2.jpg',
+//   },
+// ]);
+
+// 현재 날짜 기준 임박한 일정 계산
+function isUpcoming(date) {
+  const now = new Date();
+  const targetDate = new Date(date);
+  const diffInDays = (targetDate - now) / (1000 * 60 * 60 * 24);
+  return diffInDays >= 0 && diffInDays <= 7; // 7일 이내의 일정
+}
 
 // 활성 탭에 따라 데이터를 필터링
 const filteredData = computed(() => {
   if (activeTab.value === 1) return data.value; // 전체보기
   if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
   if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
+  if (activeTab.value === 4) return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date)); // 임박한 일정
   return [];
 });
 
+// Tab 변경 시 활성화
 function clickTab(index) {
   activeTab.value = index;
 }
+// 데이터 가져오기
+async function fetchData() {
+  try {
+    const response = await axios.get(`${BASE_URL}/shared/all/${userIdx}`); // 실제 API 엔드포인트로 수정
+    data.value = response.data; // 서버에서 가져온 데이터 저장
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+  }
+}
+// 컴포넌트 로드 시 데이터 가져오기
+onMounted(() => {
+  fetchData();
+  authStore.restoreLogin();
+});
 </script>
 
 <template>
@@ -146,7 +178,7 @@ function clickTab(index) {
         </defs>
       </svg>
     </div>
-
+    <!-- 필터링된 데이터 -->
     <div class="content-container">
       <div v-for="item in filteredData" :key="item.id" class="content-box">
         <div class="header-section">

@@ -99,6 +99,7 @@ import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
+import { toRaw } from 'vue';
 
 const props = defineProps({
   selectedDate: String,
@@ -153,13 +154,17 @@ const closeModal = modalName => {
 };
 
 // 친구 목록 로드
+// 새로운 loadFriends 함수
 const loadFriends = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
+    console.log('API 응답 데이터:', response.data); // 응답 데이터 구조 확인
     friends.value = response.data.map(friend => ({
-      ...friend,
+      idx: friend.idx || friend.userId, // API 데이터의 키 확인 후 수정
+      userName: friend.userName,
       profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
     }));
+    console.log('로드된 친구 목록:', friends.value);
   } catch (error) {
     console.error('Failed to load friends:', error);
   }
@@ -167,8 +172,9 @@ const loadFriends = async () => {
 
 // 공개 범위 변경
 const handleShareChange = () => {
+  console.log('공개 범위 변경:', share.value);
   if (share.value !== 'CHOOSE') {
-    selectedFriends.value = []; // 친구 선택 초기화
+    selectedFriends.value = []; // 초기화
   }
 };
 
@@ -184,9 +190,9 @@ const submitDiary = async () => {
     date: date.value,
     content: content.value,
     category: category.value,
-    share: share.value || 'ALL', // 기본값을 'ALL'로 설정
+    share: share.value || 'ALL',
     calendarIdx: authStore.calendarIdx,
-    friendIdxList: share.value === 'CHOOSE' ? selectedFriends.value : null,
+    friendIdxList: share.value === 'CHOOSE' ? toRaw(selectedFriends.value) : null,
   };
 
   console.log('Diary Request:', diaryRequest); // 서버로 보내는 데이터 확인
@@ -194,7 +200,6 @@ const submitDiary = async () => {
   const formData = new FormData();
   formData.append('diaryRequest', new Blob([JSON.stringify(diaryRequest)], { type: 'application/json' }));
 
-  // 이미지 처리 로직
   if (images.value.length > 0) {
     images.value.forEach(image => {
       formData.append('imageFiles', image.file);
@@ -208,6 +213,9 @@ const submitDiary = async () => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Diary saved:', response.data);
+    console.log('전송된 friendIdxList:', diaryRequest.friendIdxList); // 디버깅용
+    console.log('친구 목록:', friends.value);
+
     showSuccessModal.value = true; // 저장 성공 모달 표시
   } catch (error) {
     console.error('Failed to save diary:', error.response?.data || error.message);

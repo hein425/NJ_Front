@@ -338,9 +338,9 @@ const fetchDayData = async selectedDate => {
 // const startPolling = async selectedDate => {
 //   const res = await fetchDayData(selectedDate);
 //   console.log(res);
-  // pollingInterval = setInterval(() => {
-  //   fetchDayData(selectedDate);
-  // }, 1100);
+// pollingInterval = setInterval(() => {
+//   fetchDayData(selectedDate);
+// }, 1100);
 // };
 
 // const stopPolling = () => {

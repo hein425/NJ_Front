@@ -353,7 +353,7 @@ const changeLanguage = langCode => {
 };
 
 const colorList = [
-  { value: 'PINK', color: '#ff7f7f', label: '분홍색'},
+  { value: 'PINK', color: '#ff7f7f', label: '분홍색' },
   { value: 'ORANGE', color: '#ff9933', label: '주황색' },
   { value: 'YELLOW', color: '#ffe066', label: '노란색' },
   { value: 'BLUE', color: '#4da6ff', label: '파란색' },
@@ -376,8 +376,8 @@ onMounted(() => {
 
 onMounted(() => {
   const buttons = document.querySelectorAll('.tooltip-btn');
-  
-  buttons.forEach((button) => {
+
+  buttons.forEach(button => {
     const tooltipContent = button.getAttribute('data-tooltip');
     tippy(button, {
       content: tooltipContent,
@@ -465,14 +465,12 @@ const submitSchedule = async () => {
     });
     console.log('Schedule Submitted Successfully', response.data);
 
-  // 공개 범위 변경
-  const handleShareChange = () => {
-    if  (share.value !== 'CHOOSE') {
-      selectedFriends.value = []; // 친구 선택 초기화
-    }
-  };
-
-  
+    // 공개 범위 변경
+    const handleShareChange = () => {
+      if (share.value !== 'CHOOSE') {
+        selectedFriends.value = []; // 친구 선택 초기화
+      }
+    };
 
     // 일정 저장 성공 모달 표시
     showSuccessModal.value = true;
