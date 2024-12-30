@@ -79,7 +79,7 @@ const dropdownStyles = ref({});
 const router = useRouter();
 const filterBtn = ref(null);
 
-const showNotifications = ref(false);
+const showNotifications = ref(true);
 const unreadCount = ref(3); // 예제: 알림 개수 (API 연동 필요)
 
 

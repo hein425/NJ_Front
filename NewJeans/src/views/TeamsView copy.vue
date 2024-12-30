@@ -154,14 +154,19 @@ const sendFriendRequest = async receiverId => {
     const friend = searchResults.value.find(user => user.userId === receiverId);
     const friendName = friend ? friend.userName : 'Unknown';
 
-    const requestBody = {
-      userId: userId,       // 현재 사용자의 ID
-      friendId: receiverId, // 친구로 추가하려는 사용자의 ID
-      userName: authStore.userName, // 현재 사용자의 이름
-      friendName: friendName,       // 검색 결과에서 가져온 친구 이름
+    const friendRequestDto = {
+      userId: userId,
+      userName: authStore.userName,
+      friendId: receiverId,
+      friendName: friendName,
     };
 
-    await axios.post(`${BASE_URL}/friend/request`, requestBody);
+    await axios.post(`${BASE_URL}/friend/request`,
+     JSON.stringify(friendRequestDto), {
+      headers: {
+        'Content-Type': 'application/json', // JSON 요청 명시
+      },
+    });
 
     alert('친구 요청이 성공적으로 전송되었습니다.');
   } catch (error) {
