@@ -110,6 +110,25 @@
         </div>
       </div>
 
+      <!-- 공개 범위 설정 -->
+      <div class="row">
+        <label for="share" style="width: 80px">공개 설정</label>
+        <select v-model="share" id="share" class="input-field" @change="handleShareChange">
+          <option value="ALL">전체공개</option>
+          <option value="CHOOSE">친구공개</option>
+          <option value="NONE">비공개</option>
+        </select>
+      </div>
+
+      <!-- 친구 목록 (친구공개 선택 시 표시) -->
+      <div v-if="share === 'CHOOSE'" class="friend-selection">
+        <h4>공개할 친구 선택</h4>
+        <div v-for="friend in friends" :key="friend.idx" class="friend-item">
+          <input type="checkbox" :value="friend.idx" v-model="selectedFriends" />
+          <span>{{ friend.userName }}</span>
+        </div>
+      </div>
+
       <div class="row" v-if="repeatType !== 'NONE'">
         <label for="repeatEndDate" style="width: 80px; margin-bottom: 5px">반복 종료</label>
         <input id="repeatEndDate" v-model="repeatEndDate" type="date" class="input-field" />
@@ -223,6 +242,8 @@ const isRecording = ref(false); // 녹음 상태
 const recordingField = ref(null); // 현재 녹음 중인 필드 ('title' 또는 'description')
 let recognition = null; // SpeechRecognition 객체 초기화
 const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
+const share = ref('ALL'); // 공개 범위 설정
+const selectedFriends = ref([]); // 선택한 친구 목록
 
 const isRecordingMenuVisible = ref(false);
 const isMemoRecordingMenuVisible = ref(false); // 메모 녹음 메뉴 상태
@@ -416,6 +437,7 @@ const submitSchedule = async () => {
     calendarIdx: calendarIdx.value,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
+    share: share.value || 'ALL', // 기본값을 'ALL'로 설정
   };
 
   // FormData 생성 및 diaryRequest JSON과 이미지 파일 추가
@@ -442,6 +464,15 @@ const submitSchedule = async () => {
       withCredentials: true, // 쿠키를 자동으로 포함
     });
     console.log('Schedule Submitted Successfully', response.data);
+
+  // 공개 범위 변경
+  const handleShareChange = () => {
+    if  (share.value !== 'CHOOSE') {
+      selectedFriends.value = []; // 친구 선택 초기화
+    }
+  };
+
+  
 
     // 일정 저장 성공 모달 표시
     showSuccessModal.value = true;
