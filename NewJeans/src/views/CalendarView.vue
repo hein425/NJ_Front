@@ -330,16 +330,30 @@ const closeModal = () => {
 
 //드래그 앤 드랍 관련
 const onDragStart = (event, schedule) => {
-  const rawSchedule = JSON.parse(JSON.stringify(schedule)); // Proxy 제거
-  if (!rawSchedule || !rawSchedule.idx) {
-    // idx 확인
-    console.error('Invalid schedule:', rawSchedule);
+  // 1. 유효성 검사
+  if (!schedule || !schedule.idx || !schedule.start) {
+    console.error('Invalid schedule:', schedule);
     return;
   }
 
-  event.dataTransfer.setData('application/json', JSON.stringify(rawSchedule));
-  console.log('Drag started with schedule:', rawSchedule);
+  // 2. Proxy 객체를 순수 JSON 객체로 변환
+  const rawSchedule = JSON.parse(JSON.stringify(schedule));
+
+  // 3. 기본값 설정: end 값이 없을 경우 start와 동일한 날짜의 23:59:59로 설정
+  rawSchedule.end = rawSchedule.end || dayjs(rawSchedule.start).endOf('day').format('YYYY-MM-DDTHH:mm:ss');
+
+  // 4. 디버깅 로그
+
+  // 5. 데이터 설정
+  try {
+    event.dataTransfer.setData('application/json', JSON.stringify(rawSchedule));
+  } catch (error) {
+    console.error('Failed to set dataTransfer:', error);
+  }
 };
+
+
+
 
 const onScheduleClick = schedule => {
   console.log('Schedule clicked:', schedule);
@@ -359,7 +373,6 @@ const onDrop = async (event, targetDate) => {
   let parsedSchedule;
   try {
     parsedSchedule = JSON.parse(scheduleData);
-    console.log('Dropped schedule:', parsedSchedule);
   } catch (error) {
     console.error('Failed to parse schedule data:', scheduleData, error);
     return;
@@ -383,6 +396,7 @@ const onDrop = async (event, targetDate) => {
   const newStart = dayjs(targetDate.format('YYYY-MM-DD') + `T${startTime}`); // 기존 시간 유지
   const newEnd = newStart.add(duration, 'day').add(1, 'second'); // 기존 기간 유지 (초 단위 조정)
 
+
   try {
     // 서버로 PUT 요청
     await axios.put(`${BASE_URL}/schedule/${parsedSchedule.idx}`, {
@@ -402,6 +416,7 @@ const onDrop = async (event, targetDate) => {
     console.error('Failed to update schedule:', error);
   }
 };
+
 
 const onDragOver = event => {
   event.currentTarget.classList.add('drag-over');

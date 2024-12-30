@@ -6,6 +6,7 @@ import { BASE_URL } from '@/config';
 // emit 정의
 const emit = defineEmits(['close']);
 
+
 //더미 데이터
 // const notifications = ref([
 //   { id: 1, message: 'John posted Design team weekly #37', time: '2h ago', type: 'all' },
@@ -32,27 +33,31 @@ const filteredNotifications = computed(() =>
 // 알림 데이터 가져오기
 const fetchNotifications = async () => {
   try {
-    const userName = "exampleUser"; // 실제 로그인된 사용자 이름으로 교체 (로그인 시스템 사용 시 변경 필요)
-    const response = await axios.get(`${BASE_URL}/friend-request`, {
-      params: { userName },
+    // 로컬 스토리지에서 유저 idx 가져오기
+    const idx = localStorage.getItem('idx');
+    if (!idx) {
+      console.error('User idx is not found in local storage.');
+      return;
+    }
+
+    const response = await axios.get(`${BASE_URL}/friend/${idx}/requests`, {
+      // 필요 시 추가 파라미터 설정 가능
     });
 
-    // 백엔드에서 반환된 데이터가 배열 형태라고 가정하고 데이터를 처리
+    // 데이터를 알림 형식으로 매핑
     notifications.value = response.data.map((notification) => ({
-      id: notification.notificationId, // 고유 ID
-      message: notification.content,   // 알림 메시지
-      time: new Date(notification.createdAt).toLocaleString(), // 생성 시간 포맷팅
-      type: notification.notificationType.toLowerCase(), // 알림 타입 (소문자로 변환)
+      id: notification.diaryId || 'N/A', // 고유 ID (없으면 기본값)
+      message: notification.userName
+        ? `${notification.userName}님이 요청을 보냈습니다.` // userName을 포함한 메시지
+        : '알림 메시지가 없습니다.', // userName이 없을 경우 기본 메시지
+      time: notification.createdAt
+        ? new Date(notification.createdAt).toLocaleString()
+        : '시간 정보 없음', // 생성 시간 포맷팅
+      type: 'requests', // 요청 유형으로 설정 (하드코딩 가능)
     }));
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
   }
-};
-
-// 알림 모두 읽음 처리 (더미 로직)
-const markAllAsRead = () => {
-  console.log('Marking all notifications as read...');
-  // 필요 시 API 호출 추가
 };
 
 // API로부터 알림 데이터 가져오기
