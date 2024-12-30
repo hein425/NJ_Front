@@ -150,7 +150,6 @@ const searchFriends = async () => {
 
 const sendFriendRequest = async receiverId => {
   try {
-    
     const friend = searchResults.value.find(user => user.userId === receiverId);
     const friendName = friend ? friend.userName : 'Unknown';
 
@@ -161,8 +160,7 @@ const sendFriendRequest = async receiverId => {
       friendName: friendName,
     };
 
-    await axios.post(`${BASE_URL}/friend/request`,
-     JSON.stringify(friendRequestDto), {
+    await axios.post(`${BASE_URL}/friend/request`, JSON.stringify(friendRequestDto), {
       headers: {
         'Content-Type': 'application/json', // JSON 요청 명시
       },
