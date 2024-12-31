@@ -1,11 +1,66 @@
 <template>
   <div class="diary-form">
     <form @submit.prevent="submitDiary">
+            <!-- 녹음 상태 모달 -->
+            <div v-if="isRecording" class="modal-overlay">
+        <div class="modal">
+          <p>마이크에 입력하고 싶은 음성을 녹음하세요</p>
+          <p>녹음 중입니다...🎙️</p>
+          <button @click="stopRecording" class="stop-recording-button">녹음 중지</button>
+        </div>
+      </div>
+
+        <!-- 녹음 제목 쪽 - 기본 숨김 -->
+
+        <div class="language-recording-container" v-if="isRecordingMenuVisible">
+        <!-- 닫기 버튼 -->
+        <button type="button" class="close-button" @click="closeLanguageRecordingContainer"><strong>X</strong></button>
+        <!-- 언어 선택 -->
+        <div class="row">
+          <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
+          <div class="language-options">
+            <button v-for="(lang, index) in languages" :key="index" :class="{ 'active-lang': selectedLanguage === lang.code }" @click="changeLanguage(lang.code)" type="button">
+              {{ lang.name }}
+            </button>
+          </div>
+        </div>
+        <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
+        <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+      </div>
+
+      <!-- 녹음 본문 쪽쪽- 기본 숨김 -->
+      <div class="language-recording-container-memo" v-if="isMemoRecordingMenuVisible">
+        <!-- 닫기 버튼 -->
+        <button type="button" class="close-button" @click="closeMemoLanguageRecordingContainer"><strong>X</strong></button>
+        <!-- 언어 선택 -->
+        <div class="row">
+          <label style="width: 80px; margin-bottom: 5px">언어 선택</label>
+          <div class="language-options">
+            <button v-for="(lang, index) in languages" :key="index" :class="{ 'active-lang': selectedLanguage === lang.code }" @click="changeLanguage(lang.code)" type="button">
+              {{ lang.name }}
+            </button>
+          </div>
+        </div>
+        <div class="button-container">
+          <!-- 시작하기 버튼 -->
+          <button type="button" @click="startRecording('description')" class="play-button">녹음하기⏺️</button>
+          <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
+        </div>
+      </div>
+
+
+
       <!-- Title과 Category -->
       <div class="row">
         <div class="title-category-row">
           <div class="title-section">
             <label for="title" style="width: 50px">제목</label>
+
+            <button type="button" @click="toggleRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
+          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+          </button>
+
+        
             <input id="title" v-model="title" class="input-field" @input="checkTitleLength" />
           </div>
 
@@ -57,8 +112,13 @@
 
       <!-- Note -->
       <div class="row">
-        <label for="content" style="width: 80px">내용</label>
-        <textarea id="content" v-model="content" placeholder="Enter your note" class="input-field textarea-field"></textarea>
+        <label for="description" style="width: 80px; display: flex; gap : 10px">내용 <button type="button" @click="toggleMemoRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
+                  <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+                </button>
+        </label>
+        
+ 
+        <textarea id="description" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 
       <!-- 이미지 미리보기 -->
@@ -113,14 +173,116 @@ const showEmptyTitleModal = ref(false);
 const showSuccessModal = ref(false);
 
 const date = ref(props.selectedDate || '');
-const content = ref('');
+const description = ref('');
 const category = ref('DAILY');
 const share = ref('ALL'); // 공개 범위 설정
 const images = ref([]); // 이미지 리스트
 const friends = ref([]); // 친구 목록
 const selectedFriends = ref([]); // 선택한 친구 목록
 
+const isRecording = ref(false); // 녹음 상태
+const recordingField = ref(null); // 현재 녹음 중인 필드 ('title' 또는 'content')
+let recognition = null; // SpeechRecognition 객체 초기화
+const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
+const isRecordingMenuVisible = ref(false);
+const isMemoRecordingMenuVisible = ref(false); // 메모 녹음 메뉴 상태
+
 const authStore = useAuthStore();
+
+// 메모 언어 선택 및 듣기 버튼 컨테이너 닫기
+const closeMemoLanguageRecordingContainer = () => {
+  isMemoRecordingMenuVisible.value = false;
+};
+const closeLanguageRecordingContainer = () => {
+  isRecordingMenuVisible.value = false; // 메뉴 닫기
+};
+// 메모 메뉴 토글
+const toggleMemoRecordingMenu = () => {
+  isMemoRecordingMenuVisible.value = !isMemoRecordingMenuVisible.value;
+};
+// 메뉴 토글 함수
+const toggleRecordingMenu = () => {
+  isRecordingMenuVisible.value = !isRecordingMenuVisible.value;
+};
+
+// 지원 언어 목록
+const languages = ref([
+  { name: '한국어', code: 'ko-KR' },
+  { name: '영어', code: 'en-US' },
+  { name: '일본어', code: 'ja-JP' },
+  { name: '중국어', code: 'zh-CN' },
+]);
+
+// 녹음 시작
+const startRecording = field => {
+  if (isRecording.value) {
+    alert('이미 녹음 중입니다.');
+    return;
+  }
+
+  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+    alert('Web Speech API를 지원하지 않는 브라우저입니다.');
+    return;
+  }
+
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = selectedLanguage.value;
+
+  isRecording.value = true;
+  recordingField.value = field;
+
+  recognition.onresult = event => {
+    const transcript = Array.from(event.results)
+      .map(result => result[0].transcript)
+      .join('');
+    if (field === 'title') {
+      title.value += transcript;
+    } else if (field === 'description') {
+      description.value += transcript;
+    }
+  };
+
+  recognition.onend = () => {
+    isRecording.value = false;
+    recordingField.value = null;
+  };
+
+  recognition.onerror = error => {
+    console.error('SpeechRecognition Error:', error);
+    isRecording.value = false;
+    recordingField.value = null;
+  };
+
+  recognition.start();
+};
+
+// 녹음 중지
+const stopRecording = () => {
+  if (!isRecording.value || !recognition) {
+    alert('녹음 중이 아닙니다.');
+    return;
+  }
+
+  recognition.stop();
+  isRecording.value = false;
+  recordingField.value = null;
+};
+
+// 텍스트 읽기
+const playText = field => {
+  const synth = window.speechSynthesis;
+  const utterance = new SpeechSynthesisUtterance();
+
+  utterance.lang = selectedLanguage.value;
+  utterance.text = field === 'title' ? title.value : description.value;
+
+  synth.speak(utterance);
+};
+
+// 언어 변경
+const changeLanguage = langCode => {
+  selectedLanguage.value = langCode;
+};
 
 // 이미지 업로드 처리
 const handleImageUpload = event => {
@@ -188,7 +350,7 @@ const submitDiary = async () => {
   const diaryRequest = {
     title: title.value,
     date: date.value,
-    content: content.value,
+    content: description.value,
     category: category.value,
     share: share.value || 'ALL',
     calendarIdx: authStore.calendarIdx,
@@ -292,6 +454,7 @@ onMounted(() => {
 
 .category-section {
   flex: 1;
+  padding-left: 0;
   display: flex;
   justify-content: flex-end;
 }
@@ -551,5 +714,190 @@ label[for='image'] {
 
 label[for='image']:hover {
   background-color: #525151;
+}
+
+/* 녹음관련 css */
+
+/* 녹음 상태 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.stop-recording-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.stop-recording-button:hover {
+  background-color: #d32f2f;
+}
+
+/* 언어 선택 및 듣기 버튼 */
+.language-options {
+  display: flex;
+  gap: 10px;
+}
+
+.language-options button {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #fff;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.language-options button.active-lang {
+  background-color: #555;
+  color: white;
+  font-weight: bold;
+}
+
+.language-options button:hover {
+  background-color: #f0f0f0;
+}
+
+/* 언어 선택 및 듣기 버튼 컨테이너 */
+.language-recording-container,
+.language-recording-container-memo {
+  position: absolute;
+  top: 0%;
+  left: 550px;
+  width: 350px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.language-recording-container {
+  top: 0%;
+}
+
+.language-recording-container-memo {
+  top: 64%;
+}
+
+/* 닫기 버튼 */
+.language-recording-container .close-button,
+.language-recording-container-memo .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.language-recording-container .close-button:hover,
+.language-recording-container-memo .close-button:hover {
+  color: #d32f2f;
+}
+
+/* 듣기 버튼 */
+.play-button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #fff;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.play-button:hover {
+  background-color: #f0f0f0;
+}
+
+.play-button:active {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.1),
+    0 1px 0 #999;
+  transform: translateY(2px); /* 눌리는 효과 */
+}
+
+/* 슬라이드 애니메이션 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 페이드 인 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.split-button-icon {
+  color: #555;
+  font-size: 15px; /* 아이콘 크기 */
+}
+.split-button:hover {
+  background: #ddd;
+  border-color: #888;
+}
+.split-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  transition: all 0.3s ease;
 }
 </style>
