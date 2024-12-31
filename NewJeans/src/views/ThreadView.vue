@@ -221,7 +221,10 @@ onMounted(async () => {
         <!-- 다이어리 내용 -->
         <div v-show="item.type === 'DIARY'" class="content-section" style="margin-left: 4.5rem; text-align: left">
           <p class="content">{{ item.content }}</p>
-          <p><img :src="`http://192.168.0.17:50002${item.diaryImages}`" /></p>
+          <!-- 이미지를 조건부로 렌더링 -->
+          <p class="diary_image" v-if="item.diaryImages && item.diaryImages.length > 0">
+            <img :src="`http://192.168.0.17:50002${item.diaryImages}`" alt="Diary Image" />
+          </p>
         </div>
 
         <!-- 일정 내용 -->
@@ -455,7 +458,9 @@ body {
   color: #999;
   font-weight: bold;
 }
-
+.diary_image img {
+  max-width: 1000px;
+}
 .content-section .content {
   font-size: 1rem;
   line-height: 1.5;
