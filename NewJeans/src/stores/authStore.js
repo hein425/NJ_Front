@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', {
       const userName = localStorage.getItem('userName');
       const profileImageUrl = localStorage.getItem('profileImageUrl');
       const email = localStorage.getItem('email');
-      const userIdx = localStorage.getItem('userIdx'); // 추가: userIdx 복원
+      const userIdx = localStorage.getItem('userIdx'); // 추가: userIdx 불러오기
       const idx = localStorage.getItem('idx');
       const calendarIdx = localStorage.getItem('calendarIdx');
 
@@ -89,6 +89,7 @@ export const useAuthStore = defineStore('auth', {
         this.profileImageUrl = profileImageUrl && profileImageUrl !== 'undefined' && profileImageUrl !== '' ? profileImageUrl : defaultProfileImage; // 기본 이미지 적용
         this.email = email || '';
         this.idx = idx ? Number(idx) : null;
+        this.userIdx = userIdx ? Number(userIdx) : Number(idx); // userIdx가 없으면 idx로 설정
         this.calendarIdx = idx ? Number(idx) : null; // idx 값을 그대로 복원
         this.isLoggedIn = true;
 

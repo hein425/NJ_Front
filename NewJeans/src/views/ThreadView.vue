@@ -117,12 +117,32 @@ function isUpcoming(date) {
   return diffInDays >= 0 && diffInDays <= 7; // 7일 이내의 일정
 }
 
-// 활성 탭에 따라 데이터를 필터링
+// // 활성 탭에 따라 데이터를 필터링
+// const filteredData = computed(() => {
+//   if (activeTab.value === 1) return data.value; // 전체보기
+//   if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
+//   if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
+//   if (activeTab.value === 4) return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date)); // 임박한 일정
+//   return [];
+// });
+
 const filteredData = computed(() => {
-  if (activeTab.value === 1) return data.value; // 전체보기
-  if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
-  if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
-  if (activeTab.value === 4) return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date)); // 임박한 일정
+  if (activeTab.value === 1) {
+    // 전체 보기
+    return data.value.filter(item => {
+      // 공유 범위 조건 추가
+      return item.type === 'diary' && (item.share === 'ALL' || (item.share === 'CHOOSE' && item.friendIdxList?.includes(authStore.userIdx)));
+    });
+  }
+  if (activeTab.value === 2) {
+    return data.value.filter(item => item.type === 'schedule');
+  }
+  if (activeTab.value === 3) {
+    return data.value.filter(item => item.type === 'diary');
+  }
+  if (activeTab.value === 4) {
+    return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date));
+  }
   return [];
 });
 
@@ -134,6 +154,7 @@ function clickTab(index) {
 async function fetchData() {
   try {
     const response = await axios.get(`${BASE_URL}/shared/all/${userIdx}`); // 실제 API 엔드포인트로 수정
+    console.log('API로부터 반환된 데이터:', response.data); // API로 반환된 데이터를 확인
     data.value = response.data; // 서버에서 가져온 데이터 저장
   } catch (error) {
     console.error('Failed to fetch data:', error);
