@@ -1,9 +1,12 @@
 <template>
   <div class="team-view">
-    <!-- 전체 화면을 삼분할로 나눔 -->
-    <div class="left-section">
-      <!-- 친구 목록 -->
-      <div class="friend-list-container">
+    <div class="left-middle-section">
+      <div class="toggle-buttons">
+        <button :class="{ active: activeTab === 'friends' }" @click="setActiveTab('friends')">친구 목록</button>
+        <button :class="{ active: activeTab === 'messages' }" @click="setActiveTab('messages')">메시지 목록</button>
+      </div>
+
+      <div v-if="activeTab === 'friends'" class="friend-list-container">
         <div class="friend-list-header">
           <h3>친구 목록</h3>
           <button class="add-friend-button tooltip-btn" data-tooltip="친구 추가" @click="openFriendSearchModal">
@@ -13,21 +16,18 @@
           </button>
         </div>
         <ul class="friends-list">
-          <li v-for="friend in friends" :key="friend.idx" class="friend-item">
-            <img :src="friend.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
+          <li v-for="friend in friends" :key="friend.friendId" class="friend-item">
+            <img :src="defaultProfileImage" alt="프로필 이미지" class="profile-icon" />
             <span class="friend-name">{{ friend.userName }}</span>
-            <button class="message-icon tooltip-btn" data-tooltip="메시지 전송" @click="openChat(friend.idx)">
+            <button class="message-icon tooltip-btn" data-tooltip="메시지 전송" @click="openChat(friend.friendId)">
               <font-awesome-icon :icon="['fas', 'envelope']" />
             </button>
-            <button @click="deleteFriend(friend.idx)" class="friend-action">친구 끊기</button>
+            <button @click="deleteFriend(friend.friendId)" class="friend-action">친구 끊기</button>
           </li>
         </ul>
       </div>
-    </div>
 
-    <div class="middle-section">
-      <!-- 메시지 목록 -->
-      <div class="message-list-container">
+      <div v-if="activeTab === 'messages'" class="message-list-container">
         <h3>메시지 목록</h3>
         <ul class="messages-list">
           <li v-for="message in messages" :key="message.id" class="message-item">
@@ -43,28 +43,33 @@
     </div>
 
     <div class="right-section">
-      <!-- 채팅방 -->
       <div class="chatroom-container">
-        <h3>채팅방</h3>
         <div v-if="currentChatRoom">
           <div class="chatroom-header">
+            <img :src="defaultProfileImage" alt="프로필 이미지" class="chatroom-profile-icon" />
             <span>{{ currentChatRoom.name }}</span>
           </div>
-          <div class="chatroom-messages">
-            <div v-for="message in currentChatRoom.messages" :key="message.id" class="chat-message">
-              <span>{{ message.senderName }}:</span>
+          <div class="chatroom-messages" ref="chatroomMessagesRef">
+            <div
+              v-for="message in currentChatRoom.messages"
+              :key="message.id"
+              class="chat-message"
+              :class="{ 'my-message': message.senderId === userId, 'other-message': message.senderId !== userId }"
+            >
               <p>{{ message.content }}</p>
             </div>
           </div>
-          <input v-model="newMessage" placeholder="메시지를 입력하세요" @keydown.enter="sendMessage" />
+          <div class="chatroom-input">
+            <input v-model="newMessage" placeholder="메시지를 입력하세요" @keydown.enter="sendMessage" />
+            <button @click="sendMessage">전송</button>
+          </div>
         </div>
-        <div v-else>
+        <div v-else class="chatroom-placeholder">
           <p>채팅방을 선택하세요.</p>
         </div>
       </div>
     </div>
 
-    <!-- 친구 검색 모달 -->
     <div v-if="isFriendSearchModalOpen" class="modal-overlay" @click.self="closeFriendSearchModal">
       <div class="modal-container">
         <h3>친구 검색</h3>
@@ -82,7 +87,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import defaultProfileImage from '@/assets/profile2.jpg';
@@ -99,7 +104,13 @@ const messages = ref([]);
 const currentChatRoom = ref(null);
 const newMessage = ref('');
 const isFriendSearchModalOpen = ref(false);
+const activeTab = ref('friends');
+const chatroomMessagesRef = ref(null);
 let sse = null;
+
+const setActiveTab = tab => {
+  activeTab.value = tab;
+};
 
 const openFriendSearchModal = () => {
   isFriendSearchModalOpen.value = true;
@@ -112,10 +123,15 @@ const closeFriendSearchModal = () => {
 const loadFriends = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/list`);
+    console.log('Response data:', response.data);
     friends.value = response.data.map(friend => ({
-      ...friend,
+      friendId: friend.friendId, // friendId 필드 추가
+      userName: friend.userName,
       profileImageUrl: friend.profileImageUrl || defaultProfileImage,
+      email: friend.email, // 필요하다면 다른 필드도 포함
     }));
+
+    console.log('Loaded friends:', friends.value);
   } catch (error) {
     console.error('Failed to load friends:', error);
   }
@@ -123,8 +139,9 @@ const loadFriends = async () => {
 
 const deleteFriend = async friendId => {
   try {
-    await axios.delete(`${BASE_URL}/friend/${userId}/delete`, { params: { friendId } });
-    friends.value = friends.value.filter(friend => friend.idx !== friendId);
+    console.log('Deleting friend with ID:', friendId);
+    await axios.delete(`${BASE_URL}/friend/delete`, { params: { userId, friendId } });
+    friends.value = friends.value.filter(friend => friend.friendId !== friendId); // friendId 기준으로 필터링
   } catch (error) {
     console.error('Failed to delete friend:', error);
   }
@@ -162,7 +179,7 @@ const sendFriendRequest = async receiverId => {
 
     await axios.post(`${BASE_URL}/friend/request`, JSON.stringify(friendRequestDto), {
       headers: {
-        'Content-Type': 'application/json', // JSON 요청 명시
+        'Content-Type': 'application/json',
       },
     });
 
@@ -223,16 +240,31 @@ const formatTime = timestamp => {
   return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
 };
 
-const openChat = async receiverId => {
+const openChat = async friendId => {
   try {
-    const response = await axios.get(`${BASE_URL}/message/messages/${userId}/${receiverId}`);
+    const friend = friends.value.find(friend => friend.friendId === friendId);
+    const response = await axios.get(`${BASE_URL}/message/messages/${userId}/${friendId}`);
     currentChatRoom.value = {
-      name: `Chat with ${receiverId}`,
+      name: friend.userName, // 친구 이름 설정
+      profileImageUrl: friend.profileImageUrl,
+      receiverId: friendId,
       messages: response.data,
     };
   } catch (error) {
-    console.error('Failed to open chat room:', error);
+    console.error('채팅방 열기 실패:', error);
   }
+};
+
+const scrollToBottom = () => {
+  if (chatroomMessagesRef.value) {
+    chatroomMessagesRef.value.scrollTop = chatroomMessagesRef.value.scrollHeight;
+  }
+};
+
+// 메시지가 추가된 이후 실행
+const addMessage = (message) => {
+  currentChatRoom.value.messages.push(message);
+  nextTick(() => scrollToBottom());
 };
 
 const sendMessage = async () => {
@@ -241,13 +273,13 @@ const sendMessage = async () => {
   try {
     const response = await axios.post(`${BASE_URL}/message/send`, {
       senderId: userId,
-      receiverId: currentChatRoom.value.name.split(' ')[2],
+      receiverId: currentChatRoom.value.receiverId,
       content: newMessage.value,
     });
-    currentChatRoom.value.messages.push(response.data);
+    addMessage(response.data); // 메시지 추가 후 스크롤 이동
     newMessage.value = '';
   } catch (error) {
-    console.error('Failed to send message:', error);
+    console.error('메시지 전송 실패:', error);
   }
 };
 
@@ -257,18 +289,26 @@ const subscribeToSSE = () => {
   sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse.addEventListener('message', event => {
     const newMessage = JSON.parse(event.data);
+    if (currentChatRoom.value && currentChatRoom.value.receiverId === newMessage.senderId) {
+      currentChatRoom.value.messages.push(newMessage);
+    }
     messages.value.unshift(newMessage);
   });
-
   sse.addEventListener('error', () => {
-    console.error('SSE connection error');
     sse.close();
     sse = null;
   });
 };
 
+// sse.addEventListener('error', () => {
+//   console.error('SSE 연결 오류');
+//   sse.close();
+//   sse = null;
+// });
+
 const unsubscribeFromSSE = () => {
   if (sse) {
+    console.log('SSE 구독 종료');
     sse.close();
     sse = null;
   }
@@ -299,6 +339,80 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.team-view {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  height: 80vh;
+}
+
+.left-middle-section {
+  flex: 0 0 27%;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.right-section {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.toggle-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.toggle-buttons button {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #f1f1f1;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.toggle-buttons button:last-child {
+  margin-right: 0;
+}
+
+.toggle-buttons button.active {
+  background-color: black;
+  color: white;
+}
+
+.friend-list-container,
+.message-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-item,
+.message-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.friend-item .profile-icon,
+.message-item .message-profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
 input.search-input {
   width: 95%;
 }
@@ -394,8 +508,8 @@ input.search-input {
 }
 
 .plus-icon {
-  width: 20px;
-  height: 20px;
+  width: 23px;
+  height: 23px;
   color: black;
 }
 
@@ -461,52 +575,116 @@ input.search-input {
   color: #6b7280;
 }
 
+.chat-message {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.my-message {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.other-message {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+}
+
 .chatroom-container {
   padding: 10px;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  gap: 0;
 }
 
 .chatroom-messages {
-  max-height: 300px;
+  max-height: 615px;
   overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
+/* 스크롤바 스타일링 */
+.chatroom-messages::-webkit-scrollbar {
+  width: 8px; /* 세로 스크롤바의 너비 */
+  height: 8px; /* 가로 스크롤바의 높이 */
+}
+.chatroom-messages::-webkit-scrollbar-thumb {
+  background: #888; /* 스크롤바의 색상 */
+  border-radius: 4px; /* 스크롤바의 둥근 모서리 */
+}
+.chatroom-messages::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 스크롤바에 마우스 오버 시 색상 */
+}
+.chatroom-messages::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 스크롤 트랙의 색상 */
+}
+
+
+
 .chatroom-header {
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
+}
+
+.chatroom-input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 8px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #ccc;
+}
+
+.chatroom-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.chatroom-input button {
+  padding: 10px 20px;
+  border: none;
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+}
+
+.chatroom-profile-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.chatroom-name {
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 .chat-message {
   margin-bottom: 10px;
 }
 
-.team-view {
+.chatroom-placeholder {
   display: flex;
-  gap: 20px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  height: 80vh;
-}
-
-.left-section {
-  flex: 0 0 23%;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.middle-section {
-  flex: 1;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
-}
-
-.right-section {
-  flex: 1;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: black;
 }
 
 .modal-overlay {

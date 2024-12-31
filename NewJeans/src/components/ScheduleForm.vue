@@ -176,8 +176,8 @@
         </div>
         <div class="button-container">
           <!-- 시작하기 버튼 -->
-          <button type="button" @click="startRecording('title')" class="play-button">녹음하기⏺️</button>
-          <button type="button" @click="playText('title')" class="play-button">듣기▶️</button>
+          <button type="button" @click="startRecording('description')" class="play-button">녹음하기⏺️</button>
+          <button type="button" @click="playText('description')" class="play-button">듣기▶️</button>
         </div>
       </div>
 
