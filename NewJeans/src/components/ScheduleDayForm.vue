@@ -88,7 +88,7 @@
 
                 <div v-else class="schedule-images">
                   <div v-for="(imageUrl, imgIndex) in schedule.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
+                    <img :src="`http://192.168.0.17:50002${imageUrl}`" alt="Schedule Image" style="width: 150px; margin: 5px" />
                   </div>
                 </div>
 
@@ -187,7 +187,7 @@
 
                 <div v-else class="diary-images">
                   <div v-for="(imageUrl, imgIndex) in diary.images" :key="imgIndex" class="image-container">
-                    <img :src="`${BASE_URL}${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
+                    <img :src="`http://192.168.0.17:50002${imageUrl}`" alt="Diary Image" style="width: 150px; margin: 5px" />
                   </div>
                 </div>
                 <div class="button-group">

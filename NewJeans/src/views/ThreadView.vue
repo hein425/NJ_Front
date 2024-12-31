@@ -126,27 +126,6 @@ const filteredData = computed(() => {
   return [];
 });
 
-// const filteredData = computed(() => {
-//   if (activeTab.value === 1) {
-//     // 전체 보기
-//     return data.value.filter(item => item.type === 'diary');
-//   }
-//   if (activeTab.value === 2) {
-//     return data.value.filter(item => item.type === 'schedule');
-//   }
-//   if (activeTab.value === 3) {
-//     return data.value.filter(item => item.type === 'diary');
-//   }
-//   if (activeTab.value === 4) {
-//     return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date));
-//   }
-//   return [];
-// });
-
-// const filteredData = computed(() => {
-//   return data.value; // 필터 없이 모든 데이터 반환
-// });
-
 // Tab 변경 시 활성화
 function clickTab(index) {
   activeTab.value = index;
@@ -165,6 +144,7 @@ async function fetchData() {
       content: String(item.content || ''), // content 변환 확인
       category: String(item.category || ''), // category 변환 확인
       date: String(item.date || ''), // 정상 작동 확인
+      diaryImages: String(item.diaryImages || ''),
     }));
 
     console.log('변환된 데이터:', data.value);
@@ -241,6 +221,7 @@ onMounted(async () => {
         <!-- 다이어리 내용 -->
         <div v-show="item.type === 'DIARY'" class="content-section" style="margin-left: 4.5rem; text-align: left">
           <p class="content">{{ item.content }}</p>
+          <p><img :src="`http://192.168.0.17:50002${item.diaryImages}`" /></p>
         </div>
 
         <!-- 일정 내용 -->
