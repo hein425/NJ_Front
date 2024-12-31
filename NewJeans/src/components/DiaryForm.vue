@@ -386,7 +386,7 @@ const submitDiary = async () => {
 // 취소
 const cancelForm = () => {
   title.value = '';
-  content.value = '';
+  // content.value = '';
   date.value = '';
   category.value = 'DAILY';
   share.value = 'ALL';

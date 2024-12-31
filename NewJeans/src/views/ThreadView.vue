@@ -225,11 +225,12 @@ onMounted(async () => {
             <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
             <div class="text-info">
               <h3 class="author">{{ item.author }}</h3>
-              <div v-if="item.type === 'diary'" class="title-category">
+              <!-- 다이어리 제목과 카테고리 -->
+              <div v-show="item.type === 'DIARY'" class="title-category">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
-                <span class="category" :style="{ backgroundColor: '#FFEBCC' }">{{ item.category }}</span>
+                <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
               </div>
-              <div v-else-if="item.type === 'schedule'" class="title-only">
+              <div v-show="item.type === 'schedule'" class="title-only">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
               </div>
             </div>
@@ -238,12 +239,12 @@ onMounted(async () => {
         </div>
 
         <!-- 다이어리 내용 -->
-        <div v-if="item.type === 'diary'" class="content-section" style="margin-left: 4.5rem; text-align: left">
+        <div v-show="item.type === 'DIARY'" class="content-section" style="margin-left: 4.5rem; text-align: left">
           <p class="content">{{ item.content }}</p>
         </div>
 
         <!-- 일정 내용 -->
-        <div v-else-if="item.type === 'schedule'" class="schedule-section">
+        <div v-show="item.type === 'SCHEDULE'" class="schedule-section">
           <p><span style="font-weight: bold">시작 시간:</span> {{ item.startTime }}</p>
           <p><span style="font-weight: bold">종료 시간:</span> {{ item.endTime }}</p>
           <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
