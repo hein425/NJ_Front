@@ -30,13 +30,13 @@
       <div v-if="activeTab === 'messages'" class="message-list-container">
         <h3>메시지 목록</h3>
         <ul class="messages-list">
-          <li v-for="message in messages" :key="message.id" class="message-item">
-            <img :src="message.profileImageUrl || defaultProfileImage" alt="프로필 이미지" class="message-profile" />
+          <li v-for="message in messages" :key="message.id" class="message-item" @click="openChat(message.id)">
+            <img :src="message.profileImage || defaultProfileImage" alt="프로필 이미지" class="message-profile" />
             <div class="message-info">
-              <span class="message-sender">{{ message.senderName }}</span>
-              <p class="message-preview">{{ message.content }}</p>
+              <span class="message-sender">{{ message.userName }}</span>
+              <p class="message-preview">{{ message.lastMessage }}</p>
             </div>
-            <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+            <span class="message-time">{{ formatTime(message.lastMessageTime) }}</span>
           </li>
         </ul>
       </div>
@@ -191,48 +191,22 @@ const sendFriendRequest = async receiverId => {
 };
 
 const loadMessages = async () => {
-  messages.value = [
-    {
-      id: 1,
-      senderId: 101,
-      senderName: 'Alice',
-      senderProfile: 'https://via.placeholder.com/50',
-      content: '안녕하세요! 오랜만이에요.',
-      timestamp: '2024-12-27T09:00:00Z',
-    },
-    {
-      id: 2,
-      senderId: 102,
-      senderName: 'Bob',
-      senderProfile: 'https://via.placeholder.com/50',
-      content: '네! 잘 지내셨나요?',
-      timestamp: '2024-12-27T09:01:00Z',
-    },
-    {
-      id: 3,
-      senderId: 103,
-      senderName: 'Charlie',
-      senderProfile: 'https://via.placeholder.com/50',
-      content: '회의 일정 조정이 필요합니다.',
-      timestamp: '2024-12-27T10:30:00Z',
-    },
-    {
-      id: 4,
-      senderId: 104,
-      senderName: 'David',
-      senderProfile: 'https://via.placeholder.com/50',
-      content: '오늘 저녁에 약속 가능하신가요?',
-      timestamp: '2024-12-27T14:45:00Z',
-    },
-    {
-      id: 5,
-      senderId: 105,
-      senderName: 'Eve',
-      senderProfile: 'https://via.placeholder.com/50',
-      content: '프로젝트 관련 자료 확인 부탁드립니다.',
-      timestamp: '2024-12-27T16:15:00Z',
-    },
-  ];
+  try {
+    const response = await axios.get(`${BASE_URL}/message/conversations/${userId}`);
+    console.log('Loaded conversations:', response.data);
+
+    messages.value = response.data.map(conversation => ({
+      id: conversation.otherUserId,
+      userName: conversation.userName,
+      profileImage: conversation.profileImage || defaultProfileImage,
+      lastMessage: conversation.lastMessage,
+      lastMessageTime: conversation.lastMessageTime,
+    }));
+
+    console.log('Messages processed:', messages.value);
+  } catch (error) {
+    console.error('Failed to load messages:', error);
+  }
 };
 
 const formatTime = timestamp => {
@@ -250,6 +224,8 @@ const openChat = async friendId => {
       receiverId: friendId,
       messages: response.data,
     };
+    await nextTick();
+    scrollToBottom();
   } catch (error) {
     console.error('채팅방 열기 실패:', error);
   }
@@ -262,7 +238,7 @@ const scrollToBottom = () => {
 };
 
 // 메시지가 추가된 이후 실행
-const addMessage = (message) => {
+const addMessage = message => {
   currentChatRoom.value.messages.push(message);
   nextTick(() => scrollToBottom());
 };
@@ -285,12 +261,13 @@ const sendMessage = async () => {
 
 const subscribeToSSE = () => {
   if (sse) return;
-
+  console.log('SSE 구독 시작');
   sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse.addEventListener('message', event => {
     const newMessage = JSON.parse(event.data);
     if (currentChatRoom.value && currentChatRoom.value.receiverId === newMessage.senderId) {
       currentChatRoom.value.messages.push(newMessage);
+      nextTick(() => scrollToBottom());
     }
     messages.value.unshift(newMessage);
   });
@@ -299,12 +276,6 @@ const subscribeToSSE = () => {
     sse = null;
   });
 };
-
-// sse.addEventListener('error', () => {
-//   console.error('SSE 연결 오류');
-//   sse.close();
-//   sse = null;
-// });
 
 const unsubscribeFromSSE = () => {
   if (sse) {
@@ -625,8 +596,6 @@ input.search-input {
 .chatroom-messages::-webkit-scrollbar-track {
   background: #f1f1f1; /* 스크롤 트랙의 색상 */
 }
-
-
 
 .chatroom-header {
   display: flex;
