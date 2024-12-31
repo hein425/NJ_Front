@@ -1,8 +1,8 @@
 <template>
   <div class="diary-form">
     <form @submit.prevent="submitDiary">
-            <!-- 녹음 상태 모달 -->
-            <div v-if="isRecording" class="modal-overlay">
+      <!-- 녹음 상태 모달 -->
+      <div v-if="isRecording" class="modal-overlay">
         <div class="modal">
           <p>마이크에 입력하고 싶은 음성을 녹음하세요</p>
           <p>녹음 중입니다...🎙️</p>
@@ -10,9 +10,9 @@
         </div>
       </div>
 
-        <!-- 녹음 제목 쪽 - 기본 숨김 -->
+      <!-- 녹음 제목 쪽 - 기본 숨김 -->
 
-        <div class="language-recording-container" v-if="isRecordingMenuVisible">
+      <div class="language-recording-container" v-if="isRecordingMenuVisible">
         <!-- 닫기 버튼 -->
         <button type="button" class="close-button" @click="closeLanguageRecordingContainer"><strong>X</strong></button>
         <!-- 언어 선택 -->
@@ -48,8 +48,6 @@
         </div>
       </div>
 
-
-
       <!-- Title과 Category -->
       <div class="row">
         <div class="title-category-row">
@@ -57,10 +55,9 @@
             <label for="title" style="width: 50px">제목</label>
 
             <button type="button" @click="toggleRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
-          <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
-          </button>
+              <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+            </button>
 
-        
             <input id="title" v-model="title" class="input-field" @input="checkTitleLength" />
           </div>
 
@@ -112,12 +109,13 @@
 
       <!-- Note -->
       <div class="row">
-        <label for="description" style="width: 80px; display: flex; gap : 10px">내용 <button type="button" @click="toggleMemoRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
-                  <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
-                </button>
+        <label for="description" style="width: 80px; display: flex; gap: 10px"
+          >내용
+          <button type="button" @click="toggleMemoRecordingMenu" class="split-button tooltip-btn" data-tooltip="음성으로 입력하기">
+            <span class="split-button-icon"><i class="fa-solid fa-microphone"></i></span>
+          </button>
         </label>
-        
- 
+
         <textarea id="description" v-model="description" placeholder="Enter your note" class="input-field textarea-field"></textarea>
       </div>
 

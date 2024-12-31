@@ -117,34 +117,35 @@ function isUpcoming(date) {
   return diffInDays >= 0 && diffInDays <= 7; // 7일 이내의 일정
 }
 
-// // 활성 탭에 따라 데이터를 필터링
+// // 활성 탭에 따라 데이터
+const filteredData = computed(() => {
+  if (activeTab.value === 1) return data.value; // 전체보기
+  if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
+  if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
+  if (activeTab.value === 4) return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date)); // 임박한 일정
+  return [];
+});
+
 // const filteredData = computed(() => {
-//   if (activeTab.value === 1) return data.value; // 전체보기
-//   if (activeTab.value === 2) return data.value.filter(item => item.type === 'schedule');
-//   if (activeTab.value === 3) return data.value.filter(item => item.type === 'diary');
-//   if (activeTab.value === 4) return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date)); // 임박한 일정
+//   if (activeTab.value === 1) {
+//     // 전체 보기
+//     return data.value.filter(item => item.type === 'diary');
+//   }
+//   if (activeTab.value === 2) {
+//     return data.value.filter(item => item.type === 'schedule');
+//   }
+//   if (activeTab.value === 3) {
+//     return data.value.filter(item => item.type === 'diary');
+//   }
+//   if (activeTab.value === 4) {
+//     return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date));
+//   }
 //   return [];
 // });
 
-const filteredData = computed(() => {
-  if (activeTab.value === 1) {
-    // 전체 보기
-    return data.value.filter(item => {
-      // 공유 범위 조건 추가
-      return item.type === 'diary' && (item.share === 'ALL' || (item.share === 'CHOOSE' && item.friendIdxList?.includes(authStore.userIdx)));
-    });
-  }
-  if (activeTab.value === 2) {
-    return data.value.filter(item => item.type === 'schedule');
-  }
-  if (activeTab.value === 3) {
-    return data.value.filter(item => item.type === 'diary');
-  }
-  if (activeTab.value === 4) {
-    return data.value.filter(item => item.type === 'schedule' && isUpcoming(item.date));
-  }
-  return [];
-});
+// const filteredData = computed(() => {
+//   return data.value; // 필터 없이 모든 데이터 반환
+// });
 
 // Tab 변경 시 활성화
 function clickTab(index) {
@@ -153,17 +154,34 @@ function clickTab(index) {
 // 데이터 가져오기
 async function fetchData() {
   try {
-    const response = await axios.get(`${BASE_URL}/shared/all/${userIdx}`); // 실제 API 엔드포인트로 수정
-    console.log('API로부터 반환된 데이터:', response.data); // API로 반환된 데이터를 확인
-    data.value = response.data; // 서버에서 가져온 데이터 저장
+    const response = await axios.get(`${BASE_URL}/shared/all/${userIdx}`);
+    console.log('API로부터 반환된 데이터:', response.data);
+
+    data.value = response.data.map(item => ({
+      sharedIdx: String(item.sharedIdx || ''),
+      shareDate: String(item.shareDate || ''),
+      type: String(item.type || ''),
+      title: String(item.title || ''), // title 변환 확인
+      content: String(item.content || ''), // content 변환 확인
+      category: String(item.category || ''), // category 변환 확인
+      date: String(item.date || ''), // 정상 작동 확인
+    }));
+
+    console.log('변환된 데이터:', data.value);
   } catch (error) {
     console.error('Failed to fetch data:', error);
   }
 }
+
 // 컴포넌트 로드 시 데이터 가져오기
-onMounted(() => {
-  fetchData();
-  authStore.restoreLogin();
+onMounted(async () => {
+  await authStore.restoreLogin(); // 로그인 상태 복원
+  console.log('userIdx:', authStore.userIdx); // userIdx 확인
+  if (authStore.userIdx) {
+    await fetchData(); // userIdx가 설정된 후에 데이터 가져오기
+  } else {
+    console.error('userIdx가 null입니다. 데이터를 가져올 수 없습니다.');
+  }
 });
 </script>
 
@@ -201,10 +219,10 @@ onMounted(() => {
     </div>
     <!-- 필터링된 데이터 -->
     <div class="content-container">
-      <div v-for="item in filteredData" :key="item.id" class="content-box">
+      <div v-for="item in filteredData" :key="item.sharedIdx" class="content-box">
         <div class="header-section">
           <div class="profile-info">
-            <img :src="item.profileImg" alt="Profile" class="profile-img" />
+            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
             <div class="text-info">
               <h3 class="author">{{ item.author }}</h3>
               <div v-if="item.type === 'diary'" class="title-category">
