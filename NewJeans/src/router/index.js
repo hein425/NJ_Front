@@ -16,6 +16,7 @@ import ThreadView from '@/views/ThreadView.vue';
 import TeamsViewCopy from '@/views/TeamsView copy.vue';
 import TeamsView from '../views/TeamsView.vue';
 import ThreadUserProfile from '@/components/ThreadUserProfile.vue';
+import Games from '@/views/games/games.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,11 @@ const router = createRouter({
       path: '/teams',
       name: 'teams',
       component: TeamsViewCopy,
+    },
+    {
+      path: '/games',
+      name: 'games',
+      component: Games,
     },
     {
       path: '/thread',
