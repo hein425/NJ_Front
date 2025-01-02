@@ -44,26 +44,21 @@ const setupSSE = () => {
   eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${idx}`);
 
   // SSE 이벤트 수신 처리
-  eventSource.onmessage = (event) => {
+  eventSource.addEventListener('notification', (event) => {
     const data = JSON.parse(event.data);
-    console.log('New SSE Notification:', data);
-
-    // SSE 알림 추가
     notifications.value.unshift({
-      id: data.notificationId || 'N/A',
-      message: `sse 알림: ${data.content || '새 알림이 도착했습니다.'}`,
-      time: new Date(data.createdAt || Date.now()).toLocaleString(),
+        id: Date.now(), // 고유 ID 생성
+        message: data,
+        time: new Date().toLocaleString(),
     });
-
-    // 읽지 않은 알림 개수 증가
     unreadCount.value += 1;
-  };
+});
 
   // SSE 연결 종료 처리
-  eventSource.onerror = (error) => {
-    console.error('SSE connection error:', error);
+  eventSource.addEventListener('error', () => {
+    console.error('SSE 연결 오류 발생');
     eventSource.close();
-  };
+  });
 };
 
 // 컴포넌트 마운트 시 데이터 로드 및 SSE 설정
