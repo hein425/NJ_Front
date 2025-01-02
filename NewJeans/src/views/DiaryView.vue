@@ -141,7 +141,7 @@ import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import { toRaw } from 'vue';
-import { tippy } from 'vue';
+import tippy from 'tippy.js';
 
 const router = useRouter();
 const diaries = ref([]);
