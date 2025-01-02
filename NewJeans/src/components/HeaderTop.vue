@@ -6,10 +6,10 @@
         <img :src="logoSrc" alt="Logo" />
       </RouterLink>
     </div>
+
     <!-- 검색창 -->
     <div class="search-container">
       <div class="search-wrapper">
-        <!-- 돋보기 아이콘 -->
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
         <div class="search-content">
           <div v-if="selectedOption !== 'ALL'" class="filter-tag">
@@ -18,16 +18,29 @@
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
-          <input type="text" v-model="searchQuery" placeholder="검색" class="search-input" @keyup.enter="goToSearchForm" />
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="검색"
+            class="search-input"
+            @keyup.enter="goToSearchForm"
+          />
         </div>
         <div class="filter-btn-container" ref="filterBtn">
-          <!-- 필터 아이콘 -->
           <button class="filter-btn tooltip-btn" @click="toggleDropdown" data-tooltip="검색필터">
             <font-awesome-icon :icon="['fas', 'sliders']" />
           </button>
-          <!-- 필터 드롭다운 -->
-          <ul v-if="dropdownVisible" class="dropdown-options" :style="dropdownStyles">
-            <li v-for="option in toggleOptions" :key="option.value" :class="{ active: selectedOption === option.value }" @click.stop="selectOption(option.value)">
+          <ul
+            v-if="dropdownVisible"
+            class="dropdown-options"
+            :style="dropdownStyles"
+          >
+            <li
+              v-for="option in toggleOptions"
+              :key="option.value"
+              :class="{ active: selectedOption === option.value }"
+              @click.stop="selectOption(option.value)"
+            >
               {{ option.label }}
               <span v-if="selectedOption === option.value" class="check-mark">✔</span>
             </li>
@@ -35,6 +48,7 @@
         </div>
       </div>
     </div>
+
     <div class="notifi">
       <!-- 메시지 아이콘 -->
       <div class="message-icon">
@@ -45,16 +59,21 @@
 
       <!-- 알림 아이콘 -->
       <div class="notification-icon">
-        <button @click="toggleNotifications" class="tooltip-btn" data-tooltip="알림">
+        <button
+          @click="toggleNotifications"
+          class="tooltip-btn"
+          data-tooltip="알림"
+        >
           <font-awesome-icon :icon="['fas', 'bell']" />
           <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
         </button>
         <!-- 알림 컴포넌트 -->
-        <Notifications v-if="showNotifications" @close="showNotifications = false" />
+        <Notifications v-if="showNotifications" @close="closeNotifications" />
       </div>
     </div>
   </header>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
@@ -67,6 +86,8 @@ import { faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope } from '@fort
 import Notifications from '@/components/NotiFication.vue';
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
+import { BASE_URL } from '@/config';
+import axios from 'axios';
 
 // Font Awesome 아이콘 등록
 library.add(faMagnifyingGlass, faTimes, faSliders, faBell, faEnvelope);
@@ -81,12 +102,87 @@ const filterBtn = ref(null);
 
 const showNotifications = ref(true);
 const unreadCount = ref(3); // 예제: 알림 개수 (API 연동 필요)
+const notifications = ref([]);
 
-
-// 알림 창 표시/숨기기
-const toggleNotifications = () => {
+// 알림 창 표시/숨기기 및 알림 로드
+const toggleNotifications = async () => {
   showNotifications.value = !showNotifications.value;
+
+  if (showNotifications.value) {
+    await fetchNotifications(); // 알림 데이터 로드
+    unreadCount.value = 0; // 알림 확인 후 읽지 않은 개수 초기화
+  }
 };
+
+// 알림 데이터 가져오기
+const fetchNotifications = async () => {
+  try {
+    const idx = localStorage.getItem('idx');
+    if (!idx) {
+      console.error('User idx is not found in local storage.');
+      return;
+    }
+
+    const response = await axios.get(`${BASE_URL}/friend/${idx}/requests`);
+    notifications.value = response.data.map((notification) => ({
+      id: notification.diaryId || 'N/A',
+      message: notification.userName
+        ? `${notification.userName}님이 친구 요청을 보냈습니다.`
+        : '알림 메시지가 없습니다.',
+      time: notification.createdAt
+        ? new Date(notification.createdAt).toLocaleString()
+        : '시간 정보 없음',
+      type: 'requests',
+    }));
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error);
+  }
+};
+
+// SSE 연결 설정
+let eventSource = null;
+
+const setupSSE = () => {
+  const idx = localStorage.getItem('idx');
+  if (!idx) {
+    console.error('User idx is not found in local storage.');
+    return;
+  }
+
+  eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${idx}`);
+
+  // SSE 메시지 수신
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    notifications.value.unshift({
+      id: data.notificationId || 'N/A',
+      message: data.content || '새 알림이 도착했습니다.',
+      time: new Date(data.createdAt || Date.now()).toLocaleString(),
+      type: 'requests',
+    });
+    unreadCount.value += 1; // 읽지 않은 알림 개수 증가
+  };
+
+  // SSE 오류 처리
+  eventSource.onerror = (error) => {
+    console.error('SSE connection error:', error);
+    eventSource.close();
+  };
+};
+
+// SSE 연결 종료
+onBeforeUnmount(() => {
+  if (eventSource) eventSource.close();
+});
+
+onMounted(() => {
+  setupSSE();
+});
+
+watch(router.currentRoute, () => {
+  applyTheme();
+});
+
 
 // 테마에 따른 로고 업데이트
 const applyTheme = () => {
