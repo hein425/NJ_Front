@@ -55,9 +55,9 @@ const props = defineProps({
   userIdx: String, // 변경된 userIdx
 });
 
-// const route = useRoute();
+const route = useRoute();
 const router = useRouter();
-// const userIdx = ref(route.params.userIdx || props.userIdx); // URL 파라미터나 props에서 값 가져오기
+const userIdx = ref(route.params.userIdx || props.userIdx); // URL 파라미터나 props에서 값 가져오기
 
 const profileImageUrl = ref('');
 const userName = ref('');
@@ -78,10 +78,13 @@ const filteredData = computed(() => {
 
 // 작성자의 데이터를 가져오는 함수
 const fetchUserProfile = async () => {
+  console.log('Fetching data for userIdx:', userIdx.value);
+
   try {
     // 사용자 프로필 정보 가져오기
-    const userResponse = await axios.get(`${BASE_URL}/shared/user/${props.userIdx}`);
-    console.log('유저 프로필 정보:', userResponse.data); // API 응답 확인
+    console.log('Fetching user profile for userIdx:', userIdx.value); // 디버깅 로그
+    const userResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
+    console.log('유저 프로필 정보:', userResponse.data); // API 응답 로그
     profileImageUrl.value = userResponse.data.profileImageUrl || '/default-profile.png';
     userName.value = userResponse.data.userName || 'Unknown User';
 
@@ -91,7 +94,7 @@ const fetchUserProfile = async () => {
     schedules.value = scheduleResponse.data || [];
 
     // 작성자의 공개 일기 가져오기
-    const diaryResponse = await axios.get(`${BASE_URL}/shared/user/${props.userIdx}`);
+    const diaryResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
     console.log('Fetched diaries:', diaryResponse.data); // API 응답 확인
     diaries.value = diaryResponse.data.map(diary => ({
       id: diary.id,
@@ -111,10 +114,11 @@ const goBack = () => {
 };
 
 onMounted(() => {
-  if (!props.userIdx) {
+  if (!userIdx.value) {
     console.error('userIdx가 전달되지 않았습니다.');
     return;
   }
+  console.log('Fetching data for userIdx:', userIdx.value); // 디버깅 로그
   fetchUserProfile();
 });
 

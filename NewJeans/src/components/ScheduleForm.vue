@@ -327,6 +327,42 @@ const startRecording = field => {
   recognition.start();
 };
 
+const loadFriends = async () => {
+  console.log('loadFriends 함수 시작');
+  try {
+    if (!authStore.idx) {
+      console.error('authStore.idx가 null이거나 정의되지 않음');
+      return;
+    }
+    const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
+    console.log('API 응답 데이터:', response.data);
+
+    // 친구 목록 업데이트
+    friends.value = response.data.map(friend => ({
+      idx: friend.idx || friend.userId,
+      userName: friend.userName,
+      profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
+    }));
+    console.log('로드된 친구 목록:', friends.value);
+  } catch (error) {
+    console.error('Failed to load friends:', error);
+  }
+};
+
+// 컴포넌트 마운트 시 로직
+onMounted(async () => {
+  console.log('ScheduleForm Mounted');
+  // 친구 목록 로드
+  await loadFriends();
+});
+// 공개 범위 변경 핸들러
+const handleShareChange = () => {
+  console.log('공개 설정 변경됨, 현재 설정:', share.value);
+  if (share.value !== 'CHOOSE') {
+    selectedFriends.value = []; // 선택된 친구 초기화
+  }
+};
+
 // 녹음 중지
 const stopRecording = () => {
   if (!isRecording.value || !recognition) {
@@ -469,40 +505,6 @@ const submitSchedule = async () => {
       withCredentials: true, // 쿠키를 자동으로 포함
     });
     console.log('Schedule Submitted Successfully', response.data);
-
-    // 공개 설정 변경 핸들러
-    const handleShareChange = () => {
-      console.log('공개 설정 변경됨, 현재 설정:', share.value);
-      if (share.value !== 'CHOOSE') {
-        selectedFriends.value = []; // 친구 선택 초기화
-      }
-    };
-
-    // 친구 목록 로드
-    const loadFriends = async () => {
-      console.log('loadFriends 함수 호출됨');
-      try {
-        const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
-        console.log('API 응답 데이터:', response.data); // 응답 데이터 구조 확인
-        friends.value = response.data.map(friend => ({
-          idx: friend.idx || friend.userId, // API 데이터의 키 확인 후 수정
-          userName: friend.userName,
-          profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
-        }));
-        console.log('로드된 친구 목록:', friends.value);
-      } catch (error) {
-        console.error('Failed to load friends:', error);
-      }
-    };
-
-    onMounted(() => {
-      console.log('ScheduleForm Mounted, AuthStore ID:', authStore.idx);
-      if (!authStore.idx) {
-        console.error('authStore.idx is null or undefined.');
-      } else {
-        loadFriends(); // 친구 목록 로드
-      }
-    });
 
     // 일정 저장 성공 모달 표시
     showSuccessModal.value = true;

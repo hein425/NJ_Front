@@ -16,9 +16,13 @@
               <div v-show="isScheduleExpanded[index]" class="expanded-content">
                 <hr class="divider" />
 
-                <div class="form-row" style="width: 450px">
+                <div class="form-row schedule-share-row" style="width: 450px">
                   <p v-if="scheduleEditIndex !== index"><strong>시작 시간:</strong> {{ formatDateTime(schedule.start) }}</p>
                   <input v-else v-model="editData.start" class="input-field" type="datetime-local" placeholder="Start Time" @click.stop />
+                  <!-- 공개 설정 -->
+                  <p class="schedule-share-info">
+                    {{ schedule.share === 'ALL' ? '전체공개' : schedule.share === 'CHOOSE' ? '친구공개' : '비공개' }}
+                  </p>
                 </div>
                 <div class="form-row" style="width: 450px">
                   <p v-if="scheduleEditIndex !== index"><strong>종료 시간:</strong> {{ formatDateTime(schedule.end) }}</p>
@@ -168,7 +172,7 @@
                   <p v-if="diaryEditIndex !== index"><strong>Date:</strong> {{ diary.date }}</p>
                   <input v-else v-model="editData.date" class="input-field" placeholder="Enter Date" type="date" @click.stop />
                   <!-- 공개 설정 -->
-                  <p class="share-info">
+                  <p class="schedule-share">
                     {{ diary.share === 'ALL' ? '전체공개' : diary.share === 'CHOOSE' ? '친구공개' : '비공개' }}
                   </p>
                 </div>
@@ -454,6 +458,7 @@ const saveScheduleEdit = async (type, index) => {
     repeatEndDate: editData.value.repeatEndDate,
     address: editData.value.address,
     content: editData.value.content,
+    share: editData.value.share || 'NONE',
     color: editData.value.color || 'DEFAULT_COLOR', // color 필드를 기본값으로 설정
     deletedImageList: editData.value.deletedImageList || [],
   };
@@ -770,6 +775,24 @@ onMounted(() => {
   font-size: 0.9rem;
   color: gray;
   margin-left: auto;
+}
+
+/* 스케줄 섹션: 시작 시간과 공개 설정을 동일한 줄에 배치 */
+.schedule-share-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* 간격 추가 */
+}
+
+.start-time {
+  flex: 1; /* 시작 시간에 적절한 공간 할당 */
+}
+
+.schedule-share-info {
+  font-size: 0.9rem;
+  color: #888;
+  margin-left: auto; /* 오른쪽 정렬 */
 }
 
 /* Date와 공개 설정을 동일한 줄에 배치 */

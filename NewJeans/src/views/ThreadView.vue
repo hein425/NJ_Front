@@ -99,7 +99,7 @@ async function fetchData() {
     console.log('API로부터 반환된 데이터:', response.data);
 
     data.value = response.data.map(item => ({
-      sharedIdx: String(item.sharedIdx || ''),
+      userIdx: String(item.userIdx || ''),
       shareDate: String(item.shareDate || ''),
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
@@ -128,8 +128,12 @@ onMounted(async () => {
 
 // 프로필 페이지로 이동
 const goToUserProfile = userId => {
-  console.log('Clicked User ID:', userId); // 로그로 확인
-  router.push({ path: `/user/${userId}` }); // URL로 userId 전달
+  console.log('Clicked User ID:', userId); // 디버깅 로그
+  if (!userIdx) {
+    console.error('userIdx가 없습니다. 전달할 수 없습니다.');
+    return;
+  }
+  router.push({ path: `/user/${userIdx}` }); // 라우터로 이동
 };
 </script>
 
@@ -171,9 +175,9 @@ const goToUserProfile = userId => {
         <!-- 프로필 이미지 및 작성자 이름 -->
         <div class="header-section">
           <div class="profile-info">
-            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.userId)" />
+            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.userIdx)" />
             <div class="text-info">
-              <h3 class="author" @click="goToUserProfile(item.userId)">{{ item.author }}</h3>
+              <h3 class="author" @click="goToUserProfile(item.userIdx)">{{ item.author }}</h3>
               <!-- 다이어리 제목과 카테고리 -->
               <div v-show="item.type === 'DIARY'" class="title-category">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
