@@ -208,7 +208,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch,toRaw } from 'vue';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import KakaoMap from '@/views/KakaoMap.vue';
@@ -242,7 +242,11 @@ const isRecording = ref(false); // 녹음 상태
 const recordingField = ref(null); // 현재 녹음 중인 필드 ('title' 또는 'description')
 let recognition = null; // SpeechRecognition 객체 초기화
 const selectedLanguage = ref('ko-KR'); // 기본 언어: 한국어
+
+
+const date = ref(props.selectedDate || '');
 const share = ref('ALL'); // 공개 범위 설정
+const friends = ref([]); // 친구 목록
 const selectedFriends = ref([]); // 선택한 친구 목록
 
 const isRecordingMenuVisible = ref(false);
@@ -429,12 +433,14 @@ const submitSchedule = async () => {
   // scheduleRequest JSON 객체 생성
   const scheduleRequest = {
     title: title.value,
+    date: date.value,
     color: color.value,
     start: startdate.value,
     end: enddate.value,
     location: location.value,
     content: description.value,
     calendarIdx: calendarIdx.value,
+    friendIdxList: share.value === 'CHOOSE' ? toRaw(selectedFriends.value) : null,
     repeatType: repeatType.value,
     repeatEndDate: repeatEndDate.value || null, // 반복 종료 날짜 추가
     share: share.value || 'ALL', // 기본값을 'ALL'로 설정
@@ -465,12 +471,43 @@ const submitSchedule = async () => {
     });
     console.log('Schedule Submitted Successfully', response.data);
 
-    // 공개 범위 변경
-    const handleShareChange = () => {
-      if (share.value !== 'CHOOSE') {
-        selectedFriends.value = []; // 친구 선택 초기화
-      }
-    };
+
+// 공개 설정 변경 핸들러
+const handleShareChange = () => {
+  console.log('공개 설정 변경됨, 현재 설정:', share.value);
+  if (share.value !== 'CHOOSE') {
+    selectedFriends.value = []; // 친구 선택 초기화
+  }
+};
+
+// 친구 목록 로드
+const loadFriends = async () => {
+  console.log("loadFriends 함수 호출됨");
+  try {
+    const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
+    console.log('API 응답 데이터:', response.data); // 응답 데이터 구조 확인
+    friends.value = response.data.map(friend => ({
+      idx: friend.idx || friend.userId, // API 데이터의 키 확인 후 수정
+      userName: friend.userName,
+      profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
+    }));
+    console.log('로드된 친구 목록:', friends.value);
+  } catch (error) {
+    console.error('Failed to load friends:', error);
+  }
+};
+
+onMounted(() => {
+  console.log('ScheduleForm Mounted, AuthStore ID:', authStore.idx);
+  if (!authStore.idx) {
+    console.error('authStore.idx is null or undefined.');
+  } else {
+    loadFriends(); // 친구 목록 로드
+  }
+});
+
+
+
 
     // 일정 저장 성공 모달 표시
     showSuccessModal.value = true;

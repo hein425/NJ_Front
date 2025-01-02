@@ -72,13 +72,32 @@
 
     <div v-if="isFriendSearchModalOpen" class="modal-overlay" @click.self="closeFriendSearchModal">
       <div class="modal-container">
-        <h3>친구 검색</h3>
-        <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
-        <div v-if="searchResults.length > 0" class="search-results">
-          <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
-            <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
-            <span class="user-click">{{ user.userName }}</span>
-            <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
+        <div class="toggle-buttons">
+          <button :class="{ active: friendModalTab === 'search' }" @click="setFriendModalTab('search')">친구 추가 요청</button>
+          <button :class="{ active: friendModalTab === 'requests' }" @click="setFriendModalTab('requests')">요청 확인</button>
+        </div>
+
+        <div v-if="friendModalTab === 'search'">
+          <h3>친구 검색</h3>
+          <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
+          <div v-if="searchResults.length > 0" class="search-results">
+            <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
+              <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
+              <span class="user-click">{{ user.userName }}</span>
+              <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="friendModalTab === 'requests'">
+          <h3>받은 요청</h3>
+          <div v-if="receivedRequests.length > 0" class="received-requests">
+            <div v-for="request in receivedRequests" :key="request.id" class="request-item">
+              <img :src="request.profileImageUrl || defaultProfileImage" class="profile-icon" />
+              <span class="request-name">{{ request.userName }}</span>
+              <button @click="acceptFriendRequest(request.id)">수락</button>
+              <button @click="declineFriendRequest(request.id)">거절</button>
+            </div>
           </div>
         </div>
       </div>
@@ -547,8 +566,8 @@ input.search-input {
 }
 
 .chat-message {
-  max-width: 70%;
-  padding: 10px;
+  max-width: 20%;
+  padding: 1px 5px;
   border-radius: 10px;
   font-size: 0.9rem;
 }
