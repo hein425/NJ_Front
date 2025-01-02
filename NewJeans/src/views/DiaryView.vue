@@ -66,6 +66,24 @@
               </div>
             </div>
 
+       <!-- 공개 범위 설정 -->
+      <div class="row">
+        <label for="share" style="width: 80px">공개 설정</label>
+        <select v-model="share" id="share" class="input-field" @change="handleShareChange">
+          <option value="ALL">전체공개</option>
+          <option value="CHOOSE">친구공개</option>
+          <option value="NONE">비공개</option>
+        </select>
+      </div>
+
+      <div v-if="share === 'CHOOSE'" class="friend-selection">
+        <h4>공개할 친구 선택</h4>
+        <div v-for="friend in friends" :key="friend.idx" class="friend-item">
+          <input type="checkbox" :value="friend.idx" v-model="selectedFriends" />
+          <span>{{ friend.userName }}</span>
+        </div>
+      </div>
+
             <!-- 작성일 -->
             <div class="row">
               <label for="date">작성일</label>
@@ -122,6 +140,8 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
+import { toRaw } from 'vue';
+import { tippy } from 'vue';
 
 const router = useRouter();
 const diaries = ref([]);
@@ -138,6 +158,9 @@ const title = ref('');
 const category = ref('DAILY');
 const content = ref('');
 const images = ref([]); // 이미지 리스트
+const share = ref('ALL');
+const friends = ref([]); // 친구 목록
+const selectedFriends = ref([]); // 선택한 친구 목록
 
 const showEmptyTitleModal = ref(false);
 const showTitleLimitModal = ref(false);
@@ -174,6 +197,14 @@ const checkTitleLength = () => {
   }
 };
 
+// 공개 범위 변경
+const handleShareChange = () => {
+  console.log('공개 범위 변경:', share.value);
+  if (share.value !== 'CHOOSE') {
+    selectedFriends.value = []; // 초기화
+  }
+};
+
 const handleImageUpload = event => {
   const files = Array.from(event.target.files);
   files.forEach(file => {
@@ -191,6 +222,23 @@ const toggleModal = () => {
   isModalOpen.value = !isModalOpen.value;
 };
 
+// 친구 목록 로드
+// 새로운 loadFriends 함수
+const loadFriends = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/friend/${authStore.idx}/list`);
+    console.log('API 응답 데이터:', response.data); // 응답 데이터 구조 확인
+    friends.value = response.data.map(friend => ({
+      idx: friend.idx || friend.userId, // API 데이터의 키 확인 후 수정
+      userName: friend.userName,
+      profileImageUrl: `${BASE_URL}${friend.profileImageUrl}`,
+    }));
+    console.log('로드된 친구 목록:', friends.value);
+  } catch (error) {
+    console.error('Failed to load friends:', error);
+  }
+};
+
 // 일기 작성 API 호출
 const submitDiary = async () => {
   if (!title.value.trim()) {
@@ -203,7 +251,9 @@ const submitDiary = async () => {
     content: content.value,
     category: category.value,
     date: date.value,
+    share: share.value || 'ALL',
     calendarIdx: authStore.calendarIdx,
+    friendIdxList: share.value === 'CHOOSE' ? toRaw(selectedFriends.value) : null,
   };
 
   const formData = new FormData();
@@ -234,6 +284,8 @@ const submitDiary = async () => {
     title.value = '';
     content.value = '';
     category.value = 'DAILY';
+    share.value = 'ALL';
+    selectedFriends.value = [];
     date.value = getTodayDate();
     images.value = [];
 
@@ -306,8 +358,23 @@ const getCategoryLabel = categoryValue => {
   return category ? category.label : '기타';
 };
 
+// 컴포넌트 로드시 친구 목록 로드
 onMounted(() => {
-  fetchDiaries('ALL');
+  loadFriends();
+});
+onMounted(() => {
+  const buttons = document.querySelectorAll('.tooltip-btn');
+
+  buttons.forEach(button => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
 });
 </script>
 
