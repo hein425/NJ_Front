@@ -1,11 +1,14 @@
 <script setup>
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
 axios;
 // 전역 변수 선언
 let body, menu, menuItems, menuBorder, activeItem;
+
+const router = useRouter();
 
 // CSS 사용자 정의 속성을 동적으로 관리
 const rootStyles = computed(() => ({
@@ -68,47 +71,6 @@ const data = ref([]); // 다이어리 및 일정 데이터
 const authStore = useAuthStore();
 const userIdx = authStore.userIdx;
 
-// 더미 데이터
-// const data = ref([
-//   {
-//     id: 1,
-//     type: 'diary',
-//     title: '집가고 싶다',
-//     content: '오늘만 아침에 일어나서 학원가면, 내일부터는 늦잠도 자고 오후에 학원간다 오예',
-//     date: '2024.12.30',
-//     author: '다람이',
-//     category: '#일기',
-//     comments: 20,
-//     profileImg: 'src/assets/profile2.jpg',
-//   },
-//   {
-//     id: 2,
-//     type: 'diary',
-//     title: '포미의 일상',
-//     content: '오늘 포미는 밥 잘 먹고 있을까? 새 친구는 많이 사귀었을까? 우리 포미 사진은 언제쯤 올라나, 너무 궁금하다. 포미 사진 보고 싶은 사람 댓글 달아줘 >_<',
-//     date: '2024.12.27',
-//     author: '포미언니',
-//     category: '#성장기록',
-//     comments: 20,
-//     profileImg: 'src/assets/profile2.jpg',
-//   },
-//   {
-//     id: 3,
-//     type: 'schedule',
-//     title: '멘토님 방문',
-//     startTime: '2024-12-24 PM 17:20',
-//     endTime: '2024-12-24 PM 18:10',
-//     repeat: '없음',
-//     content: '멘토님께서 방문하시는 날입니다. 모두 프로젝트 진행상황 및 궁금한 점 질문 준비해주세요!',
-//     // address: '대구 중구 남일동 109-2',
-//     mapImg: 'src/assets/map.png',
-//     date: '2024.12.24',
-//     author: '탁민지',
-//     comments: 20,
-//     profileImg: 'src/assets/profile2.jpg',
-//   },
-// ]);
-
 // 현재 날짜 기준 임박한 일정 계산
 function isUpcoming(date) {
   const now = new Date();
@@ -163,6 +125,12 @@ onMounted(async () => {
     console.error('userIdx가 null입니다. 데이터를 가져올 수 없습니다.');
   }
 });
+
+// 프로필 페이지로 이동
+const goToUserProfile = userId => {
+  console.log('Clicked User ID:', userId); // 로그로 확인
+  router.push({ path: `/user/${userId}` }); // URL로 userId 전달
+};
 </script>
 
 <template>
@@ -200,11 +168,12 @@ onMounted(async () => {
     <!-- 필터링된 데이터 -->
     <div class="content-container">
       <div v-for="item in filteredData" :key="item.sharedIdx" class="content-box">
+        <!-- 프로필 이미지 및 작성자 이름 -->
         <div class="header-section">
           <div class="profile-info">
-            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
+            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.userId)" />
             <div class="text-info">
-              <h3 class="author">{{ item.author }}</h3>
+              <h3 class="author" @click="goToUserProfile(item.userId)">{{ item.author }}</h3>
               <!-- 다이어리 제목과 카테고리 -->
               <div v-show="item.type === 'DIARY'" class="title-category">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>

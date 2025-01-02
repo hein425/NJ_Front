@@ -15,6 +15,7 @@ import ScheduleDetail from '@/views/ScheduleDetail.vue';
 import ThreadView from '@/views/ThreadView.vue';
 import TeamsViewCopy from '@/views/TeamsView copy.vue';
 import TeamsView from '../views/TeamsView.vue';
+import ThreadUserProfile from '@/components/ThreadUserProfile.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,12 @@ const router = createRouter({
       path: '/schedule/:idx',
       name: 'ScheduleDetail',
       component: ScheduleDetail,
+      props: true,
+    },
+    {
+      path: '/user/:userIdx',
+      name: 'ThreadUserProfile',
+      component: ThreadUserProfile,
       props: true,
     },
   ],

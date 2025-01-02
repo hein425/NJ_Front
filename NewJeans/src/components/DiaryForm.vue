@@ -150,14 +150,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import BaseModal from './BaseModal.vue';
 import 'tippy.js/dist/tippy.css';
 import tippy from 'tippy.js';
-import { toRaw } from 'vue';
 
 const props = defineProps({
   selectedDate: String,
@@ -404,6 +403,7 @@ const removeImage = index => {
 onMounted(() => {
   loadFriends();
 });
+
 onMounted(() => {
   const buttons = document.querySelectorAll('.tooltip-btn');
 
