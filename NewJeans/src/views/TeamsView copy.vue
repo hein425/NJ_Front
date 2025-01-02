@@ -76,7 +76,6 @@
           <button :class="{ active: friendModalTab === 'search' }" @click="setFriendModalTab('search')">친구 추가 요청</button>
           <button :class="{ active: friendModalTab === 'requests' }" @click="setFriendModalTab('requests')">요청 확인</button>
         </div>
-
         <div v-if="friendModalTab === 'search'">
           <h3>친구 검색</h3>
           <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
@@ -87,17 +86,25 @@
               <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
             </div>
           </div>
+          <div v-else>
+            <p>검색 결과가 없습니다.</p>
+          </div>
         </div>
 
         <div v-if="friendModalTab === 'requests'">
           <h3>받은 요청</h3>
-          <div v-if="receivedRequests.length > 0" class="received-requests">
-            <div v-for="request in receivedRequests" :key="request.id" class="request-item">
+          <div v-if="friendRequests.length > 0" class="received-requests">
+            <div v-for="request in friendRequests" :key="request.idx" class="request-item">
               <img :src="request.profileImageUrl || defaultProfileImage" class="profile-icon" />
               <span class="request-name">{{ request.userName }}</span>
-              <button @click="acceptFriendRequest(request.id)">수락</button>
-              <button @click="declineFriendRequest(request.id)">거절</button>
+              <div class="request-actions">
+                <button @click="acceptFriendRequest(request.idx)">수락</button>
+                <button @click="declineFriendRequest(request.idx)">거절</button>
+              </div>
             </div>
+          </div>
+          <div v-else>
+            <p>받은 친구 요청이 없습니다.</p>
           </div>
         </div>
       </div>
@@ -106,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, onUpdated } from 'vue';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import defaultProfileImage from '@/assets/profile2.jpg';
@@ -117,6 +124,7 @@ import 'tippy.js/dist/tippy.css';
 const authStore = useAuthStore();
 const userId = authStore.idx;
 const friends = ref([]);
+const friendRequests = ref([]);
 const searchQuery = ref('');
 const searchResults = ref([]);
 const messages = ref([]);
@@ -125,7 +133,22 @@ const newMessage = ref('');
 const isFriendSearchModalOpen = ref(false);
 const activeTab = ref('friends');
 const chatroomMessagesRef = ref(null);
+const friendModalTab = ref('search');
 let sse = null;
+
+const initializeTooltips = () => {
+  const tooltipButtons = document.querySelectorAll('.tooltip-btn');
+  tooltipButtons.forEach(button => {
+    const tooltipContent = button.getAttribute('data-tooltip');
+    tippy(button, {
+      content: tooltipContent,
+      interactive: true,
+      trigger: 'mouseenter',
+      duration: [300, 300],
+      theme: 'light',
+    });
+  });
+};
 
 const setActiveTab = tab => {
   activeTab.value = tab;
@@ -137,6 +160,26 @@ const openFriendSearchModal = () => {
 
 const closeFriendSearchModal = () => {
   isFriendSearchModalOpen.value = false;
+};
+
+const setFriendModalTab = tab => {
+  friendModalTab.value = tab;
+};
+
+const loadProfileImage = async userId => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/${userId}/profileImage`);
+    let imageUrl = response.data;
+
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      imageUrl = `${BASE_URL}${imageUrl}`;
+    }
+
+    return imageUrl;
+  } catch (error) {
+    console.error(`Failed to load profile image for userId ${userId}:`, error);
+    return defaultProfileImage;
+  }
 };
 
 const loadFriends = async () => {
@@ -209,6 +252,37 @@ const sendFriendRequest = async receiverId => {
   }
 };
 
+const loadFriendRequests = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/friend/${userId}/requests`);
+    friendRequests.value = await Promise.all(
+      response.data.map(async request => {
+        const profileImageUrl = await loadProfileImage(request.idx);
+        return { ...request, profileImageUrl };
+      }),
+    );
+  } catch (error) {
+    console.error('Failed to load friend requests:', error);
+  }
+};
+
+const acceptFriendRequest = async requesterId => {
+  try {
+    await axios.post(`${BASE_URL}/friend/accept`, {
+      params: {
+        requesterId: requesterId,
+        receiverId: userId,
+      },
+    });
+    friendRequests.value = friendRequests.value.filter(request => request.idx !== requesterId);
+    await loadFriends();
+    alert('친구 요청을 수락했습니다.');
+  } catch (error) {
+    console.error('Failed to accept friend request:', error);
+    alert('친구 요청 수락에 실패했습니다.');
+  }
+};
+
 const loadMessages = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/message/conversations/${userId}`);
@@ -256,7 +330,6 @@ const scrollToBottom = () => {
   }
 };
 
-// 메시지가 추가된 이후 실행
 const addMessage = message => {
   currentChatRoom.value.messages.push(message);
   nextTick(() => scrollToBottom());
@@ -307,8 +380,9 @@ const unsubscribeFromSSE = () => {
 onMounted(async () => {
   await loadFriends();
   await loadMessages();
-
+  await loadFriendRequests();
   subscribeToSSE();
+  initializeTooltips();
 
   const tooltipButtons = document.querySelectorAll('.tooltip-btn');
   tooltipButtons.forEach(button => {
@@ -321,6 +395,10 @@ onMounted(async () => {
       theme: 'light',
     });
   });
+});
+
+onUpdated(() => {
+  initializeTooltips(); // DOM이 갱신될 때마다 툴팁 재초기화
 });
 
 onUnmounted(() => {
@@ -600,20 +678,19 @@ input.search-input {
   scroll-behavior: smooth;
 }
 
-/* 스크롤바 스타일링 */
 .chatroom-messages::-webkit-scrollbar {
-  width: 8px; /* 세로 스크롤바의 너비 */
-  height: 8px; /* 가로 스크롤바의 높이 */
+  width: 8px;
+  height: 8px;
 }
 .chatroom-messages::-webkit-scrollbar-thumb {
-  background: #888; /* 스크롤바의 색상 */
-  border-radius: 4px; /* 스크롤바의 둥근 모서리 */
+  background: #888;
+  border-radius: 4px;
 }
 .chatroom-messages::-webkit-scrollbar-thumb:hover {
-  background: #555; /* 스크롤바에 마우스 오버 시 색상 */
+  background: #555;
 }
 .chatroom-messages::-webkit-scrollbar-track {
-  background: #f1f1f1; /* 스크롤 트랙의 색상 */
+  background: #f1f1f1;
 }
 
 .chatroom-header {
@@ -698,5 +775,51 @@ input.search-input {
 
 button {
   cursor: pointer;
+}
+
+.request-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.request-item .profile-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.request-name {
+  font-size: 1rem;
+  font-weight: bold;
+  flex: 1;
+}
+
+.request-actions button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #4caf50;
+  color: white;
+}
+
+.request-actions button:hover {
+  background-color: #0056b3;
+}
+
+.request-actions button:nth-child(2) {
+  background-color: #757575;
+}
+
+.request-actions button:nth-child(2):hover {
+  background-color: #757575;
 }
 </style>
