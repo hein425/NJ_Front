@@ -273,6 +273,9 @@ const acceptFriendRequest = async requesterId => {
         requesterId: requesterId,
         receiverId: userId,
       },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     friendRequests.value = friendRequests.value.filter(request => request.idx !== requesterId);
     await loadFriends();
@@ -333,6 +336,13 @@ const scrollToBottom = () => {
 const addMessage = message => {
   currentChatRoom.value.messages.push(message);
   nextTick(() => scrollToBottom());
+  console.log(`message = ${JSON.stringify(message)}`);
+  // console.log(`temp = ${JSON.stringify(temp)}`);
+  messages.value = [];
+  messages.value.forEach(element => {
+    messages.value.push({...element,lastMessage: element.content});
+  });
+  
 };
 
 const sendMessage = async () => {
@@ -354,14 +364,16 @@ const sendMessage = async () => {
 const subscribeToSSE = () => {
   if (sse) return;
   console.log('SSE 구독 시작');
+  // sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
+  console.log(sse);
   sse.addEventListener('message', event => {
     const newMessage = JSON.parse(event.data);
     if (currentChatRoom.value && currentChatRoom.value.receiverId === newMessage.senderId) {
       currentChatRoom.value.messages.push(newMessage);
       nextTick(() => scrollToBottom());
     }
-    messages.value.unshift(newMessage);
+    // messages.value.unshift(newMessage);
   });
   sse.addEventListener('error', () => {
     sse.close();
@@ -398,7 +410,7 @@ onMounted(async () => {
 });
 
 onUpdated(() => {
-  initializeTooltips(); // DOM이 갱신될 때마다 툴팁 재초기화
+  initializeTooltips();
 });
 
 onUnmounted(() => {
