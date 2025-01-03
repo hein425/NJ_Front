@@ -6,7 +6,7 @@
       <!-- 프로필 헤더 -->
       <div class="profile-header">
         <img :src="profileImageUrl || '/default-profile.png'" alt="Profile Picture" class="profile-image" />
-        <h2 class="profile-nickname">{{ userName }}</h2>
+        <h2 class="profile-nickname">{{ author }}</h2>
       </div>
 
       <!-- 탭 메뉴 -->
@@ -52,7 +52,7 @@ import axios from 'axios';
 import { BASE_URL } from '@/config';
 
 const props = defineProps({
-  userIdx: String, // 변경된 userIdx
+  userIdx: [String, Number], // String과 Number 모두 허용
 });
 
 const route = useRoute();
@@ -60,7 +60,13 @@ const router = useRouter();
 const userIdx = ref(route.params.userIdx || props.userIdx); // URL 파라미터나 props에서 값 가져오기
 
 const profileImageUrl = ref('');
-const userName = ref('');
+const author = ref(route.query.author || '');
+onMounted(() => {
+  if (!author.value) {
+    console.error('author 값이 전달되지 않았습니다. 기본값을 설정합니다.');
+    author.value = 'Unknown User';
+  }
+});
 const schedules = ref([]);
 const diaries = ref([]);
 const activeTab = ref('schedule');
@@ -78,29 +84,50 @@ const filteredData = computed(() => {
 
 // 작성자의 데이터를 가져오는 함수
 const fetchUserProfile = async () => {
-  console.log('Fetching data for userIdx:', userIdx.value);
-
   try {
     // 사용자 프로필 정보 가져오기
-    console.log('Fetching user profile for userIdx:', userIdx.value); // 디버깅 로그
     const userResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
-    console.log('유저 프로필 정보:', userResponse.data); // API 응답 로그
-    profileImageUrl.value = userResponse.data.profileImageUrl || '/default-profile.png';
-    userName.value = userResponse.data.userName || 'Unknown User';
+    console.log('상태 코드 확인:', userResponse.status);
+    console.log('응답 데이터 확인:', userResponse.data);
+
+    // 응답 데이터 매핑
+    if (userResponse.data) {
+      profileImageUrl.value = userResponse.data.profileImageUrl || '/default-profile.png';
+      author.value = userResponse.data.author || 'Unknown User';
+    } else {
+      console.error('응답 데이터가 비어 있습니다.');
+    }
 
     // 작성자의 공개 일정 가져오기
-    const scheduleResponse = await axios.get(`${BASE_URL}/shared/user/${props.userIdx}`);
-    console.log('Fetched schedules:', scheduleResponse.data); // API 응답 확인
-    schedules.value = scheduleResponse.data || [];
+    const scheduleResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
+    console.log('Fetched schedules:', scheduleResponse.data);
+    schedules.value = scheduleResponse.data.map(schedule => ({
+      id: schedule.id,
+      title: schedule.title,
+      content: schedule.content,
+      date: schedule.date,
+      start: schedule.start,
+      end: schedule.end,
+      location: schedule.location,
+      repeatType: schedule.repeatType,
+      repeatEndDate: schedule.repeatEndDate,
+      share: schedule.share,
+      author: schedule.author || 'Unknown User',
+      authorIdx: schedule.authorIdx || 0,
+      images: schedule.images || [],
+    }));
 
     // 작성자의 공개 일기 가져오기
     const diaryResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
-    console.log('Fetched diaries:', diaryResponse.data); // API 응답 확인
+    console.log('Fetched diaries:', diaryResponse.data);
     diaries.value = diaryResponse.data.map(diary => ({
       id: diary.id,
       title: diary.title,
       content: diary.content,
       date: diary.date,
+      share: diary.share,
+      author: diary.author || 'Unknown User',
+      authorIdx: diary.authorIdx || 0,
       images: diary.images || [],
     }));
   } catch (error) {
@@ -114,11 +141,14 @@ const goBack = () => {
 };
 
 onMounted(() => {
-  if (!userIdx.value) {
-    console.error('userIdx가 전달되지 않았습니다.');
-    return;
-  }
-  console.log('Fetching data for userIdx:', userIdx.value); // 디버깅 로그
+  console.log('Route params:', route.params);
+  console.log('Route query:', route.query);
+
+  userIdx.value = route.params.authorIdx || props.userIdx;
+  // author.value = route.query.author || 'Unknown User';
+
+  console.log('Fetching data for authorIdx:', userIdx.value);
+
   fetchUserProfile();
 });
 
