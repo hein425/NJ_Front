@@ -100,6 +100,7 @@ async function fetchData() {
 
     data.value = response.data.map(item => ({
       userIdx: String(item.userIdx || ''),
+      author: String(item.author || ''),
       shareDate: String(item.shareDate || ''),
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
@@ -127,8 +128,8 @@ onMounted(async () => {
 });
 
 // 프로필 페이지로 이동
-const goToUserProfile = userId => {
-  console.log('Clicked User ID:', userId); // 디버깅 로그
+const goToUserProfile = userIdx => {
+  console.log('Clicked User ID:', userIdx); // 디버깅 로그
   if (!userIdx) {
     console.error('userIdx가 없습니다. 전달할 수 없습니다.');
     return;
