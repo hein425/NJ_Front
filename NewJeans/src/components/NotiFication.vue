@@ -8,29 +8,29 @@ const unreadCount = ref(0); // 읽지 않은 알림 개수
 let eventSource = null;
 
 // 초기 알림 데이터 가져오기 (axios 사용)
-const fetchNotifications = async () => {
-  try {
-    const idx = localStorage.getItem('idx');
-    if (!idx) {
-      console.error('User idx is not found in local storage.');
-      return;
-    }
+// const fetchNotifications = async () => {
+//   try {
+//     const idx = localStorage.getItem('idx');
+//     if (!idx) {
+//       console.error('User idx is not found in local storage.');
+//       return;
+//     }
 
-    const response = await axios.get(`${BASE_URL}/friend/${idx}/requests`);
-    const axiosNotifications = response.data.map((notification) => ({
-      id: notification.diaryId || 'N/A',
-      message: `axios 알림: ${notification.userName || '알림 메시지가 없습니다.'}님이 친구 요청을 보냈습니다.`,
-      time: notification.createdAt
-        ? new Date(notification.createdAt).toLocaleString()
-        : '시간 정보 없음',
-    }));
+//     const response = await axios.get(`${BASE_URL}/friend/${idx}/requests`);
+//     const axiosNotifications = response.data.map((notification) => ({
+//       id: notification.diaryId || 'N/A',
+//       message: `axios 알림: ${notification.userName || '알림 메시지가 없습니다.'}님이 친구 요청을 보냈습니다.`,
+//       time: notification.createdAt
+//         ? new Date(notification.createdAt).toLocaleString()
+//         : '시간 정보 없음',
+//     }));
 
-    // 기존 알림 데이터를 리스트에 추가
-    notifications.value.push(...axiosNotifications);
-  } catch (error) {
-    console.error('Failed to fetch notifications:', error);
-  }
-};
+//     // 기존 알림 데이터를 리스트에 추가
+//     notifications.value.push(...axiosNotifications);
+//   } catch (error) {
+//     console.error('Failed to fetch notifications:', error);
+//   }
+// };
 
 // SSE 연결 설정
 const setupSSE = () => {
@@ -63,7 +63,7 @@ const setupSSE = () => {
 
 // 컴포넌트 마운트 시 데이터 로드 및 SSE 설정
 onMounted(() => {
-  fetchNotifications();
+  // fetchNotifications();
   setupSSE();
 });
 
