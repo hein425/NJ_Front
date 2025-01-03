@@ -31,7 +31,7 @@
         <h3>메시지 목록</h3>
         <ul class="messages-list">
           <li v-for="message in messages" :key="message.id" class="message-item" @click="openChat(message.id)">
-            <img :src="message.profileImage || defaultProfileImage" alt="프로필 이미지" class="message-profile" />
+            <img :src="defaultProfileImage" alt="프로필 이미지" class="message-profile" />
             <div class="message-info">
               <span class="message-sender">{{ message.userName }}</span>
               <p class="message-preview">{{ message.lastMessage }}</p>
@@ -81,7 +81,7 @@
           <input class="search-input" v-model="searchQuery" placeholder="닉네임으로 검색하기" @input="searchFriends" />
           <div v-if="searchResults.length > 0" class="search-results">
             <div v-for="user in searchResults" :key="user.idx" class="search-result-item">
-              <img :src="user.profileImageUrl || defaultProfileImage" class="profile-icon" />
+              <img :src="defaultProfileImage" class="profile-icon" />
               <span class="user-click">{{ user.userName }}</span>
               <button @click="sendFriendRequest(user.userId)">친구 추가 요청</button>
             </div>
@@ -94,12 +94,12 @@
         <div v-if="friendModalTab === 'requests'">
           <h3>받은 요청</h3>
           <div v-if="friendRequests.length > 0" class="received-requests">
-            <div v-for="request in friendRequests" :key="request.idx" class="request-item">
-              <img :src="request.profileImageUrl || defaultProfileImage" class="profile-icon" />
+            <div v-for="request in friendRequests" :key="request.friendId" class="request-item">
+              <img :src="defaultProfileImage" class="profile-icon" />
               <span class="request-name">{{ request.userName }}</span>
               <div class="request-actions">
-                <button @click="acceptFriendRequest(request.idx)">수락</button>
-                <button @click="declineFriendRequest(request.idx)">거절</button>
+                <button @click="acceptFriendRequest(request.friendId)">수락</button>
+                <button @click="rejectFriendRequest(request.friendId)">거절</button>
               </div>
             </div>
           </div>
@@ -255,9 +255,10 @@ const sendFriendRequest = async receiverId => {
 const loadFriendRequests = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/friend/${userId}/requests`);
+    console.log('response: ', response.data);
     friendRequests.value = await Promise.all(
       response.data.map(async request => {
-        const profileImageUrl = await loadProfileImage(request.idx);
+        const profileImageUrl = await loadProfileImage(request.friendId);
         return { ...request, profileImageUrl };
       }),
     );
@@ -267,22 +268,33 @@ const loadFriendRequests = async () => {
 };
 
 const acceptFriendRequest = async requesterId => {
+  console.log('request:', requesterId);
   try {
     await axios.post(`${BASE_URL}/friend/accept`, {
-      params: {
-        requesterId: requesterId,
-        receiverId: userId,
-      },
+      requesterId: requesterId,
+      receiverId: userId,
+    }, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    friendRequests.value = friendRequests.value.filter(request => request.idx !== requesterId);
+    friendRequests.value = friendRequests.value.filter(request => request.friendId !== requesterId);
     await loadFriends();
     alert('친구 요청을 수락했습니다.');
   } catch (error) {
     console.error('Failed to accept friend request:', error);
     alert('친구 요청 수락에 실패했습니다.');
+  }
+};
+
+const rejectFriendRequest = async rejectedRequestId => {
+  try {
+    await axios.post(`${BASE_URL}/friend/reject/${rejectedRequestId}`);
+    friendRequests.value = friendRequests.value.filter(request => request.friendId !== rejectedRequestId);
+    alert('친구 요청을 거절했습니다.');
+  } catch (error) {
+    console.error('Failed to reject friend request:', error);
+    alert('친구 요청 거절에 실패했습니다.');
   }
 };
 
@@ -333,16 +345,22 @@ const scrollToBottom = () => {
   }
 };
 
+// 메시지 보내는 곳
 const addMessage = message => {
   currentChatRoom.value.messages.push(message);
   nextTick(() => scrollToBottom());
-  console.log(`message = ${JSON.stringify(message)}`);
-  // console.log(`temp = ${JSON.stringify(temp)}`);
-  messages.value = [];
-  messages.value.forEach(element => {
-    messages.value.push({...element,lastMessage: element.content});
-  });
-  
+
+  console.log(messages.value);
+
+  const utcDate = new Date(message.timestamp);
+
+// 9시간(UTC+9)을 추가하여 KST로 변환
+  const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+
+  for( let i= 0; i< messages.value.length; i++ ) {
+    messages.value[i] = { ...messages.value[0], lastMessage: message.content, lastMessageTime:kstDate };
+  }
+
 };
 
 const sendMessage = async () => {
@@ -361,12 +379,12 @@ const sendMessage = async () => {
   }
 };
 
+// 메시지 들어오는것도
 const subscribeToSSE = () => {
   if (sse) return;
   console.log('SSE 구독 시작');
   // sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
-  console.log(sse);
   sse.addEventListener('message', event => {
     const newMessage = JSON.parse(event.data);
     if (currentChatRoom.value && currentChatRoom.value.receiverId === newMessage.senderId) {
