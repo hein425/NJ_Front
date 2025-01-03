@@ -60,6 +60,9 @@ const router = useRouter();
 const userIdx = ref(route.params.userIdx || props.userIdx); // URL 파라미터나 props에서 값 가져오기
 
 const profileImageUrl = ref('');
+const schedules = ref([]);
+const diaries = ref([]);
+const activeTab = ref('schedule');
 const author = ref(route.query.author || '');
 onMounted(() => {
   if (!author.value) {
@@ -67,9 +70,6 @@ onMounted(() => {
     author.value = 'Unknown User';
   }
 });
-const schedules = ref([]);
-const diaries = ref([]);
-const activeTab = ref('schedule');
 
 // 활성화된 탭에 따라 데이터를 필터링
 const filteredData = computed(() => {
@@ -91,9 +91,9 @@ const fetchUserProfile = async () => {
     console.log('응답 데이터 확인:', userResponse.data);
 
     // 응답 데이터 매핑
-    if (userResponse.data) {
+    if (userResponse.data && userResponse.data[0]) {
+      author.value = userResponse.data[0].author || 'Unknown User'; // 응답 데이터에서 author 값 설정
       profileImageUrl.value = userResponse.data.profileImageUrl || '/default-profile.png';
-      author.value = userResponse.data.author || 'Unknown User';
     } else {
       console.error('응답 데이터가 비어 있습니다.');
     }
@@ -145,7 +145,7 @@ onMounted(() => {
   console.log('Route query:', route.query);
 
   userIdx.value = route.params.authorIdx || props.userIdx;
-  // author.value = route.query.author || 'Unknown User';
+  author.value = ''; // 초기값을 비워두기
 
   console.log('Fetching data for authorIdx:', userIdx.value);
 
