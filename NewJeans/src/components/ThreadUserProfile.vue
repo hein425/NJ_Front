@@ -30,6 +30,7 @@
                 <div v-show="activeTab === 'diary'" class="title-category">
                   <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
                   <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
+                  <span class="category" :style="{ backgroundColor: '#FFEBCC' }">{{ item.date }}</span>
                 </div>
                 <!-- 스케줄 제목 -->
                 <div v-show="activeTab === 'schedule'" class="title-only">
@@ -37,7 +38,7 @@
                 </div>
               </div>
             </div>
-            <span class="date">{{ item.date }}</span>
+            <span class="date">{{ item.shareDate }}</span>
           </div>
 
           <!-- 다이어리 내용 -->
@@ -63,6 +64,14 @@
           </div>
         </div>
       </div>
+      <div>
+        <div v-if="activePost">
+          <ThreadPostDetail :post="activePost" :comments="comments" @goBack="goBackToList" />
+        </div>
+        <div v-else>
+          <!-- 게시글 목록 -->
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -73,6 +82,7 @@ import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import ThreadPostDetail from './ThreadPostDetail.vue';
 
 const props = defineProps({
   userIdx: [String, Number], // String과 Number 모두 허용
@@ -81,6 +91,10 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const userIdx = ref(route.params.userIdx || props.userIdx); // URL 파라미터나 props에서 값 가져오기
+
+const activePost = ref(null);
+const comments = ref([]);
+const data = ref([]);
 
 const profileImageUrl = ref('');
 const schedules = ref([]);
@@ -125,9 +139,12 @@ const fetchUserProfile = async () => {
       title: item.title,
       category: item.category,
       content: item.content,
-      date: item.date,
-      start: item.start,
-      end: item.end,
+      comment: item.comment,
+      commentsCount: item.comments?.length || 0, // 댓글 수를 포함
+      date: item.date, // 정상 작동 확인
+      shareDate: formatShareDate(item.shareDate), // 원하는 형식으로 변환
+      start: formatDateTime(item.start), // 원하는 형식으로 변환
+      end: formatDateTime(item.end), // 원하는 형식으로 변환
       location: item.location,
       repeatType: item.repeatType,
       repeatEndDate: item.repeatEndDate,
@@ -168,12 +185,41 @@ onMounted(() => {
   fetchUserProfile();
 });
 
-// 날짜 및 시간 포맷팅 함수
-const formatDateTime = dateTimeString => {
+// 날짜 형식 변환 함수
+function formatShareDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// 시간 형식 변환 함수
+function formatDateTime(dateTimeString) {
   if (!dateTimeString) return '';
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-  return new Date(dateTimeString).toLocaleString('ko-KR', options);
-};
+  const date = new Date(dateTimeString);
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const formattedHours = hours % 12 || 12; // 0시를 12시로 변환
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${period} ${formattedHours}:${minutes}`;
+}
+
+async function fetchComments(type, mixedIdx) {
+  try {
+    const response = await axios.get(`/shared/all/comments/${type}/${mixedIdx}`);
+    comments.value = response.data;
+  } catch (error) {
+    console.error('댓글 가져오기 실패:', error);
+  }
+}
+
+async function viewPostDetails(post) {
+  activePost.value = post;
+  await fetchComments(post.type, post.id);
+}
+
+function goBackToList() {
+  activePost.value = null;
+}
 </script>
 
 <style scoped>
@@ -250,7 +296,7 @@ const formatDateTime = dateTimeString => {
 }
 
 .tabs button {
-  padding: 10px 185px;
+  padding: 10px 184px;
   border: none;
   background: none;
   cursor: pointer;
@@ -367,6 +413,10 @@ const formatDateTime = dateTimeString => {
   padding: 5px 10px;
   border-radius: 10px;
   font-weight: bold;
+}
+
+.category {
+  margin-right: 10px;
 }
 
 .content-section,

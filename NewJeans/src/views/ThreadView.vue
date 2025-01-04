@@ -4,11 +4,14 @@ import { BASE_URL } from '@/config';
 import { useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
+import ThreadPostDetail from '@/components/ThreadPostDetail.vue';
 axios;
 // 전역 변수 선언
 let body, menu, menuItems, menuBorder, activeItem;
 
 const router = useRouter();
+const activePost = ref(null); // 현재 선택된 게시글
+const comments = ref([]); // 댓글 데이터
 
 // CSS 사용자 정의 속성을 동적으로 관리
 const rootStyles = computed(() => ({
@@ -92,6 +95,7 @@ const filteredData = computed(() => {
 function clickTab(index) {
   activeTab.value = index;
 }
+
 // 데이터 가져오기
 async function fetchData() {
   try {
@@ -101,10 +105,12 @@ async function fetchData() {
     data.value = response.data.map(item => ({
       authorIdx: item.authorIdx || 0, // 숫자로 처리
       author: String(item.author || ''), //작성자 이름
-      shareDate: String(item.shareDate || ''),
-      start: item.start,
-      end: item.end,
-      comment:item.comment,
+      sharedIdx: item.sharedIdx, // 게시글 ID
+      shareDate: formatShareDate(item.shareDate), // 원하는 형식으로 변환
+      start: formatDateTime(item.start), // 원하는 형식으로 변환
+      end: formatDateTime(item.end), // 원하는 형식으로 변환
+      comment: item.comment,
+      commentsCount: item.comments?.length || 0, // 댓글 수를 포함
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
       content: String(item.content || ''), // content 변환 확인
@@ -113,10 +119,86 @@ async function fetchData() {
       diaryImages: String(item.diaryImages || ''),
     }));
 
-    console.log('변환된 데이터:', data.value);
+    console.log('게시글 데이터:', data.value);
   } catch (error) {
-    console.error('Failed to fetch data:', error);
+    console.error('게시글 가져오기 실패:', error);
   }
+}
+
+// 날짜 형식 변환 함수
+function formatShareDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// 시간 형식 변환 함수
+function formatDateTime(dateTimeString) {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const formattedHours = hours % 12 || 12; // 0시를 12시로 변환
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${period} ${formattedHours}:${minutes}`;
+}
+
+// 댓글 가져오기
+async function fetchComments(type, mixedIdx) {
+  try {
+    const response = await axios.get(`${BASE_URL}/shared/all/comments/${type}/${mixedIdx}`);
+    comments.value = response.data.map(comment => ({
+      commentsIdx: comment.commentsIdx || 0,
+      userIdx: comment.userIdx || 0,
+      scheduleIdx: comment.scheduleIdx || 0,
+      diaryIdx: comment.diaryIdx || 0,
+      content: String(comment.content || ''),
+      dateTime: comment.dateTime || 0,
+    }));
+    console.log('댓글 데이터:', comments.value);
+  } catch (error) {
+    console.error('댓글 가져오기 실패:', error);
+  }
+}
+
+// 게시글 클릭 시 상세 보기
+async function openPostDetails(post) {
+  if (!post.sharedIdx || !post.type) {
+    console.error('유효하지 않은 게시글 데이터:', post);
+    return;
+  }
+  activePost.value = post;
+  await fetchComments(post.type, post.sharedIdx);
+}
+
+// 댓글 추가
+async function addComment(commentText) {
+  try {
+    const payload = {
+      mixedIdx: activePost.value.sharedIdx, // 현재 게시글의 ID
+      type: activePost.value.type, // DIARY 또는 SCHEDULE
+      content: commentText, // 댓글 내용
+    };
+
+    console.log('댓글 추가 요청 데이터:', payload);
+
+    const response = await axios.post(`${BASE_URL}/shared/create/comments`, payload);
+    comments.value.push({
+      userIdx: response.data.userIdx || 0,
+      scheduleIdx: response.data.scheduleIdx || 0,
+      diaryIdx: response.data.diaryIdx || 0,
+      content: String(response.data.content || ''),
+      dateTime: response.data.dateTime || 0,
+    });
+    console.log('댓글 추가 성공:', response.data);
+  } catch (error) {
+    console.error('댓글 추가 실패:', error);
+  }
+}
+
+// 뒤로가기 버튼 클릭
+function goBackToList() {
+  activePost.value = null;
 }
 
 // 컴포넌트 로드 시 데이터 가져오기
@@ -148,84 +230,95 @@ const goToUserProfile = (authorIdx, author) => {
 
 <template>
   <div class="Thread-view-container" :style="rootStyles">
-    <div class="menu-container">
-      <div class="menu">
-        <button class="menu__item" :class="{ active: activeTab === 1 }" @click="clickTab(1)" style="--bgColorItem: #ff007f">
-          <i class="fas fa-th-large fa-2x"></i>
-        </button>
-        <button class="menu__item" :class="{ active: activeTab === 2 }" @click="clickTab(2)" style="--bgColorItem: #5fff4a">
-          <i class="fas fa-calendar-alt fa-2x"></i>
-        </button>
-        <button class="menu__item" :class="{ active: activeTab === 3 }" @click="clickTab(3)" style="--bgColorItem: #ffebcc">
-          <i class="fas fa-book fa-2x"></i>
-        </button>
-        <button class="menu__item" :class="{ active: activeTab === 4 }" @click="clickTab(4)" style="--bgColorItem: #e0b115">
-          <i class="fas fa-clock fa-2x"></i>
-        </button>
-        <div class="menu__border"></div>
-      </div>
+    <div v-if="activePost">
+      <!-- 게시글 상세 보기 -->
+      <ThreadPostDetail :post="activePost" :comments="comments" @goBack="goBackToList" @addComment="addComment" />
+    </div>
+    <div v-else>
+      <!-- 게시글 목록 -->
+      <div class="menu-container">
+        <div class="menu">
+          <button class="menu__item" :class="{ active: activeTab === 1 }" @click="clickTab(1)" style="--bgColorItem: #ff007f">
+            <i class="fas fa-th-large fa-2x"></i>
+          </button>
+          <button class="menu__item" :class="{ active: activeTab === 2 }" @click="clickTab(2)" style="--bgColorItem: #5fff4a">
+            <i class="fas fa-calendar-alt fa-2x"></i>
+          </button>
+          <button class="menu__item" :class="{ active: activeTab === 3 }" @click="clickTab(3)" style="--bgColorItem: #ffebcc">
+            <i class="fas fa-book fa-2x"></i>
+          </button>
+          <button class="menu__item" :class="{ active: activeTab === 4 }" @click="clickTab(4)" style="--bgColorItem: #e0b115">
+            <i class="fas fa-clock fa-2x"></i>
+          </button>
+          <div class="menu__border"></div>
+        </div>
 
-      <!-- 클립 패스 정의 -->
-      <svg class="svg-container" width="0" height="0">
-        <defs>
-          <clipPath id="menu" clipPathUnits="userSpaceOnUse">
-            <path
-              d="M6.7,45.5c5.7,0.1,14.1-0.4,23.3-4c5.7-2.3,9.9-5,18.1-10.5c10.7-7.1,11.8-9.2,20.6-14.3
+        <!-- 클립 패스 정의 -->
+        <svg class="svg-container" width="0" height="0">
+          <defs>
+            <clipPath id="menu" clipPathUnits="userSpaceOnUse">
+              <path
+                d="M6.7,45.5c5.7,0.1,14.1-0.4,23.3-4c5.7-2.3,9.9-5,18.1-10.5c10.7-7.1,11.8-9.2,20.6-14.3
               c5-2.9,9.2-5.2,15.2-7c7.1-2.1,13.3-2.3,17.6-2.1c4.2-0.2,10.5,0.1,17.6,2.1c6.1,1.8,10.2,4.1,15.2,7
               c8.8,5,9.9,7.1,20.6,14.3c8.3,5.5,12.4,8.2,18.1,10.5c9.2,3.6,17.6,4.2,23.3,4H6.7z"
-            />
-          </clipPath>
-        </defs>
-      </svg>
-    </div>
-    <!-- 필터링된 데이터 -->
-    <div class="content-container">
-      <div v-for="item in filteredData" :key="item.sharedIdx" class="content-box">
-        <!-- 프로필 이미지 및 작성자 이름 -->
-        <div class="header-section">
-          <div class="profile-info">
-            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.authorIdx, item.author)" />
-            <div class="text-info">
-              <h3 class="author" @click="goToUserProfile(item.authorIdx, item.author)">{{ item.author }}</h3>
-              <!-- 다이어리 제목과 카테고리 -->
-              <div v-show="item.type === 'DIARY'" class="title-category">
-                <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
-                <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
-              </div>
-              <!-- 스케줄 제목 -->
-              <div v-show="item.type === 'schedule'" class="title-only">
-                <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+              />
+            </clipPath>
+          </defs>
+        </svg>
+      </div>
+      <!-- 필터링된 데이터 -->
+      <div class="content-container">
+        <div v-for="item in filteredData" :key="item.sharedIdx" class="content-box" @click="openPostDetails(item)">
+          <!-- 프로필 이미지 및 작성자 이름 -->
+          <div class="header-section">
+            <div class="profile-info">
+              <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.authorIdx, item.author)" />
+              <div class="text-info">
+                <h3 class="author" @click="goToUserProfile(item.authorIdx, item.author)">{{ item.author }}</h3>
+                <!-- 다이어리 제목과 카테고리 -->
+                <div v-show="item.type === 'DIARY'" class="title-category">
+                  <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+                  <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
+                  <span class="category" :style="{ backgroundColor: '#d6f7ff' }">{{ item.date }}</span>
+                </div>
+                <!-- 스케줄 제목 -->
+                <div v-show="item.type === 'SCHEDULE'" class="title-only">
+                  <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+                </div>
               </div>
             </div>
+            <span class="date">{{ item.shareDate }}</span>
           </div>
-          <span class="date">{{ item.date }}</span>
-        </div>
 
-        <!-- 다이어리 내용 -->
-        <div v-show="item.type === 'DIARY'" class="content-section" style="margin-left: 4.5rem; text-align: left">
-          <p class="content">{{ item.content }}</p>
-          <!-- 이미지를 조건부로 렌더링 -->
-          <p class="diary_image" v-if="item.diaryImages && item.diaryImages.length > 0">
-            <img :src="`http://192.168.0.17:50002${item.diaryImages}`" alt="Diary Image" />
-          </p>
-        </div>
-
-        <!-- 일정 내용 -->
-        <div v-show="item.type === 'SCHEDULE'" class="schedule-section">
-          <p><span style="font-weight: bold">시작 시간:</span> {{ item.start }}</p>
-          <p><span style="font-weight: bold">종료 시간:</span> {{ item.end }}</p>
-          <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
-          <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
-          <div class="map-section">
-            <p><span style="font-weight: bold">Address:</span></p>
-            <img :src="item.mapImg" alt="Map" class="map-img" />
-            <p>{{ item.address }}</p>
+          <!-- 다이어리 내용 -->
+          <div v-show="item.type === 'DIARY'" class="content-section" style="margin-left: 4.5rem; text-align: left">
+            <p class="content">{{ item.content }}</p>
+            <!-- 이미지를 조건부로 렌더링 -->
+            <p class="diary_image" v-if="item.diaryImages && item.diaryImages.length > 0">
+              <img :src="`http://192.168.0.17:50002${item.diaryImages}`" alt="Diary Image" />
+            </p>
           </div>
-        </div>
 
-        <!-- 댓글 섹션 -->
-        <div class="footer-section">
-          <span class="comments"> <i class="fas fa-comment"></i> {{ item.comment }} </span>
+          <!-- 일정 내용 -->
+          <div v-show="item.type === 'SCHEDULE'" class="schedule-section">
+            <p><span style="font-weight: bold">시작 시간:</span> {{ item.start }}</p>
+            <p><span style="font-weight: bold">종료 시간:</span> {{ item.end }}</p>
+            <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
+            <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
+            <div class="map-section">
+              <p><span style="font-weight: bold">Address:</span></p>
+              <img :src="item.mapImg" alt="Map" class="map-img" />
+              <p>{{ item.address }}</p>
+            </div>
+          </div>
+
+          <!-- 댓글 섹션 -->
+          <div class="footer-section">
+            <div class="comments-info">
+              <i class="fas fa-comment"></i>
+              <span>{{ item.commentsCount }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -377,7 +470,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  margin-top: 15rem;
+  margin-top: 25rem;
 }
 
 .content-box {
@@ -484,13 +577,24 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 10px;
+  padding: 10px;
 }
 
-.footer-section .comments i {
-  font-size: 1rem;
-  margin-right: 5px;
+.comments-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #888;
+  font-size: 14px;
+}
+
+.comments-info i {
+  font-size: 16px;
+  color: #888;
+}
+
+.comments-info span {
+  font-size: 14px;
+  color: #555;
 }
 </style>
