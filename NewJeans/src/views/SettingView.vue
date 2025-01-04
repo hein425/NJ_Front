@@ -230,7 +230,7 @@ onMounted(() => {
 
 const deleteAccount = async () => {
   try {
-    await axios.delete(`${BASE_URL}/user/delete/${authStore.idx}`, {
+    await axios.delete(`${BASE_URL}/user/delete/${authStore.email}`, {
       headers: { Authorization: `Bearer ${authStore.accessToken}` },
     });
     authStore.logout();

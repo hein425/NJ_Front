@@ -99,14 +99,14 @@ async function fetchData() {
     console.log('API로부터 반환된 데이터:', response.data);
 
     data.value = response.data.map(item => ({
-      userIdx: String(item.userIdx || ''),
-      author: String(item.author || ''),
+      authorIdx: item.authorIdx || 0, // 숫자로 처리
+      author: String(item.author || ''), //작성자 이름
       shareDate: String(item.shareDate || ''),
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
       content: String(item.content || ''), // content 변환 확인
       category: String(item.category || ''), // category 변환 확인
-      date: String(item.date || ''), // 정상 작동 확인
+      date: item.date || 0, // 정상 작동 확인
       diaryImages: String(item.diaryImages || ''),
     }));
 
@@ -128,13 +128,18 @@ onMounted(async () => {
 });
 
 // 프로필 페이지로 이동
-const goToUserProfile = userIdx => {
-  console.log('Clicked User ID:', userIdx); // 디버깅 로그
-  if (!userIdx) {
-    console.error('userIdx가 없습니다. 전달할 수 없습니다.');
+const goToUserProfile = (authorIdx, author) => {
+  console.log('Navigating to profile:', { authorIdx, author });
+
+  if (!authorIdx) {
+    console.error('authorIdx가 없습니다. 전달할 수 없습니다.');
     return;
   }
-  router.push({ path: `/user/${userIdx}` }); // 라우터로 이동
+
+  router.push({
+    path: `/user/${String(authorIdx)}`, // 문자열로 변환
+    query: { author: author || 'Unknown User' }, // author 값을 query로 전달
+  });
 };
 </script>
 
@@ -176,14 +181,15 @@ const goToUserProfile = userIdx => {
         <!-- 프로필 이미지 및 작성자 이름 -->
         <div class="header-section">
           <div class="profile-info">
-            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.userIdx)" />
+            <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.authorIdx, item.author)" />
             <div class="text-info">
-              <h3 class="author" @click="goToUserProfile(item.userIdx)">{{ item.author }}</h3>
+              <h3 class="author" @click="goToUserProfile(item.authorIdx, item.author)">{{ item.author }}</h3>
               <!-- 다이어리 제목과 카테고리 -->
               <div v-show="item.type === 'DIARY'" class="title-category">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
                 <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
               </div>
+              <!-- 스케줄 제목 -->
               <div v-show="item.type === 'schedule'" class="title-only">
                 <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
               </div>

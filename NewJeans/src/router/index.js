@@ -103,7 +103,7 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/user/:userIdx',
+      path: '/user/:authorIdx',
       name: 'ThreadUserProfile',
       component: ThreadUserProfile,
       props: true,
