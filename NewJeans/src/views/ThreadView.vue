@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
 import ThreadPostDetail from '@/components/ThreadPostDetail.vue';
+import { start } from '@popperjs/core';
 axios;
 // 전역 변수 선언
 let body, menu, menuItems, menuBorder, activeItem;
@@ -143,11 +144,32 @@ function formatDateTime(dateTimeString) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${period} ${formattedHours}:${minutes}`;
 }
 
-// 댓글 가져오기
-async function fetchComments(type, mixedIdx) {
+// 게시글과 댓글 데이터를 가져오는 함수
+async function fetchPostDetails(sharedIdx, mixedIdx, type) {
   try {
-    const response = await axios.get(`${BASE_URL}/shared/all/comments/${type}/${mixedIdx}`);
-    comments.value = response.data.map(comment => ({
+    // 게시글 데이터 가져오기
+    const postResponse = await axios.get(`${BASE_URL}/shared/one/${sharedIdx}`);
+    activePost.value = {
+      sharedIdx: postResponse.data.sharedIdx || 0,
+      title: String(postResponse.data.title || ''),
+      content: String(postResponse.data.content || ''),
+      category: String(postResponse.data.category || ''),
+      location: String(postResponse.data.location || ''),
+      author: String(postResponse.data.author || ''),
+      authorIdx: postResponse.data.authorIdx || 0,
+      start: postResponse.data.start || 0,
+      end: postResponse.data.end || 0,
+      repeatType: postResponse.data.repeatType,
+      date: postResponse.data.date || 0,
+      shareDate: postResponse.data.shareDate,
+      images: postResponse.data.diaryImages || postResponse.data.scheduleImages || [],
+      type: String(postResponse.data.type || ''),
+      share: postResponse.data.share,
+    };
+
+    // 댓글 데이터 가져오기
+    const commentsResponse = await axios.get(`${BASE_URL}/shared/all/comments/${type}/${mixedIdx}`);
+    comments.value = commentsResponse.data.map(comment => ({
       commentsIdx: comment.commentsIdx || 0,
       userIdx: comment.userIdx || 0,
       scheduleIdx: comment.scheduleIdx || 0,
@@ -155,50 +177,35 @@ async function fetchComments(type, mixedIdx) {
       content: String(comment.content || ''),
       dateTime: comment.dateTime || 0,
     }));
-    console.log('댓글 데이터:', comments.value);
   } catch (error) {
-    console.error('댓글 가져오기 실패:', error);
+    console.error('게시글 및 댓글 데이터 가져오기 실패:', error);
   }
 }
 
-// 게시글 클릭 시 상세 보기
+// 게시글 클릭 시 상세 데이터 로드
 async function openPostDetails(post) {
-  if (!post.sharedIdx || !post.type) {
-    console.error('유효하지 않은 게시글 데이터:', post);
-    return;
-  }
-  activePost.value = post;
-  await fetchComments(post.type, post.sharedIdx);
-}
-
-// 댓글 추가
-async function addComment(commentText) {
   try {
-    const payload = {
-      mixedIdx: activePost.value.sharedIdx, // 현재 게시글의 ID
-      type: activePost.value.type, // DIARY 또는 SCHEDULE
-      content: commentText, // 댓글 내용
-    };
+    // post 객체에 sharedIdx와 type이 유효한지 검증
+    if (!post.sharedIdx || !post.type) {
+      console.error('게시글 데이터가 누락되었습니다:', post);
+      return;
+    }
 
-    console.log('댓글 추가 요청 데이터:', payload);
-
-    const response = await axios.post(`${BASE_URL}/shared/create/comments`, payload);
-    comments.value.push({
-      userIdx: response.data.userIdx || 0,
-      scheduleIdx: response.data.scheduleIdx || 0,
-      diaryIdx: response.data.diaryIdx || 0,
-      content: String(response.data.content || ''),
-      dateTime: response.data.dateTime || 0,
-    });
-    console.log('댓글 추가 성공:', response.data);
+    // 게시글 및 댓글 데이터 가져오기
+    await fetchPostDetails(post.sharedIdx, post.sharedIdx, post.type);
   } catch (error) {
-    console.error('댓글 추가 실패:', error);
+    console.error('게시글 상세보기 오류:', error);
   }
 }
 
 // 뒤로가기 버튼 클릭
 function goBackToList() {
-  activePost.value = null;
+  activePost.value = null; // 상세보기에서 목록으로 돌아가기
+}
+
+// 댓글 추가 이벤트 처리
+function handleCommentAdded(newComment) {
+  comments.value.push(newComment);
 }
 
 // 컴포넌트 로드 시 데이터 가져오기
@@ -232,7 +239,7 @@ const goToUserProfile = (authorIdx, author) => {
   <div class="Thread-view-container" :style="rootStyles">
     <div v-if="activePost">
       <!-- 게시글 상세 보기 -->
-      <ThreadPostDetail :post="activePost" :comments="comments" @goBack="goBackToList" @addComment="addComment" />
+      <ThreadPostDetail :post="activePost" :comments="comments" @goBack="goBackToList" @commentAdded="handleCommentAdded" />
     </div>
     <div v-else>
       <!-- 게시글 목록 -->
@@ -376,7 +383,7 @@ body {
   /* border-radius: 10px; */
   padding: 10px 0;
   position: absolute;
-  top: 10%;
+  top: 2%;
   left: 0%;
   transform: translateY(-50%);
 }
@@ -470,7 +477,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  margin-top: 25rem;
+  margin-top: 13rem;
 }
 
 .content-box {
