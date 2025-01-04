@@ -36,7 +36,7 @@
               <span class="message-sender">{{ message.userName }}</span>
               <p class="message-preview">{{ message.lastMessage }}</p>
             </div>
-            <span class="message-time">{{ formatTime(message.lastMessageTime) }}</span>
+            <span class="message-time">{{ getRelativeTime(message.lastMessageTime) }}</span>
           </li>
         </ul>
       </div>
@@ -298,6 +298,19 @@ const rejectFriendRequest = async rejectedRequestId => {
   }
 };
 
+const getRelativeTime = timestamp => {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffInSeconds = Math.floor((now - past) / 1000);
+
+  if (diffInSeconds < 60) return `${diffInSeconds}초 전`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}일 전`;
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}달 전`;
+  return `${Math.floor(diffInSeconds / 31536000)}년 전`;
+};
+
 const loadMessages = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/message/conversations/${userId}`);
@@ -315,11 +328,6 @@ const loadMessages = async () => {
   } catch (error) {
     console.error('Failed to load messages:', error);
   }
-};
-
-const formatTime = timestamp => {
-  const date = new Date(timestamp);
-  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
 };
 
 const openChat = async friendId => {
@@ -352,13 +360,13 @@ const addMessage = message => {
 
   console.log(messages.value);
 
-  const utcDate = new Date(message.timestamp);
+  const targetMessage = messages.value.find(
+    msg => msg.id === currentChatRoom.value.receiverId
+  );
 
-// 9시간(UTC+9)을 추가하여 KST로 변환
-  const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-
-  for( let i= 0; i< messages.value.length; i++ ) {
-    messages.value[i] = { ...messages.value[0], lastMessage: message.content, lastMessageTime:kstDate };
+  if (targetMessage) {
+    targetMessage.lastMessage = message.content;
+    targetMessage.lastMessageTime = message.timestamp;
   }
 
 };
@@ -383,7 +391,6 @@ const sendMessage = async () => {
 const subscribeToSSE = () => {
   if (sse) return;
   console.log('SSE 구독 시작');
-  // sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse = new EventSource(`${BASE_URL}/message/subscribe/${userId}`);
   sse.addEventListener('message', event => {
     const newMessage = JSON.parse(event.data);
@@ -391,7 +398,6 @@ const subscribeToSSE = () => {
       currentChatRoom.value.messages.push(newMessage);
       nextTick(() => scrollToBottom());
     }
-    // messages.value.unshift(newMessage);
   });
   sse.addEventListener('error', () => {
     sse.close();
