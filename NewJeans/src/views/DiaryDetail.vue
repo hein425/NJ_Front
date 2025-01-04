@@ -83,7 +83,7 @@ const editData = ref({
 });
 const isEditMode = ref(false); // 수정 모드 상태
 
-const IMAGE_BASE_URL = 'http://112.222.157.156:10004'; // 고정 이미지 경로
+const IMAGE_BASE_URL = 'http://192.168.0.17:50002'; // 고정 이미지 경로
 
 const categoryOptions = [
   { label: '전체보기', value: 'ALL' },

@@ -106,9 +106,9 @@ const showProfileEditModal = ref(false);
 
 const languages = ref([
   { code: 'KR', name: '한국' },
-  { code: 'US', name: '미국' },
-  { code: 'JP', name: '일본' },
-  { code: 'CN', name: '중국' },
+  { code: 'US', name: 'U.S.A' },
+  { code: 'JP', name: '日本' },
+  { code: 'CN', name: '中国' },
 ]);
 
 // Pinia store로 관리

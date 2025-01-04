@@ -361,6 +361,7 @@ const getCategoryLabel = categoryValue => {
 // 컴포넌트 로드시 친구 목록 로드
 onMounted(() => {
   loadFriends();
+  fetchDiaries(selectedCategory.value || 'ALL'); // 기본 카테고리 선택
 });
 onMounted(() => {
   const buttons = document.querySelectorAll('.tooltip-btn');
