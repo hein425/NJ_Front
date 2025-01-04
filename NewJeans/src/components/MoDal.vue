@@ -48,8 +48,6 @@ import {BASE_URL} from '@/config';
 import axios from 'axios';
 import BaseModal from './BaseModal.vue';
 
-let eventSource = null; // 전역 변수로 관리
-
 // Pinia store 사용
 const authStore = useAuthStore();
 
@@ -91,30 +89,28 @@ const openSignUp = () => {
 // 로그인 처리 함수 (일반 로그인)
 const handleLogin = async () => {
   try {
+    // 서버로 로그인 요청 보내기
     const response = await axios.post(`${BASE_URL}/auth/login`, {
       email: username.value,
       password: password.value,
     });
 
     if (response.status === 200) {
-      const { accessToken, userName } = response.data;
-
       console.log(response.data);
-
-      // 로컬 스토리지에 로그인 정보 저장
-      localStorage.setItem('userName', userName);
-
-      // Pinia 스토어 업데이트
-      await authStore.login( accessToken, userName);
+      // 로그인 성공 시 Pinia store에 상태 업데이트
+      await authStore.login(response.data.accessToken, response.data.userName, response.data.profile, response.data.email, response.data.idx, response.data.calendarIdx);
 
       showSuccessModal.value = true;
+      await authStore.check();
 
-      // SSE 구독 시작
-      startSSESubscription(userName);
+      // SSE 구독 시작 (userName 전달)
+      const userName = response.data.userName; // userName 변수에 저장
+      startSSESubscription(userName); // userName 전달
 
       router.push('/'); // 로그인 후 홈으로 이동
     }
   } catch (error) {
+    // 로그인 실패 시 에러 처리
     alert('로그인 실패: ' + (error.response?.data?.message || '로그인에 실패했습니다.'));
     console.error('로그인 오류:', error);
   }
@@ -122,31 +118,22 @@ const handleLogin = async () => {
 
 // SSE 구독 함수
 const startSSESubscription = (userName) => {
-  if (eventSource) {
-    console.warn('이미 SSE 구독 중입니다.');
-    return;
-  }
+  console.log('SSE 구독 시작: ', userName); // 전달된 userName 로그로 확인
+  const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${userName}`);
+  // const eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${encodeURIComponent(userName)}`);
 
-  console.log('SSE 구독 시작: ', userName);
-  eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${userName}`);
+  eventSource.addEventListener('sse',(data)=>{
+    console.log('내려온 데이터',data);
+  })
 
-  // 기본 메시지 수신
   eventSource.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      console.log('새 알림:', data);
-      alert(`새 알림: ${data.message || event.data}`);
-    } catch (error) {
-      console.error('SSE 메시지 처리 오류:', error);
-    }
+    console.log('새 알림:', event.data);
+    alert(`새 알림: ${event.data}`); // 알림 표시
   };
 
-  // SSE 연결 오류 처리 및 자동 재연결
-  eventSource.onerror = () => {
-    console.error('SSE 연결 오류 발생. 재연결 시도 중...');
-    eventSource.close();
-    eventSource = null;
-    setTimeout(() => startSSESubscription(userName), 5000); // 5초 후 재연결
+  eventSource.onerror = (error) => {
+    console.error('SSE 오류 발생:', error);
+    eventSource.close(); // 오류 시 연결 닫기
   };
 };
 

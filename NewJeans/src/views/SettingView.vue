@@ -379,7 +379,8 @@ const deleteAccount = async () => {
 .theme-section {
   width: 23vh;
   position: relative;
-  right: 22.5%;
+  right: 20.5%;
+  bottom: 5%;
 }
 
 .theme-header {

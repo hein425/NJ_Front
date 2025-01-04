@@ -102,6 +102,9 @@ async function fetchData() {
       authorIdx: item.authorIdx || 0, // 숫자로 처리
       author: String(item.author || ''), //작성자 이름
       shareDate: String(item.shareDate || ''),
+      start: item.start,
+      end: item.end,
+      comment:item.comment,
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
       content: String(item.content || ''), // content 변환 확인
@@ -209,8 +212,8 @@ const goToUserProfile = (authorIdx, author) => {
 
         <!-- 일정 내용 -->
         <div v-show="item.type === 'SCHEDULE'" class="schedule-section">
-          <p><span style="font-weight: bold">시작 시간:</span> {{ item.startTime }}</p>
-          <p><span style="font-weight: bold">종료 시간:</span> {{ item.endTime }}</p>
+          <p><span style="font-weight: bold">시작 시간:</span> {{ item.start }}</p>
+          <p><span style="font-weight: bold">종료 시간:</span> {{ item.end }}</p>
           <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
           <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
           <div class="map-section">
@@ -222,7 +225,7 @@ const goToUserProfile = (authorIdx, author) => {
 
         <!-- 댓글 섹션 -->
         <div class="footer-section">
-          <span class="comments"> <i class="fas fa-comment"></i> {{ item.comments }} </span>
+          <span class="comments"> <i class="fas fa-comment"></i> {{ item.comment }} </span>
         </div>
       </div>
     </div>
@@ -240,7 +243,6 @@ const goToUserProfile = (authorIdx, author) => {
 
 .Thread-view-container {
   width: 88.5%;
-  height: 100rem;
   padding: 20px;
   border-radius: 10px;
   margin: 5.5vh auto;
