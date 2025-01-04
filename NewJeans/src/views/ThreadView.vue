@@ -184,6 +184,7 @@ async function fetchPostDetails(sharedIdx, mixedIdx, type) {
 
 // 게시글 클릭 시 상세 데이터 로드
 async function openPostDetails(post) {
+  console.log('Post 객체:', post); // 전달된 post 확인
   try {
     // post 객체에 sharedIdx와 type이 유효한지 검증
     if (!post.sharedIdx || !post.type) {
