@@ -75,7 +75,7 @@
 
       <!-- 공개 범위 설정 -->
       <div class="row">
-        <label for="share" style="width: 80px">공개 설정</label>
+        <label for="share">공개 설정</label>
         <select v-model="share" id="share" class="input-field" @change="handleShareChange">
           <option value="ALL">전체공개</option>
           <option value="CHOOSE">친구공개</option>

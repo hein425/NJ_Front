@@ -118,7 +118,7 @@
       <!-- 공개 범위 설정 -->
       <div class="row">
         <label for="share" style="width: 80px">공개 설정</label>
-        <select v-model="share" id="share" class="input-field" @change="handleShareChange">
+        <select v-model="share" id="share" class="input-field" style="width: 100%;" @change="handleShareChange">
           <option value="ALL">전체공개</option>
           <option value="CHOOSE">친구공개</option>
           <option value="NONE">비공개</option>
@@ -769,15 +769,6 @@ input[type='radio']:checked {
   background-color: #2196f3;
 }
 
-.input-field {
-  width: 100%;
-  padding: 8px 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  outline: none;
-  transition: border-color 0.3s ease;
-}
 
 .image-preview {
   display: flex;
@@ -857,32 +848,6 @@ label[for='image'] {
 
 label[for='image']:hover {
   background-color: #525151;
-}
-
-.split-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to bottom, #f6f6f6, #e0e0e0);
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  transition: all 0.3s ease;
-}
-
-.split-button:hover {
-  background: #ddd;
-  border-color: #888;
-}
-
-.split-button-text {
-  padding: 5px 10px;
-  font-size: 14px;
-  color: #333;
 }
 
 /* 듣기 버튼 */
@@ -1129,7 +1094,7 @@ label[for='image']:hover {
 
 /* 입력 필드 스타일 */
 .input-field {
-  width: 100%; /* 전체 너비 */
+  width: 96%; /* 전체 너비 */
   padding: 8px 10px;
   font-size: 1rem;
   border: 1px solid #ccc;

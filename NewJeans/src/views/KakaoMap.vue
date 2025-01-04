@@ -346,7 +346,7 @@ onMounted(() => {
 }
 
 .split-button {
-  width: 160px; /* 버튼의 가로 크기 */
+  width: 165px; /* 버튼의 가로 크기 */
   height: 30px; /* 버튼의 세로 크기 */
   display: flex;
   align-items: center; /* 세로 중앙 정렬 */
@@ -369,13 +369,9 @@ onMounted(() => {
   transform: translateY(2px); /* 눌리는 효과 */
 }
 
-.map-container .split-button-icon{
-  margin-right: 15px;
-}
 
 .split-button-icon {
   color: #333;
-  border-right: 2px solid #aaa; /* 오른쪽 분할 선 */
   padding: 8px 12px; /* 아이콘 영역 크기 조정 */
   display: flex;
   align-items: center;

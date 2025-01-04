@@ -1,11 +1,13 @@
 <template>
   <div class="container">
     <!-- 뒤로가기 버튼 -->
-    <button class="back-button" @click="goBack">← 뒤로가기</button>
+    <button class="back-button" @click="goBack">
+      <i class="fas fa-arrow-left"></i>
+    </button>
     <div class="user-profile">
       <!-- 프로필 헤더 -->
       <div class="profile-header">
-        <img :src="profileImageUrl || '/default-profile.png'" alt="Profile Picture" class="profile-image" />
+        <img :src="profileImageUrl || '/default-profile.png'" alt="Profile Picture" class="profile-img" />
         <h2 class="profile-nickname">{{ author }}</h2>
       </div>
 
@@ -16,27 +18,47 @@
       </div>
 
       <!-- 필터링된 데이터 -->
-      <div class="tab-content">
-        <div v-for="item in filteredData" :key="item.id" :class="[activeTab === 'schedule' ? 'schedule-item' : 'diary-item']">
-          <!-- 일정 -->
-          <div v-if="activeTab === 'schedule'">
-            <h3 class="schedule-title">{{ item.title }}</h3>
-            <p>시작 시간: {{ formatDateTime(item.start) }}</p>
-            <p>종료 시간: {{ formatDateTime(item.end) }}</p>
-            <p>내용: {{ item.content }}</p>
-            <div v-if="item.location">
-              <p>Address: {{ item.address }}</p>
-              <img :src="item.mapUrl || '/default-map.png'" alt="Map" class="map-image" />
+      <div class="content-container">
+        <div v-for="item in filteredData" :key="item.id" class="content-box">
+          <!-- 프로필 이미지 및 작성자 이름 -->
+          <div class="header-section">
+            <div class="profile-info">
+              <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
+              <div class="text-info">
+                <h3 class="author">{{ item.author }}</h3>
+                <!-- 다이어리 제목과 카테고리 -->
+                <div v-show="activeTab === 'diary'" class="title-category">
+                  <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+                  <span class="category" :style="{ backgroundColor: '#FFEBCC' }">#{{ item.category }}</span>
+                </div>
+                <!-- 스케줄 제목 -->
+                <div v-show="activeTab === 'schedule'" class="title-only">
+                  <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ item.title }}</span>
+                </div>
+              </div>
             </div>
+            <span class="date">{{ item.date }}</span>
           </div>
 
-          <!-- 일기 -->
-          <div v-else-if="activeTab === 'diary'">
-            <h3 class="diary-title">{{ item.title }}</h3>
-            <p>작성일: {{ item.date }}</p>
-            <p>내용: {{ item.content }}</p>
-            <div v-if="item.images.length">
-              <img v-for="image in item.images" :src="image" :key="image" alt="Diary Image" class="diary-image" />
+          <!-- 다이어리 내용 -->
+          <div v-show="activeTab === 'diary'" class="content-section" style="margin-left: rem; text-align: left">
+            <p class="content">{{ item.content }}</p>
+            <!-- 이미지를 조건부로 렌더링 -->
+            <p class="diary_image" v-if="item.images && item.images.length > 0">
+              <img v-for="image in item.images" :src="image" :key="image" alt="Diary Image" />
+            </p>
+          </div>
+
+          <!-- 일정 내용 -->
+          <div v-show="activeTab === 'schedule'" class="schedule-section">
+            <p><span style="font-weight: bold">시작 시간:</span> {{ item.start }}</p>
+            <p><span style="font-weight: bold">종료 시간:</span> {{ item.end }}</p>
+            <p><span style="font-weight: bold">반복:</span> {{ item.repeatType }}</p>
+            <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
+            <div class="map-section" v-if="item.location">
+              <p><span style="font-weight: bold">Address:</span></p>
+              <img :src="item.mapUrl || '/default-map.png'" alt="Map" class="map-img" />
+              <p>{{ item.location }}</p>
             </div>
           </div>
         </div>
@@ -50,6 +72,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { BASE_URL } from '@/config';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps({
   userIdx: [String, Number], // String과 Number 모두 허용
@@ -74,10 +97,10 @@ onMounted(() => {
 // 활성화된 탭에 따라 데이터를 필터링
 const filteredData = computed(() => {
   if (activeTab.value === 'schedule') {
-    return schedules.value.filter(schedule => ['ALL', 'CHOOSE'].includes(schedule.share));
+    return schedules.value.filter(item => item.type === 'SCHEDULE' && ['ALL', 'CHOOSE'].includes(item.share));
   }
   if (activeTab.value === 'diary') {
-    return diaries.value.filter(diary => ['ALL', 'CHOOSE'].includes(diary.share));
+    return diaries.value.filter(item => item.type === 'DIARY' && ['ALL', 'CHOOSE'].includes(item.share));
   }
   return [];
 });
@@ -85,51 +108,44 @@ const filteredData = computed(() => {
 // 작성자의 데이터를 가져오는 함수
 const fetchUserProfile = async () => {
   try {
-    // 사용자 프로필 정보 가져오기
-    const userResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
-    console.log('상태 코드 확인:', userResponse.status);
-    console.log('응답 데이터 확인:', userResponse.data);
+    const response = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
+    console.log('Fetched user data:', response.data);
 
     // 응답 데이터 매핑
-    if (userResponse.data && userResponse.data[0]) {
-      author.value = userResponse.data[0].author || 'Unknown User'; // 응답 데이터에서 author 값 설정
-      profileImageUrl.value = userResponse.data.profileImageUrl || '/default-profile.png';
+    if (response.data && response.data.length > 0) {
+      author.value = response.data[0].author || 'Unknown User';
+      profileImageUrl.value = response.data[0].profileImageUrl || '/default-profile.png';
     } else {
       console.error('응답 데이터가 비어 있습니다.');
     }
 
-    // 작성자의 공개 일정 가져오기
-    const scheduleResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
-    console.log('Fetched schedules:', scheduleResponse.data);
-    schedules.value = scheduleResponse.data.map(schedule => ({
-      id: schedule.id,
-      title: schedule.title,
-      content: schedule.content,
-      date: schedule.date,
-      start: schedule.start,
-      end: schedule.end,
-      location: schedule.location,
-      repeatType: schedule.repeatType,
-      repeatEndDate: schedule.repeatEndDate,
-      share: schedule.share,
-      author: schedule.author || 'Unknown User',
-      authorIdx: schedule.authorIdx || 0,
-      images: schedule.images || [],
+    // 전체 데이터를 한번에 가져오기
+    const allData = response.data.map(item => ({
+      id: item.sharedIdx,
+      title: item.title,
+      category: item.category,
+      content: item.content,
+      date: item.date,
+      start: item.start,
+      end: item.end,
+      location: item.location,
+      repeatType: item.repeatType,
+      repeatEndDate: item.repeatEndDate,
+      share: item.share ?? 'ALL', // 기본값 설정
+      type: item.type,
+      author: item.author || 'Unknown User',
+      authorIdx: item.authorIdx || 0,
+      images: item.diaryImages || [],
     }));
 
-    // 작성자의 공개 일기 가져오기
-    const diaryResponse = await axios.get(`${BASE_URL}/shared/user/${userIdx.value}`);
-    console.log('Fetched diaries:', diaryResponse.data);
-    diaries.value = diaryResponse.data.map(diary => ({
-      id: diary.id,
-      title: diary.title,
-      content: diary.content,
-      date: diary.date,
-      share: diary.share,
-      author: diary.author || 'Unknown User',
-      authorIdx: diary.authorIdx || 0,
-      images: diary.images || [],
-    }));
+    console.log('allData:', allData);
+
+    // 일정과 일기 분리
+    schedules.value = allData.filter(item => item.type === 'SCHEDULE');
+    diaries.value = allData.filter(item => item.type === 'DIARY');
+
+    console.log('Filtered Schedules:', schedules.value);
+    console.log('Filtered Diaries:', diaries.value);
   } catch (error) {
     console.error('Failed to fetch user profile data:', error);
   }
@@ -161,9 +177,11 @@ const formatDateTime = dateTimeString => {
 </script>
 
 <style scoped>
+.content-container {
+  padding: 20px;
+}
 .container {
   border-radius: 15px;
-  height: 50rem;
   background-color: white;
   margin: 0 auto;
   width: 81rem;
@@ -171,6 +189,7 @@ const formatDateTime = dateTimeString => {
 .user-profile {
   width: 100%;
   max-width: 800px;
+  /* height: 100%; */
   margin: auto;
   text-align: center;
   background: #f7f8fa;
@@ -180,17 +199,27 @@ const formatDateTime = dateTimeString => {
 }
 
 .back-button {
+  margin-top: 5.5vh;
+  margin-left: 25vh;
+  padding-top: 5vh;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 24px; /* 아이콘 크기 */
   color: #555;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.back-button i {
+  margin-right: 8px; /* 아이콘과 텍스트 간격 */
 }
 
 .back-button:hover {
-  text-decoration: underline;
+  color: #000; /* 마우스 오버 시 색상 변경 */
+  text-decoration: none;
 }
 
 .profile-header {
@@ -217,19 +246,36 @@ const formatDateTime = dateTimeString => {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  border-bottom: 1px solid #ddd; /* 기본 회색 선 */
 }
 
 .tabs button {
-  padding: 10px 20px;
+  padding: 10px 185px;
   border: none;
   background: none;
   cursor: pointer;
   font-size: 16px;
+  position: relative;
 }
 
-.tabs .active {
+.tabs button::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: transparent; /* 기본 비활성 상태 */
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  transition: background-color 0.3s ease;
+}
+
+.tabs button.active {
   font-weight: bold;
-  border-bottom: 2px solid #555;
+}
+
+.tabs button.active::after {
+  background-color: #000; /* 활성화된 탭의 검정색 선 */
 }
 
 .tab-content {
@@ -257,6 +303,83 @@ const formatDateTime = dateTimeString => {
   width: 100%;
   max-height: 300px;
   object-fit: cover;
+  margin-top: 10px;
+}
+
+/* ThreadView.vue 스타일 복사 */
+.content-container {
+  padding: 20px;
+}
+
+.content-box {
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  /* border-bottom: 1px solid #ddd; */
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+}
+
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.text-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author {
+  text-align: left;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.title {
+  margin-right: 10px;
+}
+
+.title-category,
+.title-only {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.title,
+.category {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.content-section,
+.schedule-section {
+  padding: 20px;
+  text-align: left;
+  margin-left: 5.6vh;
+}
+
+.map-img,
+.diary_image img {
+  max-width: 100%;
+  border-radius: 8px;
   margin-top: 10px;
 }
 </style>
