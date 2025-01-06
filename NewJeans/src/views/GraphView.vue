@@ -1,10 +1,12 @@
-<template>
+  <template>
     <div id="graphView">
       <PieChart />
       <LineAndBarChartMonth />
       <LineAndBarChartYear />
     </div>
   </template>
+  
+  
   
   <script>
   import PieChart from '../components/PieChart.vue';
@@ -19,6 +21,7 @@
     },
   };
   </script>
+  
   
   <style>
   #graphView {
