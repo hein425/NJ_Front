@@ -32,19 +32,19 @@
         <img :src="post.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
         <div class="text-info">
           <h3 class="author">{{ post.author }}</h3>
-          <span class="title" :style="{ backgroundColor: '#FFD6D6' }" >{{ post.title }}</span>
+          <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ post.title }}</span>
         </div>
         <span class="date">{{ formatDate(post.shareDate) }}</span>
       </div>
       <div class="schedule-info">
         <p><strong>시작 시간:</strong> {{ post.start }}</p>
         <p><strong>종료 시간:</strong> {{ post.end }}</p>
-        <p><strong>반복:</strong> {{ post.repeatType || "없음" }}</p>
+        <p><strong>반복:</strong> {{ post.repeatType || '없음' }}</p>
         <p class="content">{{ post.content }}</p>
-        <div class="map-section">
+        <!-- <div class="map-section">
           <p><span>Address:</span> {{ post.location }}</p>
           <img :src="post.mapImg || '/default-map.png'" alt="Map" class="map-img" />
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -58,7 +58,7 @@
       <ul class="comments-list">
         <li v-for="comment in comments" :key="comment.commentsIdx" class="comment-item">
           <div class="comment-header">
-            <span class="comment-author">{{ comment.userIdx }}</span>
+            <span class="comment-author">{{ comment.comAuthor }}</span>
             <span class="comment-date">{{ formatDate(comment.dateTime) }}</span>
             <div class="comment-actions">
               <i class="fas fa-ellipsis-h"></i>
@@ -103,8 +103,7 @@ async function addComment() {
   try {
     // `diaryIdx` 또는 `scheduleIdx`를 선택
     const idxKey = props.post.type === 'DIARY' ? 'diaryIdx' : 'scheduleIdx';
-    // const targetIdx = props.post[idxKey];
-    const targetIdx = 1;
+    const targetIdx = props.post[idxKey];
     console.log(props.post);
 
     if (!targetIdx) {
@@ -118,14 +117,21 @@ async function addComment() {
       return;
     }
 
-    const response = await axios.post(`${BASE_URL}/shared/create/comments`, {
+    let newData = {
       userIdx: userIdx,
       [idxKey]: targetIdx, // diaryIdx 또는 scheduleIdx
       content: newComment.value,
       dateTime: new Date().toISOString(),
-    });
+    };
 
-    emits('commentAdded', response.data);
+    const response = await axios.post(`${BASE_URL}/shared/create/comments`, newData);
+
+    console.log(response.data);
+
+    newData = { ...newData, ...response.data };
+
+    // 댓글 목록을 다시 가져와서 업데이트
+    emits('commentAdded', { type: 'add', data: newData });
     newComment.value = ''; // 댓글 입력 필드 초기화
     console.log('댓글이 성공적으로 추가되었습니다.');
   } catch (error) {
@@ -138,20 +144,12 @@ async function deleteComment(commentIdx) {
   try {
     await axios.delete(`${BASE_URL}/shared/delete/${commentIdx}`);
     alert('댓글이 삭제되었습니다.');
-    emits('commentAdded', { type: 'delete', commentIdx });
+
+    emits('commentAdded', { type: 'delete', data: commentIdx });
   } catch (error) {
     console.error('댓글 삭제 실패:', error);
   }
 }
-
-// // 댓글 수정(프론트에서만 임의로 수정하는것것)
-// function editComment(comment) {
-//   const newContent = prompt('댓글을 수정하세요:', comment.content);
-//   if (newContent) {
-//     comment.content = newContent; // 로컬에서 수정
-// 
-//   }
-// }
 
 // 댓글 수정
 async function editComment(comment) {
@@ -162,30 +160,36 @@ async function editComment(comment) {
   }
 
   try {
-    // 백엔드 API 호출
-    await axios.put(`${BASE_URL}/shared/update/comments`, {
-      commentsIdx: comment.commentsIdx, // 수정할 댓글 ID
-      content: newContent, // 새로운 댓글 내용
-    });
+    // 서버에 보낼 데이터 확인
+    const requestData = {
+      commentsIdx: comment.commentsIdx, // 댓글 ID
+      content: newContent, // 수정된 댓글 내용
+    };
 
-    // 로컬 데이터 업데이트
-    comment.content = newContent; 
+    console.log('수정 요청 데이터:', requestData);
+
+    const response = await axios.post(`${BASE_URL}/shared/update/comments`, requestData);
+    console.log('수정 성공:', response.data);
+
+    // 댓글 내용 업데이트
+    comment.content = newContent;
     alert('댓글이 수정되었습니다.');
   } catch (error) {
+    // 에러 응답 출력
     console.error('댓글 수정 실패:', error.response?.data || error.message);
-    alert('댓글 수정 중 오류가 발생했습니다.');
+    if (error.response?.status === 500) {
+      alert('서버 오류가 발생했습니다. 관리자에게 문의하세요.');
+    } else {
+      alert('댓글 수정 중 오류가 발생했습니다.');
+    }
   }
 }
 
 // 날짜 포맷 함수
 function formatDate(dateTime) {
   const date = new Date(dateTime);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
-    2,
-    '0',
-  )}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
-
 </script>
 
 <style scoped>
@@ -221,15 +225,15 @@ function formatDate(dateTime) {
   text-decoration: none;
 }
 
-
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
- 
-.schedule-layout,.diary-layout{
+
+.schedule-layout,
+.diary-layout {
   text-align: left;
 }
 
@@ -281,11 +285,11 @@ function formatDate(dateTime) {
   margin: 5px 7.6%;
 }
 
-.schedule-info .content{
+.schedule-info .content {
   border-top: 1px solid rgb(221, 221, 221);
-    border-bottom: 1px solid rgb(221, 221, 221);
-    padding: 10px 0px;
-    width: 90%;
+  border-bottom: 1px solid rgb(221, 221, 221);
+  padding: 10px 0px;
+  width: 90%;
 }
 
 .map-img {

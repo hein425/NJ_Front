@@ -165,6 +165,8 @@ async function fetchPostDetails(sharedIdx, type) {
       location: String(postData.location || ''),
       author: String(postData.author || ''),
       authorIdx: postData.authorIdx || 0,
+      scheduleIdx: postData.scheduleIdx || 0,
+      diaryIdx: postData.diaryIdx || 0,
       start: formatDateTime(postData.start), // 원하는 형식으로 변환
       end: formatDateTime(postData.end), // 원하는 형식으로 변환
       repeatType: postData.repeatType,
@@ -176,8 +178,7 @@ async function fetchPostDetails(sharedIdx, type) {
     };
 
     // 댓글 데이터 가져오기
-    // const mixedIdx = type === 'DIARY' ? postData.diaryIdx : postData.scheduleIdx;
-    const mixedIdx = 1
+    const mixedIdx = type === 'DIARY' ? postData.diaryIdx : postData.scheduleIdx;
     if (!mixedIdx) {
       console.error('mixedIdx를 찾을 수 없습니다. API 응답 데이터:', postData);
       return;
@@ -187,6 +188,8 @@ async function fetchPostDetails(sharedIdx, type) {
     console.log('댓글 데이터:', commentsResponse.data);
 
     comments.value = commentsResponse.data.map(comment => ({
+      comAuthor: String(comment.comAuthor || '익명 사용자'),
+      authorIdx: comment.authorIdx || 0,
       commentsIdx: comment.commentsIdx || 0,
       userIdx: comment.userIdx || 0,
       scheduleIdx: comment.scheduleIdx || 0,
@@ -198,7 +201,6 @@ async function fetchPostDetails(sharedIdx, type) {
     console.error('게시글 및 댓글 데이터 가져오기 실패:', error);
   }
 }
-
 
 // 게시글 클릭 시 상세 데이터 로드
 async function openPostDetails(post) {
@@ -216,7 +218,6 @@ async function openPostDetails(post) {
   }
 }
 
-
 // 뒤로가기 버튼 클릭
 function goBackToList() {
   activePost.value = null; // 상세보기에서 목록으로 돌아가기
@@ -224,7 +225,13 @@ function goBackToList() {
 
 // 댓글 추가 이벤트 처리
 function handleCommentAdded(newComment) {
-  comments.value.push(newComment);
+  console.log(`newComment ${JSON.stringify(newComment)}`);
+  if (newComment.type === 'add') comments.value.push(newComment.data);
+  else if (newComment.type === 'delete') {
+    console.log(comments.value);
+    comments.value = comments.value.filter(comment => comment.commentsIdx !== newComment.data);
+    console.log(comments.value);
+  }
 }
 
 // 컴포넌트 로드 시 데이터 가져오기
@@ -331,11 +338,11 @@ const goToUserProfile = (authorIdx, author) => {
             <p><span style="font-weight: bold">종료 시간:</span> {{ item.end }}</p>
             <p><span style="font-weight: bold">반복:</span> {{ item.repeat }}</p>
             <p style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px 0; width: 90%">{{ item.content }}</p>
-            <div class="map-section">
+            <!-- <div class="map-section">
               <p><span style="font-weight: bold">Address:</span></p>
               <img :src="item.mapImg" alt="Map" class="map-img" />
               <p>{{ item.address }}</p>
-            </div>
+            </div> -->
           </div>
 
           <!-- 댓글 섹션 -->
