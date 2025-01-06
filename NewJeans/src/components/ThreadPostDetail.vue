@@ -57,9 +57,8 @@
 
       <ul class="comments-list">
         <li v-for="comment in comments" :key="comment.commentsIdx" class="comment-item">
-          <div class="comment-header">
+          <div class="comment-top">
             <span class="comment-author">{{ comment.comAuthor }}</span>
-            <span class="comment-date">{{ formatDate(comment.dateTime) }}</span>
             <div class="comment-actions">
               <i class="fas fa-ellipsis-h"></i>
               <div class="actions-menu">
@@ -69,6 +68,7 @@
             </div>
           </div>
           <p class="comment-content">{{ comment.content }}</p>
+          <span class="comment-date">{{ formatDate(comment.dateTime) }}</span>
         </li>
       </ul>
     </div>
@@ -305,6 +305,8 @@ function formatDate(dateTime) {
 }
 
 .comments-form {
+  margin: 0 6.4vh;
+  width: 90%;
   display: flex;
   gap: 10px; /* 텍스트 영역과 버튼 사이 간격 */
   align-items: flex-start; /* 수직 정렬 */
@@ -335,21 +337,69 @@ function formatDate(dateTime) {
 }
 
 .comment-item {
-  padding: 10px 0;
+  width: 86%;
+  padding: 15px 57px;
   border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* 항목 간 간격 */
 }
 
-.comment-header {
+.comment-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 이름과 버튼을 양쪽으로 배치 */
+  align-items: center;
 }
 
 .comment-author {
   font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.comment-content {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 5px; /* 내용과 이름 간 간격 */
+  line-height: 1.4;
+  text-align: left;
 }
 
 .comment-date {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #888;
+  text-align: left;
+}
+
+.comment-actions {
+  position: relative;
+}
+
+.actions-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  z-index: 10;
+}
+
+.comment-item:hover .actions-menu {
+  display: block;
+}
+
+.actions-menu button {
+  background: none;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.actions-menu button:hover {
+  background: #f0f0f0;
 }
 </style>
