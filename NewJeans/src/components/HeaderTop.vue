@@ -60,10 +60,9 @@
       <!-- 알림 아이콘 -->
       <div class="notification-icon">
         <button
-          @click="toggleNotifications"
-          class="tooltip-btn"
-          data-tooltip="알림"
-        >
+    @click="toggleNotifications" 
+    data-tooltip="알림"
+  >
           <font-awesome-icon :icon="['fas', 'bell']" />
           <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
         </button>
@@ -109,10 +108,13 @@ const toggleNotifications = async () => {
   showNotifications.value = !showNotifications.value;
 
   if (showNotifications.value) {
-    await fetchNotifications(); // 알림 데이터 로드
-    unreadCount.value = 0; // 알림 확인 후 읽지 않은 개수 초기화
+    // 초기 데이터를 다시 가져옴
+    console.log('알림창 열기: fetchNotifications 호출');
+    notifications.value = []; // 기존 데이터 초기화
+    await fetchNotifications();
   }
 };
+
 
 // 알림 데이터 가져오기
 const fetchNotifications = async () => {

@@ -10,76 +10,98 @@ let eventSource = null;
 
 // 알림 데이터 포맷 함수
 const formatNotification = (data) => ({
-  id: data.notificationId || Date.now(), // notificationId로 ID 설정
+  id: data.id, // 여기서 서버에서 전달된 id 값 사용
   message: data.content || '알림 메시지가 없습니다.',
   time: data.createdAt
     ? new Date(data.createdAt).toLocaleString()
-    : new Date().toLocaleString(), // createdAt이 null인 경우 현재 시간 표시
+    : new Date().toLocaleString(),
   type: data.notificationType || '기타',
+  readYn: data.readYn || 'N',
 });
+
 
 // 초기 알림 데이터 가져오기
 const fetchNotifications = async () => {
   try {
-    const userName = localStorage.getItem('userName'); // 로컬 스토리지에서 userName 가져오기
+    const userName = localStorage.getItem('userName');
     if (!userName) {
       console.error('UserName is not found in local storage.');
       return;
     }
 
+    // API 호출
+    console.log('fetchNotifications: 서버 요청 시작'); // 요청 디버깅
     const response = await axios.get(`${BASE_URL}/noti/initial-data`, {
-      params: { userName }, // userName을 쿼리 파라미터로 추가
+      params: { userName },
     });
 
-    // 초기 알림 데이터를 포맷팅 후 추가
+    // 응답 데이터 처리
+    console.log('fetchNotifications: 응답 데이터:', response.data);
     notifications.value = response.data.map(formatNotification);
-    console.log('초기 알림 데이터:', notifications.value);
 
     // 읽지 않은 알림 개수 업데이트
-    unreadCount.value = notifications.value.length;
+    unreadCount.value = notifications.value.filter((n) => n.readYn === 'N').length;
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
   }
 };
 
+
+
 // SSE 연결 설정
 const setupSSE = () => {
-  const userName = localStorage.getItem('userName'); // 로컬 스토리지에서 userName 가져오기
+  const userName = localStorage.getItem('userName');
   if (!userName) {
     console.error('UserName is not found in local storage.');
     return;
   }
 
-  // EventSource 연결
   eventSource = new EventSource(`${BASE_URL}/noti/api/subscribe?userName=${userName}`);
 
-  // 연결 성공
   eventSource.onopen = () => {
     console.log('SSE 연결이 열렸습니다.');
   };
 
-  // 데이터 수신
   eventSource.addEventListener('notification', (event) => {
     console.log('수신된 notification 이벤트:', event.data);
 
     try {
-      const data = JSON.parse(event.data);
-      notifications.value.unshift(formatNotification(data)); // 알림 리스트 업데이트
-      unreadCount.value += 1; // 읽지 않은 알림 개수 증가
-      console.log('알림 리스트 업데이트:', notifications.value);
+      const data = JSON.parse(event.data); // JSON 데이터만 처리
+      notifications.value.unshift(formatNotification(data));
+      unreadCount.value += 1;
     } catch (error) {
-      console.error('알림 데이터 처리 중 오류 발생:', error);
+      console.warn('JSON 파싱 실패: 일반 텍스트 메시지일 가능성 있음.', event.data);
     }
   });
 
-  // SSE 연결 오류 및 재연결 처리
   eventSource.onerror = (error) => {
     console.error('SSE 연결 오류 발생:', error);
     eventSource.close();
-    setTimeout(setupSSE, 5000); // 5초 후 재연결
+
+    // 5초 후 재연결 시도
+    setTimeout(setupSSE, 5000);
   };
 };
 
+
+// 알림 읽음 처리
+const markAsUnread = async (id) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/noti/notifications/${id}/read`);
+    console.log('알림 읽음 처리 완료:', response.data);
+
+    // 읽음 처리된 알림을 리스트에서 제거
+    const index = notifications.value.findIndex((n) => n.id === id);
+    if (index !== -1) {
+      notifications.value[index].readYn = 'Y';
+    }
+
+    // 읽지 않은 알림 개수 감소
+    unreadCount.value -= 1;
+  } catch (error) {
+    console.error('알림 읽음 처리 실패:', error);
+  }
+};
 // 컴포넌트 마운트 시 데이터 로드 및 SSE 설정
 onMounted(() => {
   fetchNotifications();
@@ -95,7 +117,6 @@ onBeforeUnmount(() => {
 </script>
 
 
-
 <template>
   <div class="notifications">
     <div class="notifications-header">
@@ -104,7 +125,12 @@ onBeforeUnmount(() => {
     </div>
     <ul class="notifications-list">
       <template v-if="notifications.length > 0">
-        <li v-for="notification in notifications" :key="notification.id" class="notification-item">
+        <li
+          v-for="notification in notifications"
+          :key="notification.id"
+          class="notification-item"
+          @click="markAsUnread(notification.id)" 
+        >
           <p>{{ notification.message }}</p>
           <small>{{ notification.time }}</small>
         </li>
@@ -115,6 +141,8 @@ onBeforeUnmount(() => {
     </ul>
   </div>
 </template>
+
+
 
 
 
@@ -158,6 +186,16 @@ onBeforeUnmount(() => {
 .notification-item {
   padding: 1rem;
   border-bottom: 1px solid #eee;
+  cursor: pointer; /* 클릭 가능 표시 */
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #f0f0f0; /* 호버 시 배경색 변경 */
+}
+
+.notification-item:active {
+  background-color: #e0e0e0; /* 클릭 시 배경색 변경 */
 }
 
 .notification-item:last-child {
