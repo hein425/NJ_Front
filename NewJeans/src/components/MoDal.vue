@@ -149,7 +149,7 @@ const route = useRoute();
 const kakaoLogin = () => {
   window.Kakao.Auth.authorize({
     // redirectUri: 'http://192.168.0.87:5173/kakaologin', //카카오 리다이렉트 URI
-    redirectUri: 'http://msa.ildal.store', //카카오 리다이렉트 URI
+    redirectUri: 'http://msa.ildal.store/kakaologin', //카카오 리다이렉트 URI
   });
 };
 
