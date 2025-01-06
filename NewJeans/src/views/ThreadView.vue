@@ -145,30 +145,46 @@ function formatDateTime(dateTimeString) {
 }
 
 // 게시글과 댓글 데이터를 가져오는 함수
-async function fetchPostDetails(sharedIdx, mixedIdx, type) {
+async function fetchPostDetails(sharedIdx, type) {
   try {
+    console.log('fetchPostDetails 호출:', { sharedIdx, type });
+
     // 게시글 데이터 가져오기
     const postResponse = await axios.get(`${BASE_URL}/shared/one/${sharedIdx}`);
+    const postData = postResponse.data;
+
+    console.log('게시글 데이터:', postData);
+
+    // 게시글 상세 정보 설정
     activePost.value = {
-      sharedIdx: postResponse.data.sharedIdx || 0,
-      title: String(postResponse.data.title || ''),
-      content: String(postResponse.data.content || ''),
-      category: String(postResponse.data.category || ''),
-      location: String(postResponse.data.location || ''),
-      author: String(postResponse.data.author || ''),
-      authorIdx: postResponse.data.authorIdx || 0,
-      start: postResponse.data.start || 0,
-      end: postResponse.data.end || 0,
-      repeatType: postResponse.data.repeatType,
-      date: postResponse.data.date || 0,
-      shareDate: postResponse.data.shareDate,
-      images: postResponse.data.diaryImages || postResponse.data.scheduleImages || [],
-      type: String(postResponse.data.type || ''),
-      share: postResponse.data.share,
+      sharedIdx: postData.sharedIdx || 0,
+      title: String(postData.title || ''),
+      content: String(postData.content || ''),
+      category: String(postData.category || ''),
+      location: String(postData.location || ''),
+      author: String(postData.author || ''),
+      authorIdx: postData.authorIdx || 0,
+      start: formatDateTime(postData.start), // 원하는 형식으로 변환
+      end: formatDateTime(postData.end), // 원하는 형식으로 변환
+      repeatType: postData.repeatType,
+      date: postData.date || 0,
+      shareDate: postData.shareDate,
+      images: postData.diaryImages || postData.scheduleImages || [],
+      type: String(postData.type || ''),
+      share: postData.share,
     };
 
     // 댓글 데이터 가져오기
+    // const mixedIdx = type === 'DIARY' ? postData.diaryIdx : postData.scheduleIdx;
+    const mixedIdx = 1
+    if (!mixedIdx) {
+      console.error('mixedIdx를 찾을 수 없습니다. API 응답 데이터:', postData);
+      return;
+    }
+
     const commentsResponse = await axios.get(`${BASE_URL}/shared/all/comments/${type}/${mixedIdx}`);
+    console.log('댓글 데이터:', commentsResponse.data);
+
     comments.value = commentsResponse.data.map(comment => ({
       commentsIdx: comment.commentsIdx || 0,
       userIdx: comment.userIdx || 0,
@@ -182,22 +198,23 @@ async function fetchPostDetails(sharedIdx, mixedIdx, type) {
   }
 }
 
+
 // 게시글 클릭 시 상세 데이터 로드
 async function openPostDetails(post) {
   console.log('Post 객체:', post); // 전달된 post 확인
   try {
-    // post 객체에 sharedIdx와 type이 유효한지 검증
     if (!post.sharedIdx || !post.type) {
       console.error('게시글 데이터가 누락되었습니다:', post);
       return;
     }
 
     // 게시글 및 댓글 데이터 가져오기
-    await fetchPostDetails(post.sharedIdx, post.sharedIdx, post.type);
+    await fetchPostDetails(post.sharedIdx, post.type);
   } catch (error) {
     console.error('게시글 상세보기 오류:', error);
   }
 }
+
 
 // 뒤로가기 버튼 클릭
 function goBackToList() {
