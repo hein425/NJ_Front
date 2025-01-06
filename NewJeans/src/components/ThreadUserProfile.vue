@@ -7,7 +7,7 @@
     <div class="user-profile">
       <!-- 프로필 헤더 -->
       <div class="profile-header">
-        <img :src="profileImageUrl || '/default-profile.png'" alt="Profile Picture" class="profile-img" />
+        <img :src="defaultProfileImage" alt="Profile Picture" class="profile-img" />
         <h2 class="profile-nickname">{{ author }}</h2>
       </div>
 
@@ -23,7 +23,7 @@
           <!-- 프로필 이미지 및 작성자 이름 -->
           <div class="header-section">
             <div class="profile-info">
-              <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
+              <img :src="defaultProfileImage" alt="Profile" class="profile-img" />
               <div class="text-info">
                 <h3 class="author">{{ item.author }}</h3>
                 <!-- 다이어리 제목과 카테고리 -->
@@ -83,6 +83,7 @@ import axios from 'axios';
 import { BASE_URL } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import ThreadPostDetail from './ThreadPostDetail.vue';
+import defaultProfileImage from '@/assets/profile2.jpg';
 
 const props = defineProps({
   userIdx: [String, Number], // String과 Number 모두 허용
