@@ -6,6 +6,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Pinia 스토어 가져오기
 import ThreadPostDetail from '@/components/ThreadPostDetail.vue';
 import { start } from '@popperjs/core';
+import defaultProfileImage from '@/assets/profile2.jpg';
 axios;
 // 전역 변수 선언
 let body, menu, menuItems, menuBorder, activeItem;
@@ -297,7 +298,7 @@ const goToUserProfile = (authorIdx, author) => {
           <!-- 프로필 이미지 및 작성자 이름 -->
           <div class="header-section">
             <div class="profile-info">
-              <img :src="item.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" @click="goToUserProfile(item.authorIdx, item.author)" />
+              <img :src="defaultProfileImage" alt="Profile" class="profile-img" @click="goToUserProfile(item.authorIdx, item.author)" />
               <div class="text-info">
                 <h3 class="author" @click="goToUserProfile(item.authorIdx, item.author)">{{ item.author }}</h3>
                 <!-- 다이어리 제목과 카테고리 -->

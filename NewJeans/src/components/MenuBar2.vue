@@ -99,7 +99,7 @@
             :class="{ active: activeMenu === 'help' }"
             @click="
               setActiveMenu('help');
-              router.push('/help');
+              router.push('/graphView');
             "
           >
             <a href="#">

@@ -100,8 +100,8 @@ const dropdownStyles = ref({});
 const router = useRouter();
 const filterBtn = ref(null);
 
-const showNotifications = ref(true);
-const unreadCount = ref(3); // 예제: 알림 개수 (API 연동 필요)
+const showNotifications = ref(false);
+const unreadCount = ref(1); // 예제: 알림 개수 (API 연동 필요)
 const notifications = ref([]);
 
 // 알림 창 표시/숨기기 및 알림 로드
@@ -432,8 +432,8 @@ onBeforeUnmount(() => {
   top: 0;
   right: 0;
   background-color: red;
-  color: white;
-  font-size: 0.8rem;
+  color: red;
+  font-size: 0.6rem;
   border-radius: 50%;
   padding: 0.2rem 0.4rem;
 }
