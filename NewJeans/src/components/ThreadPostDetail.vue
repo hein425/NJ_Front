@@ -7,7 +7,7 @@
     <!-- 다이어리 레이아웃 -->
     <div v-if="post.type === 'DIARY'" class="diary-layout">
       <div class="header-section">
-        <img :src="post.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
+        <img :src="defaultProfileImage" alt="Profile" class="profile-img" />
         <div class="text-info">
           <h3 class="author">{{ post.author }}</h3>
           <div class="meta-info">
@@ -80,6 +80,8 @@ import { ref } from 'vue';
 import { BASE_URL } from '@/config';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import defaultProfileImage from '@/assets/profile2.jpg';
+
 axios;
 
 // Pinia를 통해 로그인한 사용자의 ID 가져오기
