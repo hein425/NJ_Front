@@ -377,7 +377,7 @@ function formatDate(dateTime) {
 }
 
 .actions-menu {
-  width: 45px;
+  width: 50px;
   display: none;
   position: absolute;
   right: 0;
