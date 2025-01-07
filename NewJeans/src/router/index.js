@@ -16,6 +16,7 @@ import ThreadView from '@/views/ThreadView.vue';
 import TeamsViewCopy from '@/views/TeamsView copy.vue';
 import TeamsView from '../views/TeamsView.vue';
 import ThreadUserProfile from '@/components/ThreadUserProfile.vue';
+import ThreadPostDetail from '@/components/ThreadPostDetail.vue';
 import Games from '@/views/games/games.vue';
 
 const router = createRouter({

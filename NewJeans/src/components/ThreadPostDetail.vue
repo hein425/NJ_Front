@@ -7,7 +7,7 @@
     <!-- 다이어리 레이아웃 -->
     <div v-if="post.type === 'DIARY'" class="diary-layout">
       <div class="header-section">
-        <img :src="defaultProfileImage" alt="Profile" class="profile-img" />
+        <!-- <img :src="defaultProfileImage" alt="Profile" class="profile-img" /> -->
         <div class="text-info">
           <h3 class="author">{{ post.author }}</h3>
           <div class="meta-info">
@@ -29,7 +29,7 @@
     <!-- 스케줄 레이아웃 -->
     <div v-else-if="post.type === 'SCHEDULE'" class="schedule-layout">
       <div class="header-section">
-        <img :src="post.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" />
+        <!-- <img :src="post.profileImg || '/default-profile.png'" alt="Profile" class="profile-img" /> -->
         <div class="text-info">
           <h3 class="author">{{ post.author }}</h3>
           <span class="title" :style="{ backgroundColor: '#FFD6D6' }">{{ post.title }}</span>
@@ -228,6 +228,7 @@ function formatDate(dateTime) {
 }
 
 .header-section {
+  margin-left: 7.5vh;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -376,6 +377,7 @@ function formatDate(dateTime) {
 }
 
 .actions-menu {
+  width: 45px;
   display: none;
   position: absolute;
   right: 0;
