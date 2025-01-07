@@ -112,7 +112,7 @@ async function fetchData() {
       start: formatDateTime(item.start), // 원하는 형식으로 변환
       end: formatDateTime(item.end), // 원하는 형식으로 변환
       comment: item.comment,
-      commentsCount: item.comments?.length || 0, // 댓글 수를 포함
+      commentsCount: item.comments?.length || 3, // 댓글 수를 포함
       type: String(item.type || ''),
       title: String(item.title || ''), // title 변환 확인
       content: String(item.content || ''), // content 변환 확인
